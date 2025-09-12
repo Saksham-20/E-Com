@@ -1,0 +1,542 @@
+const express = require('express');
+const { query } = require('../database/config');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { validateProduct, validateProductQuery, validateUUID } = require('../middleware/validation');
+
+const router = express.Router();
+
+// @route   GET /api/products
+// @desc    Get all products with filtering, sorting, and pagination
+// @access  Public
+router.get('/', validateProductQuery, async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 12,
+      category,
+      brand,
+      min_price,
+      max_price,
+      sort = 'created_at',
+      order = 'desc',
+      search
+    } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    // Build WHERE clause
+    let whereConditions = ['p.is_active = true'];
+    let queryParams = [];
+    let paramCount = 0;
+
+    if (category) {
+      paramCount++;
+      whereConditions.push(`c.slug = $${paramCount}`);
+      queryParams.push(category);
+    }
+
+    if (brand) {
+      paramCount++;
+      whereConditions.push(`b.slug = $${paramCount}`);
+      queryParams.push(brand);
+    }
+
+    if (min_price) {
+      paramCount++;
+      whereConditions.push(`p.price >= $${paramCount}`);
+      queryParams.push(parseFloat(min_price));
+    }
+
+    if (max_price) {
+      paramCount++;
+      whereConditions.push(`p.price <= $${paramCount}`);
+      queryParams.push(parseFloat(max_price));
+    }
+
+    if (search) {
+      paramCount++;
+      whereConditions.push(`(p.name ILIKE $${paramCount} OR p.description ILIKE $${paramCount})`);
+      queryParams.push(`%${search}%`);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Build ORDER BY clause
+    const orderByClause = `ORDER BY p.${sort} ${order.toUpperCase()}`;
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT p.id) as total
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      ${whereClause}
+    `;
+
+    const countResult = await query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Get products with pagination
+    const productsQuery = `
+      SELECT 
+        p.id,
+        p.name,
+        p.slug,
+        p.description,
+        p.short_description,
+        p.price,
+        p.compare_price,
+        p.sku,
+        p.stock_quantity,
+        p.is_featured,
+        p.is_bestseller,
+        p.is_new_arrival,
+        p.meta_title,
+        p.meta_description,
+        p.created_at,
+        p.updated_at,
+        c.name as category_name,
+        c.slug as category_slug,
+        b.name as brand_name,
+        b.slug as brand_slug,
+        COALESCE(
+          (SELECT AVG(r.rating)::numeric(3,2)
+           FROM product_reviews r
+           WHERE r.product_id = p.id AND r.is_approved = true), 0
+        ) as average_rating,
+        COALESCE(
+          (SELECT COUNT(*)
+           FROM product_reviews r
+           WHERE r.product_id = p.id AND r.is_approved = true), 0
+        ) as review_count,
+        (
+          SELECT pi.image_url
+          FROM product_images pi
+          WHERE pi.product_id = p.id AND pi.is_primary = true
+          LIMIT 1
+        ) as primary_image
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      ${whereClause}
+      ${orderByClause}
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+    `;
+
+    const productsResult = await query(productsQuery, [...queryParams, limit, offset]);
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.json({
+      success: true,
+      data: {
+        products: productsResult.rows,
+        pagination: {
+          current_page: parseInt(page),
+          total_pages: totalPages,
+          total_items: total,
+          items_per_page: parseInt(limit),
+          has_next_page: hasNextPage,
+          has_prev_page: hasPrevPage
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   GET /api/products/featured
+// @desc    Get featured products
+// @access  Public
+router.get('/featured', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        p.id,
+        p.name,
+        p.slug,
+        p.description,
+        p.short_description,
+        p.price,
+        p.compare_price,
+        p.sku,
+        p.is_featured,
+        p.is_bestseller,
+        p.is_new_arrival,
+        c.name as category_name,
+        c.slug as category_slug,
+        b.name as brand_name,
+        b.slug as brand_slug,
+        (
+          SELECT pi.image_url
+          FROM product_images pi
+          WHERE pi.product_id = p.id AND pi.is_primary = true
+          LIMIT 1
+        ) as primary_image
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      WHERE p.is_active = true AND (p.is_featured = true OR p.is_bestseller = true OR p.is_new_arrival = true)
+      ORDER BY p.is_featured DESC, p.is_bestseller DESC, p.is_new_arrival DESC, p.created_at DESC
+      LIMIT 8
+    `);
+
+    res.json({
+      success: true,
+      data: {
+        products: result.rows
+      }
+    });
+
+  } catch (error) {
+    console.error('Get featured products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   GET /api/products/:slug
+// @desc    Get product by slug
+// @access  Public
+router.get('/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // Get product details
+    const productResult = await query(`
+      SELECT 
+        p.*,
+        c.name as category_name,
+        c.slug as category_slug,
+        b.name as brand_name,
+        b.slug as brand_slug,
+        COALESCE(
+          (SELECT AVG(r.rating)::numeric(3,2)
+           FROM product_reviews r
+           WHERE r.product_id = p.id AND r.is_approved = true), 0
+        ) as average_rating,
+        COALESCE(
+          (SELECT COUNT(*)
+           FROM product_reviews r
+           WHERE r.product_id = p.id AND r.is_approved = true), 0
+        ) as review_count
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      WHERE p.slug = $1 AND p.is_active = true
+    `, [slug]);
+
+    if (productResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const product = productResult.rows[0];
+
+    // Get product images
+    const imagesResult = await query(`
+      SELECT id, image_url, alt_text, sort_order, is_primary
+      FROM product_images
+      WHERE product_id = $1
+      ORDER BY sort_order, is_primary DESC
+    `, [product.id]);
+
+    // Get product variants
+    const variantsResult = await query(`
+      SELECT id, name, value, price_adjustment, stock_quantity, sku
+      FROM product_variants
+      WHERE product_id = $1
+      ORDER BY name, value
+    `, [product.id]);
+
+    // Get related products
+    const relatedResult = await query(`
+      SELECT 
+        p.id,
+        p.name,
+        p.slug,
+        p.price,
+        p.compare_price,
+        c.slug as category_slug,
+        (
+          SELECT pi.image_url
+          FROM product_images pi
+          WHERE pi.product_id = p.id AND pi.is_primary = true
+          LIMIT 1
+        ) as primary_image
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.is_active = true 
+        AND p.id != $1 
+        AND (p.category_id = $2 OR p.brand_id = $3)
+      ORDER BY p.is_featured DESC, p.created_at DESC
+      LIMIT 4
+    `, [product.id, product.category_id, product.brand_id]);
+
+    res.json({
+      success: true,
+      data: {
+        product: {
+          ...product,
+          images: imagesResult.rows,
+          variants: variantsResult.rows,
+          related_products: relatedResult.rows
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   POST /api/products
+// @desc    Create a new product
+// @access  Private (Admin only)
+router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      description,
+      short_description,
+      price,
+      compare_price,
+      sku,
+      stock_quantity,
+      category_id,
+      brand_id,
+      meta_title,
+      meta_description
+    } = req.body;
+
+    // Check if slug already exists
+    const existingProduct = await query(
+      'SELECT id FROM products WHERE slug = $1',
+      [slug]
+    );
+
+    if (existingProduct.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product with this slug already exists'
+      });
+    }
+
+    // Create product
+    const result = await query(`
+      INSERT INTO products (
+        name, slug, description, short_description, price, compare_price,
+        sku, stock_quantity, category_id, brand_id, meta_title, meta_description
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *
+    `, [
+      name, slug, description, short_description, price, compare_price,
+      sku, stock_quantity, category_id, brand_id, meta_title, meta_description
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: 'Product created successfully',
+      data: {
+        product: result.rows[0]
+      }
+    });
+
+  } catch (error) {
+    console.error('Create product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   PUT /api/products/:id
+// @desc    Update a product
+// @access  Private (Admin only)
+router.put('/:id', authenticateToken, requireAdmin, validateUUID, validateProduct, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Check if product exists
+    const existingProduct = await query(
+      'SELECT id FROM products WHERE id = $1',
+      [id]
+    );
+
+    if (existingProduct.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Build update query dynamically
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 0;
+
+    Object.keys(updateData).forEach(key => {
+      if (key !== 'id' && updateData[key] !== undefined) {
+        paramCount++;
+        updateFields.push(`${key} = $${paramCount}`);
+        updateValues.push(updateData[key]);
+      }
+    });
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No fields to update'
+      });
+    }
+
+    updateFields.push('updated_at = CURRENT_TIMESTAMP');
+    paramCount++;
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE products 
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramCount}
+      RETURNING *
+    `;
+
+    const result = await query(updateQuery, updateValues);
+
+    res.json({
+      success: true,
+      message: 'Product updated successfully',
+      data: {
+        product: result.rows[0]
+      }
+    });
+
+  } catch (error) {
+    console.error('Update product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   DELETE /api/products/:id
+// @desc    Delete a product
+// @access  Private (Admin only)
+router.delete('/:id', authenticateToken, requireAdmin, validateUUID, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if product exists
+    const existingProduct = await query(
+      'SELECT id FROM products WHERE id = $1',
+      [id]
+    );
+
+    if (existingProduct.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Soft delete (set is_active to false)
+    await query(
+      'UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Product deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   GET /api/products/:id/reviews
+// @desc    Get product reviews
+// @access  Public
+router.get('/:id/reviews', validateUUID, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    // Get reviews with pagination
+    const result = await query(`
+      SELECT 
+        r.id,
+        r.rating,
+        r.title,
+        r.comment,
+        r.is_verified_purchase,
+        r.created_at,
+        u.first_name,
+        u.last_name
+      FROM product_reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.product_id = $1 AND r.is_approved = true
+      ORDER BY r.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [id, limit, offset]);
+
+    // Get total count
+    const countResult = await query(
+      'SELECT COUNT(*) as total FROM product_reviews WHERE product_id = $1 AND is_approved = true',
+      [id]
+    );
+
+    const total = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      data: {
+        reviews: result.rows,
+        pagination: {
+          current_page: parseInt(page),
+          total_pages: totalPages,
+          total_items: total,
+          items_per_page: parseInt(limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get product reviews error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+module.exports = router;
