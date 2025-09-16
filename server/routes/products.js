@@ -35,11 +35,6 @@ router.get('/', validateProductQuery, async (req, res) => {
       queryParams.push(category);
     }
 
-    if (brand) {
-      paramCount++;
-      whereConditions.push(`b.slug = $${paramCount}`);
-      queryParams.push(brand);
-    }
 
     if (min_price) {
       paramCount++;
@@ -69,7 +64,6 @@ router.get('/', validateProductQuery, async (req, res) => {
       SELECT COUNT(DISTINCT p.id) as total
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN brands b ON p.brand_id = b.id
       ${whereClause}
     `;
 
@@ -97,8 +91,6 @@ router.get('/', validateProductQuery, async (req, res) => {
         p.updated_at,
         c.name as category_name,
         c.slug as category_slug,
-        b.name as brand_name,
-        b.slug as brand_slug,
         COALESCE(
           (SELECT AVG(r.rating)::numeric(3,2)
            FROM product_reviews r
@@ -117,7 +109,6 @@ router.get('/', validateProductQuery, async (req, res) => {
         ) as primary_image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN brands b ON p.brand_id = b.id
       ${whereClause}
       ${orderByClause}
       LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
@@ -174,8 +165,6 @@ router.get('/featured', async (req, res) => {
         p.is_new_arrival,
         c.name as category_name,
         c.slug as category_slug,
-        b.name as brand_name,
-        b.slug as brand_slug,
         (
           SELECT pi.image_url
           FROM product_images pi
@@ -184,7 +173,6 @@ router.get('/featured', async (req, res) => {
         ) as primary_image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN brands b ON p.brand_id = b.id
       WHERE p.is_active = true AND (p.is_featured = true OR p.is_bestseller = true OR p.is_new_arrival = true)
       ORDER BY p.is_featured DESC, p.is_bestseller DESC, p.is_new_arrival DESC, p.created_at DESC
       LIMIT 8
@@ -206,6 +194,32 @@ router.get('/featured', async (req, res) => {
   }
 });
 
+// @route   GET /api/products/categories
+// @desc    Get all product categories
+// @access  Public
+router.get('/categories', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT id, name, slug, description, image_url, sort_order
+      FROM categories
+      WHERE is_active = true
+      ORDER BY sort_order ASC, name ASC
+    `);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 // @route   GET /api/products/:slug
 // @desc    Get product by slug
 // @access  Public
@@ -219,8 +233,6 @@ router.get('/:slug', async (req, res) => {
         p.*,
         c.name as category_name,
         c.slug as category_slug,
-        b.name as brand_name,
-        b.slug as brand_slug,
         COALESCE(
           (SELECT AVG(r.rating)::numeric(3,2)
            FROM product_reviews r
@@ -233,7 +245,6 @@ router.get('/:slug', async (req, res) => {
         ) as review_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN brands b ON p.brand_id = b.id
       WHERE p.slug = $1 AND p.is_active = true
     `, [slug]);
 

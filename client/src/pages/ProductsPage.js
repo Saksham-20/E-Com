@@ -15,7 +15,7 @@ const ProductsPage = ({ category: propCategory }) => {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     category: '',
-    priceRange: [0, 5000],
+    priceRange: [0, 100000],
     rating: 0,
     sortBy: 'newest'
   });
@@ -34,37 +34,45 @@ const ProductsPage = ({ category: propCategory }) => {
     try {
       setLoading(true);
       
-      let filteredProducts = jewelryProducts;
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        page: '1',
+        limit: '50'
+      });
       
-      // Filter by category if provided
+      // Add category filter if provided
       if (category) {
         const categoryMap = {
-          'high-jewelry': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'jewelry': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'love-engagement': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'fine-watches': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'accessories': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'gifts': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'new-arrivals': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'bestsellers': ['Rings', 'Necklaces', 'Earrings', 'Bracelets'],
-          'sale': ['Rings', 'Necklaces', 'Earrings', 'Bracelets']
+          'necklaces': 'necklaces',
+          'earrings': 'earrings',
+          'bangles-bracelets': 'bangles-bracelets',
+          'rings': 'rings',
+          'anklets': 'anklets',
+          'nose-rings': 'nose-rings',
+          'mangalsutras': 'mangalsutras',
+          'temple-jewelry': 'temple-jewelry',
+          'kundan-sets': 'kundan-sets',
+          'polki-sets': 'polki-sets',
+          'meenakari': 'meenakari',
+          'antique-jewelry': 'antique-jewelry'
         };
         
-        const categoryFilter = categoryMap[category];
-        if (categoryFilter) {
-          if (Array.isArray(categoryFilter)) {
-            filteredProducts = jewelryProducts.filter(product => 
-              categoryFilter.includes(product.category)
-            );
-          } else {
-            filteredProducts = jewelryProducts.filter(product => 
-              product.category === categoryFilter
-            );
-          }
+        const categorySlug = categoryMap[category];
+        if (categorySlug) {
+          queryParams.append('category', categorySlug);
         }
       }
       
-      setProducts(filteredProducts);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products?${queryParams}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      const data = await response.json();
+      console.log('API Response:', data);
+      console.log('Products:', data.data.products);
+      setProducts(data.data.products || []);
       setError(null);
     } catch (err) {
       setError('Failed to load products');
@@ -81,13 +89,13 @@ const ProductsPage = ({ category: propCategory }) => {
     if (searchQuery) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
     // Apply category filter from sidebar (additional to URL category)
     if (filters.category) {
-      filtered = filtered.filter(product => product.category === filters.category);
+      filtered = filtered.filter(product => product.category_name === filters.category);
     }
 
     // Apply price range filter
@@ -97,7 +105,7 @@ const ProductsPage = ({ category: propCategory }) => {
 
     // Apply rating filter
     if (filters.rating > 0) {
-      filtered = filtered.filter(product => product.rating >= filters.rating);
+      filtered = filtered.filter(product => (product.average_rating || 0) >= filters.rating);
     }
 
     // Apply sorting
@@ -109,11 +117,11 @@ const ProductsPage = ({ category: propCategory }) => {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
         break;
       case 'newest':
       default:
-        filtered.sort((a, b) => b.id - a.id);
+        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
     }
 
@@ -128,7 +136,7 @@ const ProductsPage = ({ category: propCategory }) => {
     setSearchQuery(query);
   };
 
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = [...new Set(products.map(p => p.category_name).filter(Boolean))];
 
   if (loading) {
     return <Loading />;

@@ -51,8 +51,16 @@ async function setupDatabase() {
     const schemaPath = path.join(__dirname, 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
-    await dbClient.query(schema);
-    console.log('✅ Database schema created successfully');
+    try {
+      await dbClient.query(schema);
+      console.log('✅ Database schema created successfully');
+    } catch (error) {
+      if (error.code === '42710') { // Object already exists
+        console.log('✅ Database schema already exists, skipping...');
+      } else {
+        throw error;
+      }
+    }
 
     // Create default admin user
     const bcrypt = require('bcryptjs');
@@ -73,12 +81,20 @@ async function setupDatabase() {
       console.log('✅ Admin user already exists');
     }
 
-    // Create sample categories
+    // Create Indian jewelry categories
     const categories = [
-      { name: 'Jewelry', slug: 'jewelry', description: 'Exquisite jewelry collections' },
-      { name: 'Watches', slug: 'watches', description: 'Luxury timepieces' },
-      { name: 'Accessories', slug: 'accessories', description: 'Premium accessories' },
-      { name: 'Home & Living', slug: 'home-living', description: 'Luxury home decor' }
+      { name: 'Necklaces', slug: 'necklaces', description: 'Traditional and modern Indian necklaces', sort_order: 1 },
+      { name: 'Earrings', slug: 'earrings', description: 'Elegant Indian earrings and jhumkas', sort_order: 2 },
+      { name: 'Bangles & Bracelets', slug: 'bangles-bracelets', description: 'Traditional bangles and modern bracelets', sort_order: 3 },
+      { name: 'Rings', slug: 'rings', description: 'Beautiful Indian rings and engagement rings', sort_order: 4 },
+      { name: 'Anklets', slug: 'anklets', description: 'Traditional Indian anklets and payals', sort_order: 5 },
+      { name: 'Nose Rings', slug: 'nose-rings', description: 'Traditional Indian nose rings and studs', sort_order: 6 },
+      { name: 'Mangalsutras', slug: 'mangalsutras', description: 'Sacred mangalsutras and wedding jewelry', sort_order: 7 },
+      { name: 'Temple Jewelry', slug: 'temple-jewelry', description: 'Traditional South Indian temple jewelry', sort_order: 8 },
+      { name: 'Kundan Sets', slug: 'kundan-sets', description: 'Royal Kundan jewelry sets', sort_order: 9 },
+      { name: 'Polki Sets', slug: 'polki-sets', description: 'Traditional Polki diamond sets', sort_order: 10 },
+      { name: 'Meenakari', slug: 'meenakari', description: 'Colorful Meenakari enamel jewelry', sort_order: 11 },
+      { name: 'Antique Jewelry', slug: 'antique-jewelry', description: 'Vintage and antique Indian jewelry', sort_order: 12 }
     ];
 
     for (const category of categories) {
@@ -89,35 +105,12 @@ async function setupDatabase() {
       
       if (exists.rows.length === 0) {
         await dbClient.query(`
-          INSERT INTO categories (name, slug, description)
-          VALUES ($1, $2, $3)
-        `, [category.name, category.slug, category.description]);
+          INSERT INTO categories (name, slug, description, sort_order)
+          VALUES ($1, $2, $3, $4)
+        `, [category.name, category.slug, category.description, category.sort_order]);
       }
     }
-    console.log('✅ Sample categories created');
-
-    // Create sample brands
-    const brands = [
-      { name: 'Tiffany & Co.', slug: 'tiffany-co', description: 'Legendary luxury jewelry house' },
-      { name: 'Cartier', slug: 'cartier', description: 'Prestigious French luxury goods' },
-      { name: 'Rolex', slug: 'rolex', description: 'Swiss luxury watch manufacturer' },
-      { name: 'Hermès', slug: 'hermes', description: 'French luxury goods manufacturer' }
-    ];
-
-    for (const brand of brands) {
-      const exists = await dbClient.query(
-        "SELECT 1 FROM brands WHERE slug = $1",
-        [brand.slug]
-      );
-      
-      if (exists.rows.length === 0) {
-        await dbClient.query(`
-          INSERT INTO brands (name, slug, description)
-          VALUES ($1, $2, $3)
-        `, [brand.name, brand.slug, brand.description]);
-      }
-    }
-    console.log('✅ Sample brands created');
+    console.log('✅ Indian jewelry categories created');
 
     await dbClient.end();
     console.log('🎉 Database setup completed successfully!');

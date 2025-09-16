@@ -64,12 +64,17 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <Link to={`/products/${product.id}`}>
           <motion.img
-            src={product.images?.[0] || '/placeholder-product.jpg'}
+            src={product.primary_image ? `http://localhost:5000${product.primary_image}` : '/placeholder-product.jpg'}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             onError={(e) => {
+              console.log('ProductCard image failed to load:', e.target.src);
+              console.log('Product:', product.name, 'Primary image:', product.primary_image);
               e.target.src = '/placeholder-product.jpg';
+            }}
+            onLoad={() => {
+              console.log('ProductCard image loaded successfully:', product.name, product.primary_image);
             }}
           />
         </Link>
@@ -135,7 +140,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         </div>
 
         {/* Stock Status */}
-        {product.stock <= 0 && (
+        {product.stock_quantity <= 0 && (
           <div className="absolute bottom-2 left-2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full">
             Out of Stock
           </div>
@@ -145,9 +150,9 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       {/* Product Info */}
       <div className="p-3 sm:p-4">
         {/* Category */}
-        {product.category && (
+        {product.category_name && (
           <div className="text-xs text-gray-500 mb-1 text-center sm:text-left">
-            {product.category.name}
+            {product.category_name}
           </div>
         )}
 
@@ -159,14 +164,14 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         </Link>
 
         {/* Rating */}
-        {product.rating && (
+        {product.average_rating && product.average_rating > 0 && (
           <div className="flex items-center justify-center sm:justify-start mb-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <svg
                   key={i}
                   className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                    i < Math.floor(product.rating)
+                    i < Math.floor(product.average_rating)
                       ? 'text-yellow-400 fill-current'
                       : 'text-gray-300'
                   }`}
@@ -178,7 +183,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
               ))}
             </div>
             <span className="text-xs text-gray-500 ml-1">
-              ({product.reviewCount || 0})
+              ({product.review_count || 0})
             </span>
           </div>
         )}
@@ -200,11 +205,11 @@ const ProductCard = React.memo(({ product, className = '' }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={isInCartState ? handleRemoveFromCart : handleAddToCart}
-          disabled={product.stock <= 0}
+          disabled={product.stock_quantity <= 0}
           className={`w-full py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
             isInCartState
               ? 'bg-red-600 text-white hover:bg-red-700'
-              : product.stock <= 0
+              : product.stock_quantity <= 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-tiffany-blue text-white hover:bg-tiffany-blue-dark'
           }`}

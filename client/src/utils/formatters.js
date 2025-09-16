@@ -1,7 +1,7 @@
 // Currency formatting
-export const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
+export const formatCurrency = (amount, currency = 'INR', locale = 'en-IN') => {
   if (amount === null || amount === undefined || isNaN(amount)) {
-    return '$0.00';
+    return '₹0.00';
   }
   
   try {
@@ -13,7 +13,7 @@ export const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
     }).format(amount);
   } catch (error) {
     // Fallback formatting
-    return `$${parseFloat(amount).toFixed(2)}`;
+    return `₹${parseFloat(amount).toFixed(2)}`;
   }
 };
 
@@ -355,7 +355,7 @@ export const formatRating = (rating, maxRating = 5, showText = true) => {
 };
 
 // Price range formatting
-export const formatPriceRange = (minPrice, maxPrice, currency = 'USD') => {
+export const formatPriceRange = (minPrice, maxPrice, currency = 'INR') => {
   if (minPrice === null || maxPrice === null) return '';
   
   if (minPrice === maxPrice) {

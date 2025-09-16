@@ -1,8 +1,11 @@
 const express = require('express');
-const { query } = require('../database/config');
+const pool = require('../database/config');
 const { authenticateToken } = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const { body, validationResult } = require('express-validator');
+const { upload, handleUploadError } = require('../middleware/upload');
+const imageService = require('../services/imageService');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -42,9 +45,9 @@ router.get('/dashboard', async (req, res) => {
     // Get low stock products
     const lowStockProducts = await pool.query(`
       SELECT * FROM products 
-      WHERE inventory_quantity <= low_stock_threshold 
+      WHERE stock_quantity <= low_stock_threshold 
       AND is_active = true
-      ORDER BY inventory_quantity ASC
+      ORDER BY stock_quantity ASC
       LIMIT 5
     `);
 
@@ -61,7 +64,11 @@ router.get('/dashboard', async (req, res) => {
 
   } catch (error) {
     console.error('Dashboard error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error',
+      error: error.message 
+    });
   }
 });
 
@@ -77,10 +84,10 @@ router.get('/products', async (req, res) => {
       SELECT 
         p.*,
         c.name as category_name,
-        col.name as collection_name
+        pi.image_url as primary_image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN collections col ON p.collection_id = col.id
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
       WHERE 1=1
     `;
 
@@ -158,25 +165,23 @@ router.get('/products', async (req, res) => {
 });
 
 // @route   POST /api/admin/products
-// @desc    Create new product
+// @desc    Create new product with image upload
 // @access  Admin
-router.post('/products', [
-  body('name').trim().notEmpty().withMessage('Product name is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('categoryId').isInt().withMessage('Category ID must be a valid integer'),
-  body('sku').trim().notEmpty().withMessage('SKU is required')
-], async (req, res) => {
+router.post('/products', upload.array('images', 10), handleUploadError, async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const {
-      name, description, shortDescription, price, comparePrice, sku,
-      categoryId, collectionId, material, weight, dimensions,
-      inventoryQuantity, lowStockThreshold, metaTitle, metaDescription
+      name, description, short_description, price, compare_price, sku,
+      category_id, weight, dimensions,
+      stock_quantity, low_stock_threshold, meta_title, meta_description,
+      is_active, is_featured, is_bestseller, is_new_arrival
     } = req.body;
+
+    // Validate required fields
+    if (!name || !price || !category_id || !sku) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: name, price, category_id, sku' 
+      });
+    }
 
     // Generate slug from name
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -191,24 +196,73 @@ router.post('/products', [
     const newProduct = await pool.query(`
       INSERT INTO products (
         name, slug, description, short_description, price, compare_price, sku,
-        category_id, collection_id, material, weight, dimensions,
-        inventory_quantity, low_stock_threshold, meta_title, meta_description
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        category_id, weight, dimensions,
+        stock_quantity, low_stock_threshold, meta_title, meta_description,
+        is_active, is_featured, is_bestseller, is_new_arrival
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING *
     `, [
-      name, slug, description, shortDescription, price, comparePrice, sku,
-      categoryId, collectionId, material, weight, dimensions,
-      inventoryQuantity || 0, lowStockThreshold || 5, metaTitle, metaDescription
+      name, slug, description, short_description, price, compare_price, sku,
+      category_id, weight, dimensions,
+      stock_quantity || 0, low_stock_threshold || 5, meta_title, meta_description,
+      is_active !== false, is_featured || false, is_bestseller || false, is_new_arrival || false
     ]);
+
+    const product = newProduct.rows[0];
+
+    // Handle image uploads
+    if (req.files && req.files.length > 0) {
+      try {
+        for (let i = 0; i < req.files.length; i++) {
+          const file = req.files[i];
+          const isPrimary = i === 0; // First image is primary
+          
+          // Generate product images
+          const processedImages = await imageService.generateProductImages(
+            file.path, 
+            product.id
+          );
+
+          // Save image record to database - use thumbnail for primary display
+          await pool.query(`
+            INSERT INTO product_images (product_id, image_url, alt_text, sort_order, is_primary)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [
+            product.id,
+            processedImages.find(img => img.size === 'thumbnail')?.url || processedImages[0].url,
+            file.originalname,
+            i,
+            isPrimary
+          ]);
+
+          // Clean up the original uploaded file to avoid duplicates
+          try {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+              console.log('Cleaned up original file:', file.path);
+            }
+          } catch (cleanupError) {
+            console.log('Could not clean up original file:', cleanupError.message);
+          }
+        }
+      } catch (imageError) {
+        console.error('Image processing error:', imageError);
+        // Don't fail the product creation if image processing fails
+      }
+    }
 
     res.status(201).json({
       message: 'Product created successfully',
-      product: newProduct.rows[0]
+      product: product
     });
 
   } catch (error) {
     console.error('Create product error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 });
 
@@ -411,6 +465,363 @@ router.put('/orders/:id/status', [
 
   } catch (error) {
     console.error('Update order status error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/admin/users
+// @desc    Create new user for admin
+// @access  Admin
+router.post('/users', [
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Valid email is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { firstName, lastName, email, phone, isAdmin, isVerified } = req.body;
+
+    // Check if email already exists
+    const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    // Generate a temporary password (in production, send via email)
+    const tempPassword = 'temp123'; // This should be generated and sent via email
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    // Create user
+    const newUser = await pool.query(`
+      INSERT INTO users (first_name, last_name, email, phone, password_hash, is_admin, is_verified)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, first_name, last_name, email, phone, is_admin, is_verified, created_at
+    `, [firstName, lastName, email, phone, hashedPassword, isAdmin || false, isVerified || false]);
+
+    res.status(201).json({
+      message: 'User created successfully',
+      user: newUser.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Create admin user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/admin/users
+// @desc    Get all users for admin
+// @access  Admin
+router.get('/users', async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search, role, sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+    const offset = (page - 1) * limit;
+
+    let query = `
+      SELECT 
+        id, email, first_name, last_name, phone, is_admin, is_verified, created_at, updated_at
+      FROM users
+      WHERE 1=1
+    `;
+
+    const queryParams = [];
+    let paramCount = 0;
+
+    if (search) {
+      paramCount++;
+      query += ` AND (first_name ILIKE $${paramCount} OR last_name ILIKE $${paramCount} OR email ILIKE $${paramCount})`;
+      queryParams.push(`%${search}%`);
+    }
+
+    if (role) {
+      paramCount++;
+      query += ` AND is_admin = $${paramCount}`;
+      queryParams.push(role === 'admin');
+    }
+
+    query += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    queryParams.push(parseInt(limit), offset);
+
+    const users = await pool.query(query, queryParams);
+
+    // Get total count
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM users
+      WHERE 1=1
+    `;
+
+    const countParams = [];
+    paramCount = 0;
+
+    if (search) {
+      paramCount++;
+      countQuery += ` AND (first_name ILIKE $${paramCount} OR last_name ILIKE $${paramCount} OR email ILIKE $${paramCount})`;
+      countParams.push(`%${search}%`);
+    }
+
+    if (role) {
+      paramCount++;
+      countQuery += ` AND is_admin = $${paramCount}`;
+      countParams.push(role === 'admin');
+    }
+
+    const totalCount = await pool.query(countQuery, countParams);
+
+    res.json({
+      users: users.rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount.rows[0].total / limit),
+        totalItems: parseInt(totalCount.rows[0].total),
+        itemsPerPage: parseInt(limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get admin users error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/admin/users/:id
+// @desc    Get user by ID for admin
+// @access  Admin
+router.get('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await pool.query(`
+      SELECT 
+        id, email, first_name, last_name, phone, is_admin, is_verified, created_at, updated_at
+      FROM users 
+      WHERE id = $1
+    `, [id]);
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ user: user.rows[0] });
+
+  } catch (error) {
+    console.error('Get admin user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/admin/users/:id
+// @desc    Update user for admin
+// @access  Admin
+router.put('/users/:id', [
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Valid email is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+    const { firstName, lastName, email, phone, isAdmin, isVerified } = req.body;
+
+    // Check if user exists
+    const existingUser = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
+    if (existingUser.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if email is already taken by another user
+    const emailCheck = await pool.query(
+      'SELECT id FROM users WHERE email = $1 AND id != $2',
+      [email, id]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ message: 'Email already taken' });
+    }
+
+    // Update user
+    await pool.query(`
+      UPDATE users 
+      SET first_name = $1, last_name = $2, email = $3, phone = $4, 
+          is_admin = $5, is_verified = $6, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $7
+    `, [firstName, lastName, email, phone, isAdmin || false, isVerified || false, id]);
+
+    res.json({ message: 'User updated successfully' });
+
+  } catch (error) {
+    console.error('Update admin user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   DELETE /api/admin/users/:id
+// @desc    Delete user for admin
+// @access  Admin
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists
+    const existingUser = await pool.query('SELECT id, is_admin FROM users WHERE id = $1', [id]);
+    if (existingUser.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent admin from deleting themselves
+    if (req.user.id === id) {
+      return res.status(400).json({ message: 'Cannot delete your own account' });
+    }
+
+    // Prevent deleting other admins
+    if (existingUser.rows[0].is_admin) {
+      return res.status(400).json({ message: 'Cannot delete admin accounts' });
+    }
+
+    // Delete user (cascade will handle related records)
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+    res.json({ message: 'User deleted successfully' });
+
+  } catch (error) {
+    console.error('Delete admin user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/admin/analytics
+// @desc    Get analytics data for admin
+// @access  Admin
+router.get('/analytics', async (req, res) => {
+  try {
+    const { period = '30d' } = req.query;
+    
+    // Calculate date range based on period
+    let dateFilter = '';
+    let groupBy = '';
+    
+    switch (period) {
+      case '24h':
+        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'24 hours\'';
+        groupBy = 'DATE(o.created_at)';
+        break;
+      case '7d':
+        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'7 days\'';
+        groupBy = 'DATE(o.created_at)';
+        break;
+      case '30d':
+        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'30 days\'';
+        groupBy = 'DATE(o.created_at)';
+        break;
+      case '90d':
+        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'90 days\'';
+        groupBy = 'DATE(o.created_at)';
+        break;
+      case '1y':
+        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'1 year\'';
+        groupBy = 'DATE_TRUNC(\'month\', o.created_at)';
+        break;
+    }
+
+    // Get sales data
+    const salesData = await pool.query(`
+      SELECT 
+        ${groupBy} as period,
+        COUNT(*) as orders,
+        SUM(total_amount) as revenue,
+        AVG(total_amount) as average_order
+      FROM orders o
+      WHERE status != 'cancelled' ${dateFilter}
+      GROUP BY ${groupBy}
+      ORDER BY period
+    `);
+
+    // Get top selling products
+    const topProducts = await pool.query(`
+      SELECT 
+        p.id,
+        p.name,
+        p.price,
+        pi.image_url,
+        c.name as category_name,
+        COUNT(oi.id) as order_count,
+        SUM(oi.quantity) as total_quantity,
+        SUM(oi.total_price) as total_revenue
+      FROM products p
+      LEFT JOIN order_items oi ON p.id = oi.product_id
+      LEFT JOIN orders o ON oi.order_id = o.id
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE o.status != 'cancelled' ${dateFilter}
+      GROUP BY p.id, p.name, p.price, pi.image_url, c.name
+      ORDER BY total_quantity DESC
+      LIMIT 10
+    `);
+
+    // Get recent orders
+    const recentOrders = await pool.query(`
+      SELECT 
+        o.id,
+        o.order_number,
+        o.total_amount,
+        o.status,
+        o.created_at,
+        u.first_name,
+        u.last_name,
+        u.email
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      WHERE o.status != 'cancelled' ${dateFilter}
+      ORDER BY o.created_at DESC
+      LIMIT 10
+    `);
+
+    // Get category performance
+    const categoryData = await pool.query(`
+      SELECT 
+        c.id,
+        c.name,
+        COUNT(DISTINCT p.id) as product_count,
+        COUNT(oi.id) as order_count,
+        SUM(oi.total_price) as revenue
+      FROM categories c
+      LEFT JOIN products p ON c.id = p.category_id
+      LEFT JOIN order_items oi ON p.id = oi.product_id
+      LEFT JOIN orders o ON oi.order_id = o.id
+      WHERE o.status != 'cancelled' ${dateFilter}
+      GROUP BY c.id, c.name
+      ORDER BY revenue DESC
+    `);
+
+    // Get order status breakdown
+    const orderStatusBreakdown = await pool.query(`
+      SELECT 
+        status,
+        COUNT(*) as count
+      FROM orders 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY status
+    `);
+
+    res.json({
+      period,
+      salesData: salesData.rows,
+      topProducts: topProducts.rows,
+      recentOrders: recentOrders.rows,
+      categoryData: categoryData.rows,
+      orderStatusBreakdown: orderStatusBreakdown.rows
+    });
+
+  } catch (error) {
+    console.error('Get analytics error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

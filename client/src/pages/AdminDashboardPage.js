@@ -1,6 +1,7 @@
 import React from 'react';
 import useAuth from '../hooks/useAuth';
 import Dashboard from '../components/admin/Dashboard';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 import { Navigate } from 'react-router-dom';
 
 const AdminDashboardPage = () => {
@@ -16,7 +17,11 @@ const AdminDashboardPage = () => {
   }
 
   console.log('AdminDashboardPage - rendering Dashboard component');
-  return <Dashboard />;
+  return (
+    <ErrorBoundary>
+      <Dashboard />
+    </ErrorBoundary>
+  );
 };
 
 export default AdminDashboardPage;

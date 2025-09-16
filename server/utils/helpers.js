@@ -63,7 +63,7 @@ const generateSKU = (category, brand, productId) => {
 };
 
 // Format currency
-const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
+const formatCurrency = (amount, currency = 'INR', locale = 'en-IN') => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency

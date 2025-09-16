@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/Button';
-import { Loading } from '../ui/Loading';
+import Button from '../ui/Button';
+import Loading from '../ui/Loading';
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
@@ -39,15 +39,48 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/admin/analytics?timeRange=${timeRange}`);
-      const data = await response.json();
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/analytics?period=${timeRange}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      setAnalyticsData(data.summary);
-      setTopProducts(data.topProducts);
-      setRecentOrders(data.recentOrders);
-      setSalesChart(data.salesChart);
-      setCategoryData(data.categoryData);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Transform the data to match the expected format
+        setAnalyticsData({
+          revenue: {
+            total: data.salesData.reduce((sum, item) => sum + parseFloat(item.revenue || 0), 0),
+            change: 0, // TODO: Calculate change from previous period
+            trend: 'up'
+          },
+          orders: {
+            total: data.salesData.reduce((sum, item) => sum + parseInt(item.orders || 0), 0),
+            change: 0, // TODO: Calculate change from previous period
+            trend: 'up'
+          },
+          customers: {
+            total: 0, // TODO: Get from dashboard stats
+            change: 0,
+            trend: 'up'
+          },
+          products: {
+            total: 0, // TODO: Get from dashboard stats
+            change: 0,
+            trend: 'up'
+          }
+        });
+        
+        setTopProducts(data.topProducts || []);
+        setRecentOrders(data.recentOrders || []);
+        setSalesChart(data.salesData || []);
+        setCategoryData(data.categoryData || []);
+      } else {
+        console.error('Failed to fetch analytics:', response.status);
+      }
     } catch (error) {
       console.error('Error fetching analytics:', error);
     } finally {
@@ -88,7 +121,7 @@ const Analytics = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
         <div className="flex items-center space-x-4">
@@ -228,15 +261,15 @@ const Analytics = () => {
                       />
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                        <p className="text-sm text-gray-500">{product.category}</p>
+                        <p className="text-sm text-gray-500">{product.category_name}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        {formatNumber(product.sales)} sold
+                        {formatNumber(product.total_quantity || 0)} sold
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatCurrency(product.revenue)}
+                        {formatCurrency(product.total_revenue || 0)}
                       </p>
                     </div>
                   </div>
@@ -261,24 +294,24 @@ const Analytics = () => {
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          #{order.orderNumber}
+                          #{order.order_number}
                         </span>
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">
-                          {order.customerName}
+                          {order.first_name} {order.last_name}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {new Date(order.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        {formatCurrency(order.total)}
+                        {formatCurrency(order.total_amount)}
                       </p>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                         order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                         order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                         'bg-gray-100 text-gray-800'

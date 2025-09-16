@@ -9,6 +9,21 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [recentOrders, setRecentOrders] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
+
+  // Helper function to safely format numbers
+  const safeToFixed = (value, decimals = 2) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '0.00';
+    }
+    try {
+      return Number(value).toFixed(decimals);
+    } catch (error) {
+      console.warn('Error formatting number:', value, error);
+      return '0.00';
+    }
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -19,23 +34,57 @@ const Dashboard = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard`, {
+      // Fetch dashboard stats
+      const dashboardResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.stats);
-        setRecentOrders(data.recentOrders || []);
-        setRecentProducts(data.lowStockProducts || []);
+      // Fetch analytics data
+      const analyticsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/analytics?period=30d`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (dashboardResponse.ok) {
+        const data = await dashboardResponse.json();
+        console.log('Dashboard data received:', data);
+        
+        // Safely set data with fallbacks
+        setStats(data.stats || {});
+        setRecentOrders(Array.isArray(data.recentOrders) ? data.recentOrders : []);
+        // Handle both possible field names
+        const lowStockProducts = data.lowStockProducts || data.LowStockProducts || [];
+        setRecentProducts(Array.isArray(lowStockProducts) ? lowStockProducts : []);
       } else {
-        console.error('Failed to fetch dashboard data');
+        console.error('Failed to fetch dashboard data:', dashboardResponse.status, dashboardResponse.statusText);
+        // Set empty data on error
+        setStats({});
+        setRecentOrders([]);
+        setRecentProducts([]);
+      }
+
+      if (analyticsResponse.ok) {
+        const analyticsData = await analyticsResponse.json();
+        setTopProducts(analyticsData.topProducts || []);
+        setAnalyticsData(analyticsData);
+      } else {
+        console.error('Failed to fetch analytics data:', analyticsResponse.status);
+        setTopProducts([]);
+        setAnalyticsData(null);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set empty data on error
+      setStats({});
+      setRecentOrders([]);
+      setRecentProducts([]);
+      setTopProducts([]);
+      setAnalyticsData(null);
     } finally {
       setLoading(false);
     }
@@ -44,7 +93,7 @@ const Dashboard = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div>
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -64,7 +113,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Revenue"
-          value={`$${stats?.totalRevenue?.toFixed(2) || '0.00'}`}
+          value={`$${safeToFixed(stats?.totalRevenue)}`}
           change={0}
           icon="💰"
           color="green"
@@ -160,23 +209,23 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="p-6">
-            {recentOrders.length === 0 ? (
+            {!recentOrders || recentOrders.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No recent orders</p>
             ) : (
               <div className="space-y-4">
-                {recentOrders.slice(0, 5).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                {recentOrders.slice(0, 5).map((order, index) => (
+                  <div key={order.id || index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         Order #{order.order_number || order.id}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {order.first_name} {order.last_name} • {new Date(order.created_at).toLocaleDateString()}
+                        {order.first_name || 'Unknown'} {order.last_name || 'Customer'} • {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        ${order.total_amount?.toFixed(2) || '0.00'}
+                        ${safeToFixed(order.total_amount)}
                       </p>
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         order.status === 'delivered' ? 'bg-green-100 text-green-800' :
@@ -209,26 +258,26 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="p-6">
-            {recentProducts.length === 0 ? (
+            {!recentProducts || recentProducts.length === 0 ? (
               <p className="text-gray-500 text-center py-4">All products are well stocked</p>
             ) : (
               <div className="space-y-4">
-                {recentProducts.slice(0, 5).map((product) => (
-                  <div key={product.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                {recentProducts.slice(0, 5).map((product, index) => (
+                  <div key={product.id || index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                       <span className="text-gray-400 text-lg">📦</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {product.name}
+                        {product.name || 'Unnamed Product'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        ${product.price?.toFixed(2) || '0.00'} • SKU: {product.sku}
+                        ${safeToFixed(product.price)} • SKU: {product.sku || 'N/A'}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-red-600">
-                        {product.inventory_quantity || 0} left
+                        {product.stock_quantity || 0} left
                       </p>
                       <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
                         Low Stock
@@ -241,6 +290,46 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Top Products Section */}
+      {topProducts.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Top Selling Products</h2>
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Best Sellers</h3>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {topProducts.slice(0, 5).map((product, index) => (
+                  <div key={product.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-500 w-6">{index + 1}</span>
+                      <img
+                        src={product.image_url || '/placeholder-product.jpg'}
+                        alt={product.name}
+                        className="w-12 h-12 rounded object-cover ml-3"
+                      />
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                        <p className="text-sm text-gray-500">{product.category_name}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">
+                        {product.total_quantity || 0} sold
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ${safeToFixed(product.total_revenue || 0)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

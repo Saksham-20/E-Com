@@ -22,8 +22,20 @@ const OrderManager = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await orderService.getOrders(1, 100);
-      setOrders(response.orders || []);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/orders?limit=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data.orders || []);
+      } else {
+        console.error('Failed to fetch orders:', response.status);
+      }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
@@ -34,10 +46,24 @@ const OrderManager = () => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       setLoading(true);
-      await orderService.updateOrderStatus(orderId, newStatus);
-      setShowStatusModal(false);
-      setSelectedOrder(null);
-      fetchOrders();
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        setShowStatusModal(false);
+        setSelectedOrder(null);
+        fetchOrders();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update order status:', errorData.message);
+      }
     } catch (error) {
       console.error('Failed to update order status:', error);
     } finally {
@@ -80,7 +106,7 @@ const OrderManager = () => {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
       </div>

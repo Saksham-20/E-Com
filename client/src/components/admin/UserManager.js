@@ -20,22 +20,46 @@ const UserManager = () => {
     firstName: '',
     lastName: '',
     email: '',
-    role: 'user',
-    isActive: true
+    phone: '',
+    isAdmin: false,
+    isVerified: false
   });
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, roleFilter]);
+  }, [currentPage, roleFilter, searchTerm]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/admin/users?page=${currentPage}&role=${roleFilter}`);
-      const data = await response.json();
-      setUsers(data.users);
-      setTotalPages(data.totalPages);
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({
+        page: currentPage,
+        limit: 20
+      });
+      
+      if (roleFilter !== 'all') {
+        params.append('role', roleFilter);
+      }
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+        setTotalPages(data.pagination.totalPages);
+      } else {
+        console.error('Failed to fetch users:', response.status);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -46,30 +70,43 @@ const UserManager = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/admin/users', {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(formData)
       });
       
       if (response.ok) {
         setShowAddModal(false);
-        setFormData({ firstName: '', lastName: '', email: '', role: 'user', isActive: true });
+        setFormData({ firstName: '', lastName: '', email: '', phone: '', isAdmin: false, isVerified: false });
         fetchUsers();
+      } else {
+        const errorData = await response.json();
+        console.error('Error adding user:', errorData.message);
       }
     } catch (error) {
       console.error('Error adding user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEditUser = async (e) => {
     e.preventDefault();
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users/${selectedUser.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(formData)
       });
       
@@ -77,37 +114,53 @@ const UserManager = () => {
         setShowEditModal(false);
         setSelectedUser(null);
         fetchUsers();
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating user:', errorData.message);
       }
     } catch (error) {
       console.error('Error updating user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteUser = async () => {
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
-        method: 'DELETE'
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users/${selectedUser.id}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        }
       });
       
       if (response.ok) {
         setShowDeleteModal(false);
         setSelectedUser(null);
         fetchUsers();
+      } else {
+        const errorData = await response.json();
+        console.error('Error deleting user:', errorData.message);
       }
     } catch (error) {
       console.error('Error deleting user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const openEditModal = (user) => {
     setSelectedUser(user);
     setFormData({
-      firstName: user.firstName,
-      lastName: user.lastName,
+      firstName: user.first_name,
+      lastName: user.last_name,
       email: user.email,
-      role: user.role,
-      isActive: user.isActive
+      phone: user.phone || '',
+      isAdmin: user.is_admin,
+      isVerified: user.is_verified
     });
     setShowEditModal(true);
   };
@@ -118,17 +171,17 @@ const UserManager = () => {
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesRole = roleFilter === 'all' || (roleFilter === 'admin' ? user.is_admin : !user.is_admin);
     return matchesSearch && matchesRole;
   });
 
   if (loading) return <Loading />;
 
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
         <Button onClick={() => setShowAddModal(true)}>
@@ -193,7 +246,7 @@ const UserManager = () => {
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {user.firstName} {user.lastName}
+                        {user.first_name} {user.last_name}
                       </div>
                       <div className="text-sm text-gray-500">{user.email}</div>
                     </div>
@@ -201,22 +254,20 @@ const UserManager = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                    user.role === 'moderator' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
+                    user.is_admin ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                   }`}>
-                    {user.role}
+                    {user.is_admin ? 'Admin' : 'User'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    user.is_verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {user.isActive ? 'Active' : 'Inactive'}
+                    {user.is_verified ? 'Verified' : 'Unverified'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Button
@@ -273,69 +324,94 @@ const UserManager = () => {
         onClose={() => setShowAddModal(false)}
         title="Add New User"
       >
-        <form onSubmit={handleAddUser} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              required
-            />
-            <Input
-              label="Last Name"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              required
-            />
-          </div>
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="user">User</option>
-                <option value="moderator">Moderator</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        <div className="max-w-lg mx-auto">
+          <form onSubmit={handleAddUser} className="space-y-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="First Name *"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  required
+                  className="w-full"
+                  placeholder="Enter first name"
+                />
+                <Input
+                  label="Last Name *"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  required
+                  className="w-full"
+                  placeholder="Enter last name"
+                />
+              </div>
+              
+              <Input
+                label="Email Address *"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full"
+                placeholder="user@example.com"
               />
-              <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
-                Active
-              </label>
+              
+              <Input
+                label="Phone Number"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full"
+                placeholder="+1 (555) 123-4567"
+              />
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isAdmin"
+                      checked={formData.isAdmin}
+                      onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isAdmin" className="ml-2 text-sm font-medium text-gray-900">
+                      Admin User
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isVerified"
+                      checked={formData.isVerified}
+                      onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isVerified" className="ml-2 text-sm font-medium text-gray-900">
+                      Verified Account
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Admin users have access to the admin panel. Verified accounts can make purchases.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowAddModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              Add User
-            </Button>
-          </div>
-        </form>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddModal(false)}
+                className="px-6 py-2"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="px-6 py-2">
+                Add User
+              </Button>
+            </div>
+          </form>
+        </div>
       </Modal>
 
       {/* Edit User Modal */}
@@ -344,69 +420,94 @@ const UserManager = () => {
         onClose={() => setShowEditModal(false)}
         title="Edit User"
       >
-        <form onSubmit={handleEditUser} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              required
-            />
-            <Input
-              label="Last Name"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              required
-            />
-          </div>
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="user">User</option>
-                <option value="moderator">Moderator</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editIsActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        <div className="max-w-lg mx-auto">
+          <form onSubmit={handleEditUser} className="space-y-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="First Name *"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  required
+                  className="w-full"
+                  placeholder="Enter first name"
+                />
+                <Input
+                  label="Last Name *"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  required
+                  className="w-full"
+                  placeholder="Enter last name"
+                />
+              </div>
+              
+              <Input
+                label="Email Address *"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full"
+                placeholder="user@example.com"
               />
-              <label htmlFor="editIsActive" className="ml-2 text-sm text-gray-700">
-                Active
-              </label>
+              
+              <Input
+                label="Phone Number"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full"
+                placeholder="+1 (555) 123-4567"
+              />
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="editIsAdmin"
+                      checked={formData.isAdmin}
+                      onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="editIsAdmin" className="ml-2 text-sm font-medium text-gray-900">
+                      Admin User
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="editIsVerified"
+                      checked={formData.isVerified}
+                      onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="editIsVerified" className="ml-2 text-sm font-medium text-gray-900">
+                      Verified Account
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Admin users have access to the admin panel. Verified accounts can make purchases.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowEditModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              Update User
-            </Button>
-          </div>
-        </form>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditModal(false)}
+                className="px-6 py-2"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="px-6 py-2">
+                Update User
+              </Button>
+            </div>
+          </form>
+        </div>
       </Modal>
 
       {/* Delete Confirmation Modal */}
@@ -419,7 +520,7 @@ const UserManager = () => {
           <p className="text-gray-700">
             Are you sure you want to delete{' '}
             <span className="font-semibold">
-              {selectedUser?.firstName} {selectedUser?.lastName}
+              {selectedUser?.first_name} {selectedUser?.last_name}
             </span>?
             This action cannot be undone.
           </p>

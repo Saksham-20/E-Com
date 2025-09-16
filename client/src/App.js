@@ -8,6 +8,7 @@ import { WishlistProvider } from './context/WishlistContext';
 // Layout Components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import AdminLayout from './components/layout/AdminLayout';
 
 // Auth Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -30,6 +31,8 @@ const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'));
 const AdminOrdersPage = lazy(() => import('./pages/AdminOrdersPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
+const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Loading component for Suspense fallback
@@ -50,6 +53,50 @@ function App() {
                 {/* Auth Routes - No Header */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                
+                {/* Admin Routes - No Header */}
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminDashboardPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/products" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminProductsPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/orders" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminOrdersPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminUsersPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/analytics" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminAnalyticsPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/settings" element={
+                  <AdminRoute>
+                    <AdminLayout>
+                      <AdminSettingsPage />
+                    </AdminLayout>
+                  </AdminRoute>
+                } />
                 
                 {/* Main App Routes - With Header */}
                 <Route path="/*" element={
@@ -103,28 +150,6 @@ function App() {
                           <ProtectedRoute>
                             <OrdersPage />
                           </ProtectedRoute>
-                        } />
-                        
-                        {/* Admin Routes */}
-                        <Route path="/admin" element={
-                          <AdminRoute>
-                            <AdminDashboardPage />
-                          </AdminRoute>
-                        } />
-                        <Route path="/admin/products" element={
-                          <AdminRoute>
-                            <AdminProductsPage />
-                          </AdminRoute>
-                        } />
-                        <Route path="/admin/orders" element={
-                          <AdminRoute>
-                            <AdminOrdersPage />
-                          </AdminRoute>
-                        } />
-                        <Route path="/admin/users" element={
-                          <AdminRoute>
-                            <AdminUsersPage />
-                          </AdminRoute>
                         } />
                         
                         {/* 404 Route */}
