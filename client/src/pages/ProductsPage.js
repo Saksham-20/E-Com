@@ -4,7 +4,6 @@ import ProductGrid from '../components/product/ProductGrid';
 import SearchBar from '../components/common/SearchBar';
 import FilterSidebar from '../components/common/FilterSidebar';
 import Loading from '../components/ui/Loading';
-import { jewelryProducts } from '../data/jewelryProducts';
 
 const ProductsPage = ({ category: propCategory }) => {
   const { subcategory } = useParams();
@@ -15,7 +14,7 @@ const ProductsPage = ({ category: propCategory }) => {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     category: '',
-    priceRange: [0, 100000],
+    priceRange: [0, 20000000],
     rating: 0,
     sortBy: 'newest'
   });
@@ -63,7 +62,7 @@ const ProductsPage = ({ category: propCategory }) => {
         }
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products?${queryParams}`);
+      const response = await fetch(`http://localhost:5000/api/products?${queryParams}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch products');
@@ -84,6 +83,8 @@ const ProductsPage = ({ category: propCategory }) => {
 
   const applyFilters = () => {
     let filtered = [...products];
+    console.log('Starting with products:', products.length);
+    console.log('Initial products:', products);
 
     // Apply search filter
     if (searchQuery) {
@@ -91,21 +92,30 @@ const ProductsPage = ({ category: propCategory }) => {
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
       );
+      console.log('After search filter:', filtered.length);
     }
 
     // Apply category filter from sidebar (additional to URL category)
     if (filters.category) {
+      console.log('Applying category filter:', filters.category);
       filtered = filtered.filter(product => product.category_name === filters.category);
+      console.log('After category filter:', filtered.length);
     }
 
     // Apply price range filter
-    filtered = filtered.filter(product =>
-      product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
-    );
+    console.log('Price range filter:', filters.priceRange);
+    filtered = filtered.filter(product => {
+      const price = parseFloat(product.price);
+      const inRange = price >= filters.priceRange[0] && price <= filters.priceRange[1];
+      console.log(`Product ${product.name} price ${price} in range ${filters.priceRange[0]}-${filters.priceRange[1]}: ${inRange}`);
+      return inRange;
+    });
+    console.log('After price filter:', filtered.length);
 
     // Apply rating filter
     if (filters.rating > 0) {
       filtered = filtered.filter(product => (product.average_rating || 0) >= filters.rating);
+      console.log('After rating filter:', filtered.length);
     }
 
     // Apply sorting
@@ -125,6 +135,7 @@ const ProductsPage = ({ category: propCategory }) => {
         break;
     }
 
+    console.log('Final filtered products:', filtered.length);
     setFilteredProducts(filtered);
   };
 
