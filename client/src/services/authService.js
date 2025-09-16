@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 class AuthService {
   async login(credentials) {
@@ -19,8 +19,8 @@ class AuthService {
       const data = await response.json();
       
       // Store token in localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
 
       return data;
     } catch (error) {
@@ -92,8 +92,8 @@ class AuthService {
       const data = await response.json();
       
       // Update stored token
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
 
       return data;
     } catch (error) {
@@ -129,7 +129,7 @@ class AuthService {
       
       // Update stored user data
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const updatedUser = { ...currentUser, ...data.user };
+      const updatedUser = { ...currentUser, ...data.data.user };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
       return data;

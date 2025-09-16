@@ -129,6 +129,7 @@ const SearchBar = ({
             focus:outline-none focus:ring-2 focus:ring-tiffany-blue focus:border-tiffany-blue
             transition-all duration-200
             ${isFocused ? 'shadow-md' : 'shadow-sm'}
+            min-w-0
           `}
           {...props}
         />

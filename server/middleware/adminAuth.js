@@ -15,7 +15,7 @@ const adminAuth = async (req, res, next) => {
     
     // Check if user exists and is admin
     const result = await pool.query(
-      'SELECT id, email, role FROM users WHERE id = $1',
+      'SELECT id, email, first_name, last_name, is_admin FROM users WHERE id = $1',
       [decoded.userId]
     );
 
@@ -25,7 +25,7 @@ const adminAuth = async (req, res, next) => {
 
     const user = result.rows[0];
     
-    if (user.role !== 'admin') {
+    if (!user.is_admin) {
       return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
     }
 

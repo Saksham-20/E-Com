@@ -12,6 +12,7 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const stripeRoutes = require('./routes/stripe');
 const wishlistRoutes = require('./routes/wishlist');
+const cartRoutes = require('./routes/cart');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -61,6 +62,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

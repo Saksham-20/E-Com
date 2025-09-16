@@ -4,7 +4,7 @@ import ProductCard from './ProductCard';
 const ProductGrid = ({ products, loading, error }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
         {[...Array(8)].map((_, index) => (
           <div key={index} className="bg-white rounded-lg shadow-md animate-pulse">
             <div className="bg-gray-300 h-48 rounded-t-lg"></div>
@@ -55,7 +55,7 @@ const ProductGrid = ({ products, loading, error }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

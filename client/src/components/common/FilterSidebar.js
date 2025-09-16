@@ -18,13 +18,13 @@ const FilterSidebar = ({ filters, categories, onFilterChange }) => {
   const clearFilters = () => {
     onFilterChange({
       category: '',
-      priceRange: [0, 1000],
+      priceRange: [0, 5000],
       rating: 0
     });
   };
 
   const hasActiveFilters = filters.category || filters.rating > 0 || 
-    filters.priceRange[0] > 0 || filters.priceRange[1] < 1000;
+    filters.priceRange[0] > 0 || filters.priceRange[1] < 5000;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -77,7 +77,7 @@ const FilterSidebar = ({ filters, categories, onFilterChange }) => {
               value={filters.priceRange[1]}
               onChange={(e) => handlePriceRangeChange(1, e.target.value)}
               className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="1000"
+              placeholder="5000"
             />
           </div>
           
@@ -86,7 +86,7 @@ const FilterSidebar = ({ filters, categories, onFilterChange }) => {
             <input
               type="range"
               min="0"
-              max="1000"
+              max="5000"
               value={filters.priceRange[1]}
               onChange={(e) => handlePriceRangeChange(1, e.target.value)}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"

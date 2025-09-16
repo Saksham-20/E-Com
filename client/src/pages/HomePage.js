@@ -52,7 +52,7 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold mb-6 font-playfair"
+            className="text-3xl md:text-4xl font-bold mb-4 font-playfair"
           >
             Luxury Redefined
           </motion.h1>
@@ -61,7 +61,7 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl md:text-2xl mb-8 text-gray-200 font-light"
+            className="text-lg md:text-xl mb-6 text-gray-200 font-light"
           >
             Curated collections of the world's finest luxury goods, delivered with exceptional service
           </motion.p>
@@ -74,7 +74,7 @@ const HomePage = () => {
           >
             <Link
               to="/collections"
-              className="bg-tiffany-blue text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-tiffany-blue-dark transition-colors duration-300 flex items-center justify-center group"
+              className="bg-tiffany-blue text-white px-6 py-3 rounded-lg text-base font-semibold hover:bg-tiffany-blue-dark transition-colors duration-300 flex items-center justify-center group"
             >
               Explore Collections
               <IoArrowForward className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
@@ -82,7 +82,7 @@ const HomePage = () => {
             
             <Link
               to="/about"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300"
+              className="border-2 border-white text-white px-6 py-3 rounded-lg text-base font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300"
             >
               Our Story
             </Link>
@@ -108,10 +108,10 @@ const HomePage = () => {
                 transition={{ delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="text-4xl md:text-5xl font-bold text-tiffany-blue mb-2 font-playfair">
+                <div className="text-2xl md:text-3xl font-bold text-tiffany-blue mb-2 font-playfair">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 font-medium">
+                <div className="text-sm text-gray-600 font-medium">
                   {stat.label}
                 </div>
               </motion.div>
@@ -134,10 +134,10 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 font-playfair">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
               Featured Products
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Discover our most sought-after luxury pieces, carefully selected for their exceptional quality and timeless design
             </p>
           </motion.div>
@@ -169,7 +169,7 @@ const HomePage = () => {
                   <div className="text-sm text-tiffany-blue font-medium mb-2">
                     {product.category}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
                     {product.name}
                   </h3>
                   
@@ -179,7 +179,7 @@ const HomePage = () => {
                       {[...Array(5)].map((_, i) => (
                         <IoStar
                           key={i}
-                          className={`w-4 h-4 ${
+                          className={`w-3 h-3 ${
                             i < Math.floor(product.rating)
                               ? 'text-yellow-400 fill-current'
                               : 'text-gray-300'
@@ -187,16 +187,16 @@ const HomePage = () => {
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-500 ml-2">
+                    <span className="text-xs text-gray-500 ml-2">
                       ({product.reviews})
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold text-gray-900">
+                    <div className="text-lg font-bold text-gray-900">
                       ${product.price.toLocaleString()}
                     </div>
-                    <button className="bg-tiffany-blue text-white px-4 py-2 rounded-lg hover:bg-tiffany-blue-dark transition-colors duration-200">
+                    <button className="bg-tiffany-blue text-white px-3 py-2 rounded-lg text-sm hover:bg-tiffany-blue-dark transition-colors duration-200">
                       Add to Cart
                     </button>
                   </div>
@@ -213,7 +213,7 @@ const HomePage = () => {
           >
             <Link
               to="/products"
-              className="inline-flex items-center text-tiffany-blue hover:text-tiffany-blue-dark font-semibold text-lg group"
+              className="inline-flex items-center text-tiffany-blue hover:text-tiffany-blue-dark font-semibold text-base group"
             >
               View All Products
               <IoArrowForward className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
@@ -231,10 +231,10 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 font-playfair">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
               Curated Collections
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Explore our thoughtfully curated collections, each designed to inspire and elevate your lifestyle
             </p>
           </motion.div>
@@ -265,13 +265,13 @@ const HomePage = () => {
                     
                     {/* Content */}
                     <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                      <h3 className="text-2xl font-bold mb-2 font-playfair">
+                      <h3 className="text-lg font-bold mb-2 font-playfair">
                         {collection.name}
                       </h3>
-                      <p className="text-gray-200 mb-4">
+                      <p className="text-sm text-gray-200 mb-4">
                         {collection.description}
                       </p>
-                      <div className="flex items-center text-tiffany-blue font-semibold group-hover:translate-x-2 transition-transform duration-200">
+                      <div className="flex items-center text-tiffany-blue font-semibold text-sm group-hover:translate-x-2 transition-transform duration-200">
                         Explore Collection
                         <IoArrowForward className="ml-2" />
                       </div>
@@ -291,7 +291,7 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl font-bold text-white mb-6 font-playfair"
+            className="text-2xl font-bold text-white mb-6 font-playfair"
           >
             Experience Luxury Like Never Before
           </motion.h2>
@@ -301,7 +301,7 @@ const HomePage = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-xl text-white/90 mb-8"
+            className="text-lg text-white/90 mb-8"
           >
             Join thousands of satisfied customers who trust us for their luxury needs. 
             Start your journey today and discover the difference that exceptional quality makes.
@@ -316,14 +316,14 @@ const HomePage = () => {
           >
             <Link
               to="/register"
-              className="bg-white text-tiffany-blue px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors duration-300"
+              className="bg-white text-tiffany-blue px-6 py-3 rounded-lg text-base font-semibold hover:bg-gray-100 transition-colors duration-300"
             >
               Create Account
             </Link>
             
             <Link
               to="/contact"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-tiffany-blue transition-all duration-300"
+              className="border-2 border-white text-white px-6 py-3 rounded-lg text-base font-semibold hover:bg-white hover:text-tiffany-blue transition-all duration-300"
             >
               Contact Us
             </Link>

@@ -87,7 +87,7 @@ const Header = () => {
       {/* Main Header */}
       <div className="border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16">
             {/* Left Section - Search & Location */}
             <div className="flex items-center space-x-4">
               <button
@@ -106,7 +106,7 @@ const Header = () => {
             <div className="flex-1 flex justify-center">
               <Link to="/" className="flex items-center">
                 <motion.h1 
-                  className="text-3xl font-serif font-bold text-gray-900 tracking-wider"
+                  className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
@@ -149,7 +149,7 @@ const Header = () => {
                         <Link to="/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                           Orders
                         </Link>
-                        {user.isAdmin && (
+                        {user.is_admin && (
                           <Link to="/admin" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                             Admin Dashboard
                           </Link>
@@ -227,12 +227,12 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop Navigation */}
           <div className="hidden lg:flex justify-center">
-            <ul className="flex space-x-8">
+            <ul className="flex space-x-6">
               {navigationItems.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.href}
-                    className="nav-link py-6 block text-sm font-medium uppercase tracking-wide"
+                    className="nav-link py-4 block text-xs font-medium uppercase tracking-wide"
                   >
                     {item.name}
                   </Link>

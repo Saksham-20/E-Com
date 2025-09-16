@@ -143,29 +143,29 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Category */}
         {product.category && (
-          <div className="text-xs text-gray-500 mb-1">
+          <div className="text-xs text-gray-500 mb-1 text-center sm:text-left">
             {product.category.name}
           </div>
         )}
 
         {/* Product Name */}
         <Link to={`/products/${product.id}`}>
-          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-tiffany-blue transition-colors duration-200">
+          <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 hover:text-tiffany-blue transition-colors duration-200 text-center sm:text-left">
             {product.name}
           </h3>
         </Link>
 
         {/* Rating */}
         {product.rating && (
-          <div className="flex items-center mb-2">
+          <div className="flex items-center justify-center sm:justify-start mb-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <svg
                   key={i}
-                  className={`w-4 h-4 ${
+                  className={`w-3 h-3 sm:w-4 sm:h-4 ${
                     i < Math.floor(product.rating)
                       ? 'text-yellow-400 fill-current'
                       : 'text-gray-300'
@@ -184,12 +184,12 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         )}
 
         {/* Price */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
+          <span className="text-sm sm:text-base font-semibold text-gray-900">
             {formattedPrice}
           </span>
           {formattedComparePrice && (
-            <span className="text-sm text-gray-500 line-through">
+            <span className="text-xs sm:text-sm text-gray-500 line-through">
               {formattedComparePrice}
             </span>
           )}
@@ -201,7 +201,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
           whileTap={{ scale: 0.98 }}
           onClick={isInCartState ? handleRemoveFromCart : handleAddToCart}
           disabled={product.stock <= 0}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+          className={`w-full py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
             isInCartState
               ? 'bg-red-600 text-white hover:bg-red-700'
               : product.stock <= 0

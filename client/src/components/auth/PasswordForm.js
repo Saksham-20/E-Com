@@ -7,9 +7,9 @@ const PasswordForm = () => {
   const { changePassword } = useAuth();
   
   const [formData, setFormData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -32,26 +32,26 @@ const PasswordForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.currentPassword) {
-      newErrors.currentPassword = 'Current password is required';
+    if (!formData.current_password) {
+      newErrors.current_password = 'Current password is required';
     }
 
-    if (!formData.newPassword) {
-      newErrors.newPassword = 'New password is required';
-    } else if (formData.newPassword.length < 8) {
-      newErrors.newPassword = 'New password must be at least 8 characters long';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.newPassword)) {
-      newErrors.newPassword = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+    if (!formData.new_password) {
+      newErrors.new_password = 'New password is required';
+    } else if (formData.new_password.length < 8) {
+      newErrors.new_password = 'New password must be at least 8 characters long';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.new_password)) {
+      newErrors.new_password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
     }
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your new password';
-    } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.confirm_password) {
+      newErrors.confirm_password = 'Please confirm your new password';
+    } else if (formData.new_password !== formData.confirm_password) {
+      newErrors.confirm_password = 'Passwords do not match';
     }
 
-    if (formData.currentPassword === formData.newPassword) {
-      newErrors.newPassword = 'New password must be different from current password';
+    if (formData.current_password === formData.new_password) {
+      newErrors.new_password = 'New password must be different from current password';
     }
 
     setErrors(newErrors);
@@ -67,12 +67,12 @@ const PasswordForm = () => {
 
     try {
       setLoading(true);
-      await changePassword(formData.currentPassword, formData.newPassword);
+      await changePassword(formData.current_password, formData.new_password);
       setSuccess(true);
       setFormData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
       });
       setTimeout(() => setSuccess(false), 5000);
     } catch (error) {
@@ -83,12 +83,15 @@ const PasswordForm = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-            Change Password
-          </h3>
+    <div className="max-w-2xl">
+      <div className="mb-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">
+          Change Password
+        </h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Update your password to keep your account secure
+        </p>
+      </div>
 
           {success && (
             <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
@@ -105,31 +108,31 @@ const PasswordForm = () => {
 
             <Input
               label="Current Password"
-              name="currentPassword"
+              name="current_password"
               type="password"
-              value={formData.currentPassword}
+              value={formData.current_password}
               onChange={handleInputChange}
-              error={errors.currentPassword}
+              error={errors.current_password}
               required
             />
 
             <Input
               label="New Password"
-              name="newPassword"
+              name="new_password"
               type="password"
-              value={formData.newPassword}
+              value={formData.new_password}
               onChange={handleInputChange}
-              error={errors.newPassword}
+              error={errors.new_password}
               required
             />
 
             <Input
               label="Confirm New Password"
-              name="confirmPassword"
+              name="confirm_password"
               type="password"
-              value={formData.confirmPassword}
+              value={formData.confirm_password}
               onChange={handleInputChange}
-              error={errors.confirmPassword}
+              error={errors.confirm_password}
               required
             />
 
@@ -138,25 +141,25 @@ const PasswordForm = () => {
               <h4 className="text-sm font-medium text-gray-900 mb-2">Password Requirements:</h4>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li className="flex items-center">
-                  <svg className={`h-4 w-4 mr-2 ${formData.newPassword.length >= 8 ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <svg className={`h-4 w-4 mr-2 ${formData.new_password.length >= 8 ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   At least 8 characters long
                 </li>
                 <li className="flex items-center">
-                  <svg className={`h-4 w-4 mr-2 ${/(?=.*[a-z])/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <svg className={`h-4 w-4 mr-2 ${/(?=.*[a-z])/.test(formData.new_password) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Contains at least one lowercase letter
                 </li>
                 <li className="flex items-center">
-                  <svg className={`h-4 w-4 mr-2 ${/(?=.*[A-Z])/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <svg className={`h-4 w-4 mr-2 ${/(?=.*[A-Z])/.test(formData.new_password) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Contains at least one uppercase letter
                 </li>
                 <li className="flex items-center">
-                  <svg className={`h-4 w-4 mr-2 ${/(?=.*\d)/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <svg className={`h-4 w-4 mr-2 ${/(?=.*\d)/.test(formData.new_password) ? 'text-green-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Contains at least one number
@@ -173,8 +176,6 @@ const PasswordForm = () => {
               </Button>
             </div>
           </form>
-        </div>
-      </div>
     </div>
   );
 };

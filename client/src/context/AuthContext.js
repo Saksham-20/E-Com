@@ -101,20 +101,31 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('token');
+      console.log('AuthContext - checkAuthStatus - token exists:', !!token);
+      console.log('AuthContext - checkAuthStatus - current state:', state);
+      
+      // Skip if already loading (to prevent race conditions)
+      if (state.isLoading) {
+        console.log('AuthContext - checkAuthStatus - already loading, skipping');
+        return;
+      }
       
       if (token) {
         try {
           dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
           
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/me`, {
+          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           });
 
+          console.log('AuthContext - checkAuthStatus - response status:', response.status);
+
           if (response.ok) {
             const data = await response.json();
+            console.log('AuthContext - checkAuthStatus - user data:', data.data.user);
             dispatch({
               type: AUTH_ACTIONS.LOGIN_SUCCESS,
               payload: {
@@ -123,12 +134,13 @@ export const AuthProvider = ({ children }) => {
               }
             });
           } else {
+            console.log('AuthContext - checkAuthStatus - token invalid, logging out');
             // Token is invalid, remove it
             localStorage.removeItem('token');
             dispatch({ type: AUTH_ACTIONS.LOGOUT });
           }
         } catch (error) {
-          console.error('Auth check failed:', error);
+          console.error('AuthContext - checkAuthStatus - error:', error);
           localStorage.removeItem('token');
           dispatch({ type: AUTH_ACTIONS.LOGOUT });
         } finally {
@@ -143,9 +155,10 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
+      console.log('AuthContext - login - starting login for:', email);
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -154,8 +167,11 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
+      console.log('AuthContext - login - response status:', response.status);
+      console.log('AuthContext - login - response data:', data);
 
       if (response.ok) {
+        console.log('AuthContext - login - storing token and user data');
         localStorage.setItem('token', data.data.token);
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -165,8 +181,10 @@ export const AuthProvider = ({ children }) => {
           }
         });
         toast.success('Login successful!');
-        return { success: true };
+        console.log('AuthContext - login - returning success with user:', data.data.user);
+        return { success: true, user: data.data.user };
       } else {
+        console.log('AuthContext - login - login failed:', data.message);
         dispatch({
           type: AUTH_ACTIONS.LOGIN_FAILURE,
           payload: data.message || 'Login failed'
@@ -175,7 +193,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('AuthContext - login - error:', error);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: 'Network error. Please try again.'
@@ -190,7 +208,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -201,15 +219,9 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.data.token);
-        dispatch({
-          type: AUTH_ACTIONS.REGISTER_SUCCESS,
-          payload: {
-            user: data.data.user,
-            token: data.data.token
-          }
-        });
-        toast.success('Registration successful! Welcome to our luxury store.');
+        // Don't automatically log in after registration
+        // Just show success message and let the form handle redirect
+        toast.success('Registration successful! Please log in to your account.');
         return { success: true };
       } else {
         dispatch({
@@ -237,7 +249,7 @@ export const AuthProvider = ({ children }) => {
       
       if (token) {
         // Call logout endpoint
-        await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+        await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -259,7 +271,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${state.token}`,
@@ -291,7 +303,7 @@ export const AuthProvider = ({ children }) => {
   // Change password function
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/change-password`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/change-password`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${state.token}`,
@@ -322,7 +334,7 @@ export const AuthProvider = ({ children }) => {
   // Refresh token function
   const refreshToken = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/refresh`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/refresh`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${state.token}`,

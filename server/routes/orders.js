@@ -1,6 +1,6 @@
 const express = require('express');
 const { query } = require('../database/config');
-const { authenticateTokenenticateToken } = require('../middleware/authenticateToken');
+const { authenticateToken } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
 const router = express.Router();

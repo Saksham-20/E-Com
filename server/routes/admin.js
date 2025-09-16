@@ -1,12 +1,13 @@
 const express = require('express');
 const { query } = require('../database/config');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth');
 const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
 // Apply admin auth to all routes
-router.use(authenticateToken, requireAdmin);
+router.use(authenticateToken, adminAuth);
 
 // @route   GET /api/admin/dashboard
 // @desc    Get admin dashboard stats
@@ -14,16 +15,23 @@ router.use(authenticateToken, requireAdmin);
 router.get('/dashboard', async (req, res) => {
   try {
     // Get total products
-    const totalProducts = await query('SELECT COUNT(*) as count FROM products');
+    const totalProducts = await pool.query('SELECT COUNT(*) as count FROM products');
     
     // Get total orders
-    const totalOrders = await query('SELECT COUNT(*) as count FROM orders');
+    const totalOrders = await pool.query('SELECT COUNT(*) as count FROM orders');
     
     // Get total users
-    const totalUsers = await query('SELECT COUNT(*) as count FROM users WHERE is_admin = false');
+    const totalUsers = await pool.query('SELECT COUNT(*) as count FROM users WHERE is_admin = false');
+    
+    // Get total revenue
+    const totalRevenue = await pool.query(`
+      SELECT COALESCE(SUM(total_amount), 0) as revenue 
+      FROM orders 
+      WHERE status IN ('delivered', 'shipped', 'processing')
+    `);
     
     // Get recent orders
-    const recentOrders = await query(`
+    const recentOrders = await pool.query(`
       SELECT o.*, u.first_name, u.last_name, u.email
       FROM orders o
       JOIN users u ON o.user_id = u.id
@@ -32,11 +40,11 @@ router.get('/dashboard', async (req, res) => {
     `);
     
     // Get low stock products
-    const lowStockProducts = await query(`
+    const lowStockProducts = await pool.query(`
       SELECT * FROM products 
-      WHERE stock_quantity <= low_stock_threshold 
+      WHERE inventory_quantity <= low_stock_threshold 
       AND is_active = true
-      ORDER BY stock_quantity ASC
+      ORDER BY inventory_quantity ASC
       LIMIT 5
     `);
 
@@ -44,7 +52,8 @@ router.get('/dashboard', async (req, res) => {
       stats: {
         totalProducts: parseInt(totalProducts.rows[0].count),
         totalOrders: parseInt(totalOrders.rows[0].count),
-        totalUsers: parseInt(totalUsers.rows[0].count)
+        totalUsers: parseInt(totalUsers.rows[0].count),
+        totalRevenue: parseFloat(totalRevenue.rows[0].revenue)
       },
       recentOrders: recentOrders.rows,
       lowStockProducts: lowStockProducts.rows
@@ -99,7 +108,7 @@ router.get('/products', async (req, res) => {
     query += ` ORDER BY p.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
-    const products = await query(query, queryParams);
+    const products = await pool.query(query, queryParams);
 
     // Get total count
     let countQuery = `
@@ -130,7 +139,7 @@ router.get('/products', async (req, res) => {
       countParams.push(status === 'active');
     }
 
-    const totalCount = await query(countQuery, countParams);
+    const totalCount = await pool.query(countQuery, countParams);
 
     res.json({
       products: products.rows,
@@ -173,13 +182,13 @@ router.post('/products', [
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     // Check if SKU already exists
-    const existingSku = await query('SELECT id FROM products WHERE sku = $1', [sku]);
+    const existingSku = await pool.query('SELECT id FROM products WHERE sku = $1', [sku]);
     if (existingSku.rows.length > 0) {
       return res.status(400).json({ message: 'SKU already exists' });
     }
 
     // Create product
-    const newProduct = await query(`
+    const newProduct = await pool.query(`
       INSERT INTO products (
         name, slug, description, short_description, price, compare_price, sku,
         category_id, collection_id, material, weight, dimensions,
@@ -220,7 +229,7 @@ router.put('/products/:id', [
     const updateData = req.body;
 
     // Check if product exists
-    const existingProduct = await query('SELECT id FROM products WHERE id = $1', [id]);
+    const existingProduct = await pool.query('SELECT id FROM products WHERE id = $1', [id]);
     if (existingProduct.rows.length === 0) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -254,7 +263,7 @@ router.put('/products/:id', [
       RETURNING *
     `;
 
-    const updatedProduct = await query(updateQuery, updateValues);
+    const updatedProduct = await pool.query(updateQuery, updateValues);
 
     res.json({
       message: 'Product updated successfully',
@@ -275,13 +284,13 @@ router.delete('/products/:id', async (req, res) => {
     const { id } = req.params;
 
     // Check if product exists
-    const existingProduct = await query('SELECT id FROM products WHERE id = $1', [id]);
+    const existingProduct = await pool.query('SELECT id FROM products WHERE id = $1', [id]);
     if (existingProduct.rows.length === 0) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
     // Soft delete - set as inactive
-    await query('UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [id]);
+    await pool.query('UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [id]);
 
     res.json({ message: 'Product deleted successfully' });
 
@@ -328,7 +337,7 @@ router.get('/orders', async (req, res) => {
     query += ` GROUP BY o.id, u.first_name, u.last_name, u.email ORDER BY o.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
-    const orders = await query(query, queryParams);
+    const orders = await pool.query(query, queryParams);
 
     // Get total count
     let countQuery = `
@@ -353,7 +362,7 @@ router.get('/orders', async (req, res) => {
       countParams.push(`%${search}%`);
     }
 
-    const totalCount = await query(countQuery, countParams);
+    const totalCount = await pool.query(countQuery, countParams);
 
     res.json({
       orders: orders.rows,
@@ -387,13 +396,13 @@ router.put('/orders/:id/status', [
     const { status } = req.body;
 
     // Check if order exists
-    const existingOrder = await query('SELECT id FROM orders WHERE id = $1', [id]);
+    const existingOrder = await pool.query('SELECT id FROM orders WHERE id = $1', [id]);
     if (existingOrder.rows.length === 0) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
     // Update status
-    await query(
+    await pool.query(
       'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       [status, id]
     );

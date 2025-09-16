@@ -85,8 +85,10 @@ const ProductsPage = ({ category: propCategory }) => {
       );
     }
 
-    // Category filtering is handled in fetchProducts based on URL category
-    // No need to filter by category here as it's already done
+    // Apply category filter from sidebar (additional to URL category)
+    if (filters.category) {
+      filtered = filtered.filter(product => product.category === filters.category);
+    }
 
     // Apply price range filter
     filtered = filtered.filter(product =>
@@ -133,14 +135,14 @@ const ProductsPage = ({ category: propCategory }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {category ? category.replace(/-/g, ' ').toUpperCase() : 'All Products'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-base text-gray-600">
             {category 
               ? `Discover our curated collection of ${category.replace(/-/g, ' ')}`
               : 'Discover our curated collection of premium products'
@@ -149,15 +151,22 @@ const ProductsPage = ({ category: propCategory }) => {
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <SearchBar onSearch={handleSearch} placeholder="Search products..." />
+        <div className="flex flex-col gap-3 mb-4">
+          {/* Search Bar - Full Width on Mobile */}
+          <div className="w-full">
+            <SearchBar 
+              onSearch={handleSearch} 
+              placeholder="Search products..." 
+              className="w-full"
+              size="sm"
+            />
           </div>
           
-          <div className="flex gap-2">
+          {/* Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="sm:hidden px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 text-center"
             >
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
@@ -165,7 +174,7 @@ const ProductsPage = ({ category: propCategory }) => {
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 w-full sm:min-w-[160px]"
             >
               <option value="newest">Newest First</option>
               <option value="price-low">Price: Low to High</option>
@@ -175,9 +184,9 @@ const ProductsPage = ({ category: propCategory }) => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
           {/* Filters Sidebar */}
-          <div className={`lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+          <div className={`xl:w-64 ${showFilters ? 'block' : 'hidden xl:block'}`}>
             <FilterSidebar
               filters={filters}
               categories={categories}
@@ -186,9 +195,9 @@ const ProductsPage = ({ category: propCategory }) => {
           </div>
 
           {/* Products Grid */}
-          <div className="flex-1">
-            <div className="mb-4">
-              <p className="text-gray-600">
+          <div className="flex-1 min-w-0">
+            <div className="mb-4 text-center sm:text-left">
+              <p className="text-sm text-gray-600">
                 Showing {filteredProducts.length} of {products.length} products
               </p>
             </div>

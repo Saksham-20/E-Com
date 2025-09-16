@@ -7,8 +7,8 @@ const ProfileForm = () => {
   const { user, updateProfile } = useAuth();
   
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     address: {
@@ -27,8 +27,8 @@ const ProfileForm = () => {
   useEffect(() => {
     if (user) {
       setFormData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
         email: user.email || '',
         phone: user.phone || '',
         address: {
@@ -68,12 +68,12 @@ const ProfileForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required';
     }
 
     if (!formData.email.trim()) {
@@ -118,12 +118,15 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-            Profile Information
-          </h3>
+    <div className="max-w-4xl">
+      <div className="mb-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">
+          Profile Information
+        </h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Update your personal information and address details
+        </p>
+      </div>
 
           {success && (
             <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
@@ -144,16 +147,16 @@ const ProfileForm = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="First Name"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  error={errors.firstName}
+                  value={formData.first_name}
+                  onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  error={errors.first_name}
                   required
                 />
                 <Input
                   label="Last Name"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  error={errors.lastName}
+                  value={formData.last_name}
+                  onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  error={errors.last_name}
                   required
                 />
               </div>
@@ -238,8 +241,6 @@ const ProfileForm = () => {
               </Button>
             </div>
           </form>
-        </div>
-      </div>
     </div>
   );
 };

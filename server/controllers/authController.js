@@ -6,7 +6,7 @@ const authController = {
   // Register a new user
   async register(req, res) {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { email, password, first_name, last_name, phone } = req.body;
 
       // Check if user already exists
       const existingUser = await pool.query(
@@ -16,6 +16,7 @@ const authController = {
 
       if (existingUser.rows.length > 0) {
         return res.status(400).json({
+          success: false,
           message: 'User with this email already exists'
         });
       }
@@ -26,8 +27,8 @@ const authController = {
 
       // Create user
       const result = await pool.query(
-        'INSERT INTO users (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, role',
-        [email, hashedPassword, firstName, lastName, 'user']
+        'INSERT INTO users (email, password_hash, first_name, last_name, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, phone, is_admin, is_verified, created_at',
+        [email, hashedPassword, first_name, last_name, phone]
       );
 
       const user = result.rows[0];
@@ -40,19 +41,25 @@ const authController = {
       );
 
       res.status(201).json({
+        success: true,
         message: 'User registered successfully',
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role
-        },
-        token
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            is_admin: user.is_admin,
+            is_verified: user.is_verified
+          },
+          token
+        }
       });
     } catch (error) {
       console.error('Registration error:', error);
       res.status(500).json({
+        success: false,
         message: 'Internal server error during registration'
       });
     }
@@ -65,12 +72,13 @@ const authController = {
 
       // Find user by email
       const result = await pool.query(
-        'SELECT id, email, password, first_name, last_name, role FROM users WHERE email = $1',
+        'SELECT id, email, password_hash, first_name, last_name, phone, is_admin, is_verified FROM users WHERE email = $1',
         [email]
       );
 
       if (result.rows.length === 0) {
         return res.status(401).json({
+          success: false,
           message: 'Invalid email or password'
         });
       }
@@ -78,9 +86,10 @@ const authController = {
       const user = result.rows[0];
 
       // Check password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, user.password_hash);
       if (!isPasswordValid) {
         return res.status(401).json({
+          success: false,
           message: 'Invalid email or password'
         });
       }
@@ -93,19 +102,25 @@ const authController = {
       );
 
       res.json({
+        success: true,
         message: 'Login successful',
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role
-        },
-        token
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            is_admin: user.is_admin,
+            is_verified: user.is_verified
+          },
+          token
+        }
       });
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({
+        success: false,
         message: 'Internal server error during login'
       });
     }
@@ -115,30 +130,38 @@ const authController = {
   async getProfile(req, res) {
     try {
       const result = await pool.query(
-        'SELECT id, email, first_name, last_name, role, created_at FROM users WHERE id = $1',
+        'SELECT id, email, first_name, last_name, phone, is_admin, is_verified, created_at, updated_at FROM users WHERE id = $1',
         [req.user.id]
       );
 
       if (result.rows.length === 0) {
         return res.status(404).json({
+          success: false,
           message: 'User not found'
         });
       }
 
       const user = result.rows[0];
       res.json({
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role,
-          createdAt: user.created_at
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            is_admin: user.is_admin,
+            is_verified: user.is_verified,
+            created_at: user.created_at,
+            updated_at: user.updated_at
+          }
         }
       });
     } catch (error) {
       console.error('Get profile error:', error);
       res.status(500).json({
+        success: false,
         message: 'Internal server error while fetching profile'
       });
     }
@@ -147,49 +170,43 @@ const authController = {
   // Update user profile
   async updateProfile(req, res) {
     try {
-      const { firstName, lastName, email } = req.body;
+      const { first_name, last_name, phone } = req.body;
       const userId = req.user.id;
-
-      // Check if email is already taken by another user
-      if (email) {
-        const existingUser = await pool.query(
-          'SELECT id FROM users WHERE email = $1 AND id != $2',
-          [email, userId]
-        );
-
-        if (existingUser.rows.length > 0) {
-          return res.status(400).json({
-            message: 'Email is already taken'
-          });
-        }
-      }
 
       // Update user
       const result = await pool.query(
-        'UPDATE users SET first_name = COALESCE($1, first_name), last_name = COALESCE($2, last_name), email = COALESCE($3, email), updated_at = NOW() WHERE id = $4 RETURNING id, email, first_name, last_name, role',
-        [firstName, lastName, email, userId]
+        'UPDATE users SET first_name = COALESCE($1, first_name), last_name = COALESCE($2, last_name), phone = COALESCE($3, phone), updated_at = NOW() WHERE id = $4 RETURNING id, email, first_name, last_name, phone, is_admin, is_verified, updated_at',
+        [first_name, last_name, phone, userId]
       );
 
       if (result.rows.length === 0) {
         return res.status(404).json({
+          success: false,
           message: 'User not found'
         });
       }
 
       const user = result.rows[0];
       res.json({
+        success: true,
         message: 'Profile updated successfully',
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            is_admin: user.is_admin,
+            is_verified: user.is_verified,
+            updated_at: user.updated_at
+          }
         }
       });
     } catch (error) {
       console.error('Update profile error:', error);
       res.status(500).json({
+        success: false,
         message: 'Internal server error while updating profile'
       });
     }
@@ -198,49 +215,67 @@ const authController = {
   // Change password
   async changePassword(req, res) {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const { current_password, new_password } = req.body;
       const userId = req.user.id;
+
+      if (!current_password || !new_password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password and new password are required'
+        });
+      }
+
+      if (new_password.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 8 characters long'
+        });
+      }
 
       // Get current password hash
       const result = await pool.query(
-        'SELECT password FROM users WHERE id = $1',
+        'SELECT password_hash FROM users WHERE id = $1',
         [userId]
       );
 
       if (result.rows.length === 0) {
         return res.status(404).json({
+          success: false,
           message: 'User not found'
         });
       }
 
       // Verify current password
       const isCurrentPasswordValid = await bcrypt.compare(
-        currentPassword,
-        result.rows[0].password
+        current_password,
+        result.rows[0].password_hash
       );
 
       if (!isCurrentPasswordValid) {
         return res.status(400).json({
+          success: false,
           message: 'Current password is incorrect'
         });
       }
 
       // Hash new password
       const saltRounds = 12;
-      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+      const hashedNewPassword = await bcrypt.hash(new_password, saltRounds);
 
       // Update password
       await pool.query(
-        'UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2',
+        'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
         [hashedNewPassword, userId]
       );
 
       res.json({
+        success: true,
         message: 'Password changed successfully'
       });
     } catch (error) {
       console.error('Change password error:', error);
       res.status(500).json({
+        success: false,
         message: 'Internal server error while changing password'
       });
     }

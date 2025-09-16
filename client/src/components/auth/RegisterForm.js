@@ -4,7 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 
-const RegisterForm = () => {
+const RegisterForm = ({ onSwitchToLogin }) => {
   const navigate = useNavigate();
   const { register } = useAuth();
   
@@ -53,6 +53,8 @@ const RegisterForm = () => {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters long';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
     }
 
     if (!formData.confirmPassword) {
@@ -74,7 +76,14 @@ const RegisterForm = () => {
 
     try {
       setLoading(true);
-      await register(formData);
+      // Convert form data to match server expectations
+      const serverData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        password: formData.password
+      };
+      await register(serverData);
       navigate('/login', { 
         state: { message: 'Registration successful! Please log in to your account.' }
       });
@@ -86,114 +95,173 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              sign in to your existing account
-            </Link>
-          </p>
+    <div className="max-w-md mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-tiffany-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-tiffany-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
         </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h2>
+        <p className="text-gray-600 text-base">
+          Or{' '}
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="font-semibold text-tiffany-blue hover:text-tiffany-blue/80 transition-colors"
+          >
+            sign in to your existing account
+          </button>
+        </p>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {errors.submit && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-              {errors.submit}
+      <form onSubmit={handleSubmit} className="space-y-4">
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                {errors.submit}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2 w-full">
+                <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
+                  First Name
+                </label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  error={errors.firstName}
+                  placeholder="Enter your first name"
+                  className="h-10 text-sm"
+                  fullWidth={true}
+                  required
+                />
+              </div>
+              <div className="space-y-2 w-full">
+                <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
+                  Last Name
+                </label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  error={errors.lastName}
+                  placeholder="Enter your last name"
+                  className="h-10 text-sm"
+                  fullWidth={true}
+                  required
+                />
+              </div>
             </div>
-          )}
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2 w-full">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                Email Address
+              </label>
               <Input
-                label="First Name"
-                name="firstName"
-                type="text"
-                value={formData.firstName}
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleInputChange}
-                error={errors.firstName}
+                error={errors.email}
+                placeholder="Enter your email address"
+                className="h-10 text-sm"
+                fullWidth={true}
                 required
               />
+            </div>
+
+            <div className="space-y-2 w-full">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                Password
+              </label>
               <Input
-                label="Last Name"
-                name="lastName"
-                type="text"
-                value={formData.lastName}
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
                 onChange={handleInputChange}
-                error={errors.lastName}
+                error={errors.password}
+                placeholder="Enter your password"
+                className="h-10 text-sm"
+                fullWidth={true}
                 required
               />
             </div>
 
-            <Input
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              error={errors.email}
-              required
-            />
+            <div className="space-y-2 w-full">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                error={errors.confirmPassword}
+                placeholder="Confirm your password"
+                className="h-10 text-sm"
+                fullWidth={true}
+                required
+              />
+            </div>
 
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              error={errors.password}
-              required
-            />
-
-            <Input
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              error={errors.confirmPassword}
-              required
-            />
-          </div>
-
-          <div>
             <Button
               type="submit"
-              className="w-full"
-              size="lg"
+              className="w-full h-12 text-base font-semibold bg-tiffany-blue hover:bg-tiffany-blue/90 text-white rounded-lg transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </Button>
-          </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              By creating an account, you agree to our{' '}
-              <Link
-                to="/terms"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link
-                to="/privacy"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Privacy Policy
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
+            <div className="mt-4 text-center">
+              <p className="text-xs text-gray-600">
+                By creating an account, you agree to our{' '}
+                <Link
+                  to="/terms"
+                  className="text-tiffany-blue hover:text-tiffany-blue/80 font-semibold"
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  to="/privacy"
+                  className="text-tiffany-blue hover:text-tiffany-blue/80 font-semibold"
+                >
+                  Privacy Policy
+                </Link>
+              </p>
+            </div>
+
+            {onSwitchToLogin && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={onSwitchToLogin}
+                    className="text-tiffany-blue hover:text-tiffany-blue/80 font-semibold"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            )}
+          </form>
     </div>
   );
 };

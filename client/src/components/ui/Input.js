@@ -43,8 +43,8 @@ const Input = forwardRef(({
     if (error) return 'border-red-300 focus:border-red-500 focus:ring-red-500';
     if (success) return 'border-green-300 focus:border-green-500 focus:ring-green-500';
     if (warning) return 'border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500';
-    if (isFocused) return 'border-tiffany-blue focus:ring-tiffany-blue';
-    return 'border-gray-300 focus:border-tiffany-blue focus:ring-tiffany-blue';
+    if (isFocused) return 'border-blue-500 focus:ring-blue-500';
+    return 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
   };
 
   const getStatusIcon = () => {
@@ -147,6 +147,7 @@ const Input = forwardRef(({
             ${type === 'password' ? 'pr-20' : ''}
             ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'}
             focus:outline-none focus:ring-2 focus:ring-opacity-50
+            ${className}
           `}
           {...props}
         />
@@ -250,8 +251,8 @@ export const Textarea = forwardRef(({
     if (error) return 'border-red-300 focus:border-red-500 focus:ring-red-500';
     if (success) return 'border-green-300 focus:border-green-500 focus:ring-green-500';
     if (warning) return 'border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500';
-    if (isFocused) return 'border-tiffany-blue focus:ring-tiffany-blue';
-    return 'border-gray-300 focus:border-tiffany-blue focus:ring-tiffany-blue';
+    if (isFocused) return 'border-blue-500 focus:ring-blue-500';
+    return 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
   };
 
   return (
