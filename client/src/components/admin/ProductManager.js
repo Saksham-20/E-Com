@@ -219,7 +219,7 @@ const ProductManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/products/${selectedProduct.id}`, {
+      const response = await fetch(`http://localhost:5000/api/admin/products/${selectedProduct.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -231,14 +231,50 @@ const ProductManager = () => {
         setShowDeleteModal(false);
         setSelectedProduct(null);
         fetchProducts();
+        // Show success message (you can add a toast notification here)
+        alert('Product permanently removed successfully!');
       } else {
         const errorData = await response.json();
         console.error('Failed to delete product:', errorData.message);
+        alert('Failed to delete product. Please try again.');
       }
     } catch (error) {
       console.error('Failed to delete product:', error);
+      alert('Failed to delete product. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStockUpdate = async (productId, newQuantity) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/products/${productId}/stock`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantity: newQuantity })
+      });
+
+      if (response.ok) {
+        // Update the product in the local state
+        setProducts(prevProducts => 
+          prevProducts.map(product => 
+            product.id === productId 
+              ? { ...product, stock_quantity: newQuantity }
+              : product
+          )
+        );
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update stock:', errorData.message);
+        alert('Failed to update stock. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to update stock:', error);
+      alert('Failed to update stock. Please try again.');
     }
   };
 
@@ -300,6 +336,34 @@ const ProductManager = () => {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Stock
+                <div className="mt-1 flex space-x-1">
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Add 10 to all products stock?')) {
+                        products.forEach(product => {
+                          handleStockUpdate(product.id, product.stock_quantity + 10);
+                        });
+                      }
+                    }}
+                    className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-600 px-2 py-1 rounded"
+                    title="Add 10 to all"
+                  >
+                    +10 All
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Subtract 10 from all products stock?')) {
+                        products.forEach(product => {
+                          handleStockUpdate(product.id, Math.max(0, product.stock_quantity - 10));
+                        });
+                      }
+                    }}
+                    className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-600 px-2 py-1 rounded"
+                    title="Subtract 10 from all"
+                  >
+                    -10 All
+                  </button>
+                </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -345,7 +409,23 @@ const ProductManager = () => {
                   ₹{product.price}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.stock_quantity}
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => handleStockUpdate(product.id, product.stock_quantity + 1)}
+                      className="w-6 h-6 bg-green-100 hover:bg-green-200 text-green-600 rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-200"
+                      title="Increase stock by 1"
+                    >
+                      +
+                    </button>
+                    <span className="font-medium min-w-[2rem] text-center">{product.stock_quantity}</span>
+                    <button
+                      onClick={() => handleStockUpdate(product.id, Math.max(0, product.stock_quantity - 1))}
+                      className="w-6 h-6 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-200"
+                      title="Decrease stock by 1"
+                    >
+                      -
+                    </button>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -369,8 +449,9 @@ const ProductManager = () => {
                     variant="danger"
                     size="sm"
                     onClick={() => openDeleteModal(product)}
+                    className="bg-red-600 hover:bg-red-700"
                   >
-                    Delete
+                    Remove
                   </Button>
                 </td>
               </tr>
@@ -837,16 +918,41 @@ const ProductManager = () => {
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="Delete Product"
+        title="Permanently Delete Product"
       >
         <div className="space-y-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.725-1.36 3.49 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Warning: This action cannot be undone
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>This will permanently delete:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>Product: <strong>"{selectedProduct?.name}"</strong></li>
+                    <li>All product images and files</li>
+                    <li>All product data from the database</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <p className="text-gray-700">
-            Are you sure you want to delete "{selectedProduct?.name}"? This action cannot be undone.
+            Are you absolutely sure you want to permanently remove this product? This action cannot be undone and will remove all associated data and files.
           </p>
+          
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
               onClick={() => setShowDeleteModal(false)}
+              disabled={loading}
             >
               Cancel
             </Button>
@@ -854,8 +960,9 @@ const ProductManager = () => {
               variant="danger"
               onClick={handleDeleteProduct}
               disabled={loading}
+              className="bg-red-600 hover:bg-red-700"
             >
-              {loading ? 'Deleting...' : 'Delete Product'}
+              {loading ? 'Deleting...' : 'Permanently Delete'}
             </Button>
           </div>
         </div>

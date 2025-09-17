@@ -331,7 +331,7 @@ router.put('/products/:id', [
 });
 
 // @route   DELETE /api/admin/products/:id
-// @desc    Delete product
+// @desc    Delete product completely (hard delete)
 // @access  Admin
 router.delete('/products/:id', async (req, res) => {
   try {
@@ -343,10 +343,28 @@ router.delete('/products/:id', async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Soft delete - set as inactive
-    await pool.query('UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [id]);
+    // Get product images before deletion
+    const productImages = await pool.query('SELECT image_url FROM product_images WHERE product_id = $1', [id]);
+    
+    // Delete product images from database
+    await pool.query('DELETE FROM product_images WHERE product_id = $1', [id]);
+    
+    // Delete product from database (hard delete)
+    await pool.query('DELETE FROM products WHERE id = $1', [id]);
 
-    res.json({ message: 'Product deleted successfully' });
+    // Delete product images from file system
+    try {
+      const productDir = `uploads/products/${id}`;
+      if (fs.existsSync(productDir)) {
+        fs.rmSync(productDir, { recursive: true, force: true });
+        console.log('Deleted product images directory:', productDir);
+      }
+    } catch (fileError) {
+      console.error('Error deleting product images:', fileError);
+      // Don't fail the request if file deletion fails
+    }
+
+    res.json({ message: 'Product completely removed successfully' });
 
   } catch (error) {
     console.error('Delete product error:', error);
@@ -693,6 +711,44 @@ router.delete('/users/:id', async (req, res) => {
 
   } catch (error) {
     console.error('Delete admin user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/admin/products/:id/stock
+// @desc    Update product stock quantity
+// @access  Admin
+router.put('/products/:id/stock', [
+  body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    // Check if product exists
+    const existingProduct = await pool.query('SELECT id FROM products WHERE id = $1', [id]);
+    if (existingProduct.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Update stock quantity
+    const updatedProduct = await pool.query(
+      'UPDATE products SET stock_quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [quantity, id]
+    );
+
+    res.json({
+      message: 'Stock updated successfully',
+      product: updatedProduct.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Update stock error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

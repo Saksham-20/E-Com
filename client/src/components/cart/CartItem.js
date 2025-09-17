@@ -18,9 +18,13 @@ const CartItem = ({ item }) => {
     <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border">
       <div className="flex-shrink-0">
         <img
-          src={item.image || '/images/placeholder-product.jpg'}
+          src={item.primary_image ? `http://localhost:5000${item.primary_image}` : '/images/placeholder-product.jpg'}
           alt={item.name}
           className="w-20 h-20 object-cover rounded-md"
+          onError={(e) => {
+            console.log('Cart image failed to load:', e.target.src);
+            e.target.src = '/images/placeholder-product.jpg';
+          }}
         />
       </div>
       

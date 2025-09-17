@@ -6,7 +6,7 @@ import Breadcrumb from '../components/common/Breadcrumb';
 import Loading from '../components/ui/Loading';
 
 const WishlistPage = () => {
-  const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
+  const { items: wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { user } = useAuth();
 
   if (!user) {
@@ -19,9 +19,9 @@ const WishlistPage = () => {
     );
   }
 
-  if (wishlist.length === 0) {
+  if (!wishlist || wishlist.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumb />
           
@@ -46,7 +46,7 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50 pt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb />
         
@@ -55,7 +55,7 @@ const WishlistPage = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
               <p className="mt-2 text-gray-600">
-                {wishlist.length} item{wishlist.length !== 1 ? 's' : ''} in your wishlist
+                {wishlist?.length || 0} item{(wishlist?.length || 0) !== 1 ? 's' : ''} in your wishlist
               </p>
             </div>
             
