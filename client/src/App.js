@@ -22,6 +22,7 @@ const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const OrderConfirmationPage = lazy(() => import('./pages/OrderConfirmationPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -149,6 +150,11 @@ function App() {
                         <Route path="/orders" element={
                           <ProtectedRoute>
                             <OrdersPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/orders/:orderId/confirmation" element={
+                          <ProtectedRoute>
+                            <OrderConfirmationPage />
                           </ProtectedRoute>
                         } />
                         

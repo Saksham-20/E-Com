@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartItem from '../components/cart/CartItem';
 import CartSummary from '../components/cart/CartSummary';
@@ -6,11 +7,12 @@ import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const { items, getCartItemCount } = useCart();
 
   const handleCheckout = () => {
     // Navigate to checkout page
-    console.log('Proceeding to checkout...');
+    navigate('/checkout');
   };
 
   if (items.length === 0) {

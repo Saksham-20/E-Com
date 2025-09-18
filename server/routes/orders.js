@@ -1,5 +1,5 @@
 const express = require('express');
-const { query } = require('../database/config');
+const { query, pool } = require('../database/config');
 const { authenticateToken } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
@@ -194,9 +194,10 @@ router.delete('/cart/clear', authenticateToken, async (req, res) => {
 // @desc    Create new order from cart
 // @access  Private
 router.post('/checkout', authenticateToken, [
+  body('items').isArray().withMessage('Items are required'),
   body('shippingAddress').isObject().withMessage('Shipping address is required'),
   body('billingAddress').isObject().withMessage('Billing address is required'),
-  body('paymentIntentId').notEmpty().withMessage('Payment intent ID is required')
+  body('paymentMethod').isString().withMessage('Payment method is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -204,28 +205,17 @@ router.post('/checkout', authenticateToken, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { shippingAddress, billingAddress, paymentIntentId, notes } = req.body;
+    const { items, shippingAddress, billingAddress, paymentMethod, paymentDetails, notes } = req.body;
 
-    // Get cart items
-    const cartItems = await query(`
-      SELECT 
-        ci.*,
-        p.name as product_name,
-        p.price,
-        p.sku
-      FROM cart_items ci
-      JOIN cart c ON ci.cart_id = c.id
-      JOIN products p ON ci.product_id = p.id
-      WHERE c.user_id = $1
-    `, [req.user.id]);
 
-    if (cartItems.rows.length === 0) {
+    // Validate items
+    if (!items || items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
     // Calculate totals
     let subtotal = 0;
-    cartItems.rows.forEach(item => {
+    items.forEach(item => {
       subtotal += item.price * item.quantity;
     });
 
@@ -236,53 +226,63 @@ router.post('/checkout', authenticateToken, [
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    // Create order
-    const order = await query(`
-      INSERT INTO orders (
-        user_id, order_number, status, subtotal, tax_amount, 
-        shipping_amount, total_amount, shipping_address, 
-        billing_address, payment_intent_id, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING *
-    `, [
-      req.user.id, orderNumber, 'processing', subtotal, taxAmount,
-      shippingAmount, totalAmount, shippingAddress, billingAddress,
-      paymentIntentId, notes
-    ]);
+    // Start transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    const orderId = order.rows[0].id;
+      // Set all orders to pending status initially
+      let initialStatus = 'pending';
 
-    // Create order items
-    for (const item of cartItems.rows) {
-      await query(`
-        INSERT INTO order_items (
-          order_id, product_id, product_variant_id, product_name,
-          quantity, unit_price, total_price
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      // Create order
+      const orderResult = await client.query(`
+        INSERT INTO orders (
+          user_id, order_number, status, subtotal, tax_amount, 
+          shipping_amount, total_amount, payment_method, 
+          payment_intent_id, notes
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING *
       `, [
-        orderId, item.product_id, item.product_variant_id, item.product_name,
-        item.quantity, item.price, item.price * item.quantity
+        req.user.id, orderNumber, initialStatus, subtotal, taxAmount,
+        shippingAmount, totalAmount, paymentMethod, 
+        JSON.stringify(paymentDetails || {}), notes || ''
       ]);
 
-      // Update inventory
-      await query(
-        'UPDATE products SET inventory_quantity = inventory_quantity - $1 WHERE id = $2',
-        [item.quantity, item.product_id]
-      );
+      const order = orderResult.rows[0];
+
+      // Create order items
+      for (const item of items) {
+        await client.query(`
+          INSERT INTO order_items (
+            order_id, product_id, product_name, quantity, unit_price, total_price, variant_details
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [
+          order.id, item.id, item.name, item.quantity, 
+          item.price, item.price * item.quantity, 
+          JSON.stringify(item.variant || {})
+        ]);
+
+        // Update product stock
+        await client.query(
+          'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+          [item.quantity, item.id]
+        );
+      }
+
+      await client.query('COMMIT');
+
+      res.json({
+        message: 'Order created successfully',
+        order: order,
+        orderNumber: order.order_number,
+        total: order.total_amount
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-
-    // Clear cart
-    await query(`
-      DELETE FROM cart_items 
-      WHERE cart_id IN (
-        SELECT id FROM cart WHERE user_id = $1
-      )
-    `, [req.user.id]);
-
-    res.json({
-      message: 'Order created successfully',
-      order: order.rows[0]
-    });
 
   } catch (error) {
     console.error('Checkout error:', error);

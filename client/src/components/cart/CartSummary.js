@@ -2,15 +2,17 @@ import React from 'react';
 import useCart from '../../hooks/useCart';
 import Button from '../ui/Button';
 
-const CartSummary = ({ onCheckout }) => {
+const CartSummary = ({ onCheckout, showCheckoutButton = true }) => {
   const { items, summary, getCartItemCount } = useCart();
 
-  const subtotal = summary.subtotal;
+  const subtotal = summary?.subtotal || 0;
   const shipping = subtotal > 100 ? 0 : 10; // Free shipping over $100
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
+  const itemCount = getCartItemCount();
 
-  if (items.length === 0) {
+
+  if (!items || items.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Cart Summary</h3>
@@ -25,7 +27,7 @@ const CartSummary = ({ onCheckout }) => {
       
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Items ({getCartItemCount()})</span>
+          <span className="text-gray-600">Items ({itemCount})</span>
           <span className="text-gray-900">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         
@@ -55,13 +57,15 @@ const CartSummary = ({ onCheckout }) => {
         </div>
       </div>
       
-      <Button
-        onClick={onCheckout}
-        className="w-full"
-        disabled={items.length === 0}
-      >
-        Proceed to Checkout
-      </Button>
+      {showCheckoutButton && onCheckout && (
+        <Button
+          onClick={onCheckout}
+          className="w-full"
+          disabled={!items || items.length === 0}
+        >
+          Proceed to Checkout
+        </Button>
+      )}
       
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">

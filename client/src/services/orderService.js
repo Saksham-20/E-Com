@@ -26,9 +26,13 @@ export const orderService = {
   // Create a new order
   async createOrder(orderData) {
     try {
-      const response = await api.post('/orders', orderData);
+      console.log('OrderService: Creating order with data:', orderData);
+      console.log('OrderService: API base URL:', api.baseURL);
+      const response = await api.post('/orders/checkout', orderData);
+      console.log('OrderService: Response received:', response);
       return response.data;
     } catch (error) {
+      console.error('OrderService: Error creating order:', error);
       throw new Error('Failed to create order');
     }
   },
