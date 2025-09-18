@@ -26,31 +26,31 @@ const CartSummary = ({ onCheckout }) => {
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Items ({getCartItemCount()})</span>
-          <span className="text-gray-900">${subtotal.toFixed(2)}</span>
+          <span className="text-gray-900">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Shipping</span>
           <span className="text-gray-900">
-            {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+            {shipping === 0 ? 'Free' : `₹${shipping.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </span>
         </div>
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Tax</span>
-          <span className="text-gray-900">${tax.toFixed(2)}</span>
+          <span className="text-gray-900">₹{tax.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         
         {shipping > 0 && (
           <div className="text-xs text-blue-600 text-center py-2 bg-blue-50 rounded">
-            Add ${(100 - subtotal).toFixed(2)} more for free shipping!
+            Add ₹{(100 - subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} more for free shipping!
           </div>
         )}
         
         <div className="border-t pt-3">
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-gray-900">Total</span>
-            <span className="text-gray-900">${total.toFixed(2)}</span>
+            <span className="text-gray-900">₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
       </div>

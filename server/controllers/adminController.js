@@ -265,7 +265,7 @@ const getSettings = async (req, res) => {
     
     const settings = {
       store: {
-        name: 'Luxury E-commerce Store',
+        name: 'E-Commerce Shop Store',
         description: 'Premium products for discerning customers',
         email: 'admin@luxurystore.com',
         phone: '+1-555-0123',

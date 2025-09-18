@@ -133,7 +133,7 @@ const Footer = () => {
             >
               <Link to="/" className="inline-block">
                 <h2 className="text-2xl font-playfair font-bold text-tiffany-blue mb-4">
-                  Luxury E-commerce
+                  E-Commerce Shop
                 </h2>
               </Link>
               <p className="text-gray-400 mb-6 leading-relaxed">
@@ -208,7 +208,7 @@ const Footer = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <p>&copy; {currentYear} Luxury E-commerce. All rights reserved.</p>
+              <p>&copy; {currentYear} E-Commerce Shop. All rights reserved.</p>
             </motion.div>
 
             {/* Social Links */}

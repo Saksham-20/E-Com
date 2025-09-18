@@ -11,83 +11,53 @@ const Navigation = () => {
 
   const navigationItems = [
     {
-      name: 'HIGH JEWELRY',
-      href: '/high-jewelry',
+      name: 'NECKLACES',
+      href: '/products?category=necklaces',
       dropdown: [
-        { name: 'Diamond Collections', href: '/high-jewelry/diamonds', description: 'Exquisite diamond pieces' },
-        { name: 'Emerald Collections', href: '/high-jewelry/emeralds', description: 'Rare emerald masterpieces' },
-        { name: 'Sapphire Collections', href: '/high-jewelry/sapphires', description: 'Stunning sapphire designs' },
-        { name: 'Ruby Collections', href: '/high-jewelry/rubies', description: 'Bold ruby creations' }
+        { name: 'Traditional Necklaces', href: '/products?category=necklaces&type=traditional', description: 'Classic Indian designs' },
+        { name: 'Modern Necklaces', href: '/products?category=necklaces&type=modern', description: 'Contemporary styles' },
+        { name: 'Gold Necklaces', href: '/products?category=necklaces&material=gold', description: 'Pure gold pieces' },
+        { name: 'Silver Necklaces', href: '/products?category=necklaces&material=silver', description: 'Elegant silver designs' }
       ]
     },
     {
-      name: 'JEWELRY',
-      href: '/jewelry',
+      name: 'EARRINGS',
+      href: '/products?category=earrings',
       dropdown: [
-        { name: 'Rings', href: '/jewelry/rings', description: 'Elegant rings for every occasion' },
-        { name: 'Necklaces', href: '/jewelry/necklaces', description: 'Statement necklaces' },
-        { name: 'Earrings', href: '/jewelry/earrings', description: 'Beautiful earrings' },
-        { name: 'Bracelets', href: '/jewelry/bracelets', description: 'Charming bracelets' }
+        { name: 'Jhumkas', href: '/products?category=earrings&type=jhumkas', description: 'Traditional jhumkas' },
+        { name: 'Studs', href: '/products?category=earrings&type=studs', description: 'Simple and elegant' },
+        { name: 'Hoops', href: '/products?category=earrings&type=hoops', description: 'Classic hoop earrings' },
+        { name: 'Danglers', href: '/products?category=earrings&type=danglers', description: 'Long dangler earrings' }
       ]
     },
     {
-      name: 'LOVE & ENGAGEMENT',
-      href: '/love-engagement',
+      name: 'BANGLES & BRACELETS',
+      href: '/products?category=bangles-bracelets',
       dropdown: [
-        { name: 'Engagement Rings', href: '/love-engagement/engagement-rings', description: 'Symbols of eternal love' },
-        { name: 'Wedding Bands', href: '/love-engagement/wedding-bands', description: 'Perfect wedding bands' },
-        { name: 'Anniversary Gifts', href: '/love-engagement/anniversary', description: 'Celebrate your love' },
-        { name: 'Promise Rings', href: '/love-engagement/promise-rings', description: 'Tokens of commitment' }
+        { name: 'Traditional Bangles', href: '/products?category=bangles-bracelets&type=bangles', description: 'Classic bangle sets' },
+        { name: 'Modern Bracelets', href: '/products?category=bangles-bracelets&type=bracelets', description: 'Contemporary designs' },
+        { name: 'Gold Bangles', href: '/products?category=bangles-bracelets&material=gold', description: 'Pure gold bangles' },
+        { name: 'Glass Bangles', href: '/products?category=bangles-bracelets&material=glass', description: 'Colorful glass bangles' }
       ]
     },
     {
-      name: 'FINE WATCHES',
-      href: '/fine-watches',
+      name: 'RINGS',
+      href: '/products?category=rings',
       dropdown: [
-        { name: 'Luxury Watches', href: '/fine-watches/luxury', description: 'Premium timepieces' },
-        { name: 'Diamond Watches', href: '/fine-watches/diamond', description: 'Diamond-encrusted watches' },
-        { name: 'Classic Watches', href: '/fine-watches/classic', description: 'Timeless designs' },
-        { name: 'Sports Watches', href: '/fine-watches/sports', description: 'Active lifestyle watches' }
+        { name: 'Engagement Rings', href: '/products?category=rings&type=engagement', description: 'Symbols of love' },
+        { name: 'Wedding Rings', href: '/products?category=rings&type=wedding', description: 'Wedding bands' },
+        { name: 'Fashion Rings', href: '/products?category=rings&type=fashion', description: 'Style statements' },
+        { name: 'Cocktail Rings', href: '/products?category=rings&type=cocktail', description: 'Bold statement pieces' }
       ]
     },
     {
-      name: 'HOME',
-      href: '/',
+      name: 'ANKLETS',
+      href: '/products?category=anklets',
       dropdown: [
-        { name: 'Homepage', href: '/', description: 'Return to homepage' },
-        { name: 'New Arrivals', href: '/new-arrivals', description: 'Latest collections' },
-        { name: 'Best Sellers', href: '/bestsellers', description: 'Customer favorites' },
-        { name: 'Sale', href: '/sale', description: 'Special offers' }
-      ]
-    },
-    {
-      name: 'ACCESSORIES',
-      href: '/accessories',
-      dropdown: [
-        { name: 'Handbags', href: '/accessories/handbags', description: 'Luxury handbags' },
-        { name: 'Scarves', href: '/accessories/scarves', description: 'Silk scarves' },
-        { name: 'Belts', href: '/accessories/belts', description: 'Designer belts' },
-        { name: 'Sunglasses', href: '/accessories/sunglasses', description: 'Premium eyewear' }
-      ]
-    },
-    {
-      name: 'GIFTS',
-      href: '/gifts',
-      dropdown: [
-        { name: 'Gift Cards', href: '/gifts/gift-cards', description: 'Perfect for any occasion' },
-        { name: 'Gift Sets', href: '/gifts/sets', description: 'Curated gift collections' },
-        { name: 'Personalized Gifts', href: '/gifts/personalized', description: 'Customized pieces' },
-        { name: 'Holiday Gifts', href: '/gifts/holiday', description: 'Seasonal collections' }
-      ]
-    },
-    {
-      name: 'WORLD OF TIFFANY',
-      href: '/world-of-tiffany',
-      dropdown: [
-        { name: 'Our Story', href: '/world-of-tiffany/story', description: 'Tiffany heritage' },
-        { name: 'Sustainability', href: '/world-of-tiffany/sustainability', description: 'Our commitment' },
-        { name: 'Careers', href: '/world-of-tiffany/careers', description: 'Join our team' },
-        { name: 'Stores', href: '/world-of-tiffany/stores', description: 'Find a store near you' }
+        { name: 'Traditional Payals', href: '/products?category=anklets&type=payals', description: 'Classic payal designs' },
+        { name: 'Modern Anklets', href: '/products?category=anklets&type=modern', description: 'Contemporary styles' },
+        { name: 'Charm Anklets', href: '/products?category=anklets&type=charms', description: 'Charming details' },
+        { name: 'Chain Anklets', href: '/products?category=anklets&type=chains', description: 'Delicate chain designs' }
       ]
     }
   ];

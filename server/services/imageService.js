@@ -88,7 +88,7 @@ class ImageService {
   }
 
   // Generate multiple image sizes for products
-  async generateProductImages(inputPath, productId) {
+  async generateProductImages(inputPath, productId, imageIndex = 0) {
     try {
       const sizes = [
         { name: 'thumbnail', width: 150, height: 150, fit: 'cover' },
@@ -99,6 +99,7 @@ class ImageService {
 
       const processedImages = [];
       const baseDir = `${this.uploadDir}/products/${productId}`;
+      const uniqueId = `${Date.now()}-${imageIndex}`;
 
       // Create product directory
       try {
@@ -108,7 +109,7 @@ class ImageService {
       }
 
       for (const size of sizes) {
-        const outputPath = `${baseDir}/${size.name}.jpg`;
+        const outputPath = `${baseDir}/${uniqueId}-${size.name}.jpg`;
         await this.processImage(inputPath, outputPath, {
           width: size.width,
           height: size.height,
@@ -118,7 +119,7 @@ class ImageService {
         processedImages.push({
           size: size.name,
           path: outputPath,
-          url: `/uploads/products/${productId}/${size.name}.jpg`
+          url: `/uploads/products/${productId}/${uniqueId}-${size.name}.jpg`
         });
       }
 

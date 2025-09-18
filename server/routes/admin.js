@@ -213,27 +213,39 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       try {
+        console.log(`Processing ${req.files.length} images for new product ${product.id}`);
+        
         for (let i = 0; i < req.files.length; i++) {
           const file = req.files[i];
           const isPrimary = i === 0; // First image is primary
           
-          // Generate product images
+          console.log(`Processing image ${i + 1}/${req.files.length}: ${file.originalname}`);
+          
+          // Generate product images with unique naming
           const processedImages = await imageService.generateProductImages(
             file.path, 
-            product.id
+            product.id,
+            i // Pass image index for unique naming
           );
 
-          // Save image record to database - use thumbnail for primary display
+          // Store the medium size image URL in database (or thumbnail if medium not available)
+          const imageUrl = processedImages.find(img => img.size === 'medium')?.url || 
+                          processedImages.find(img => img.size === 'thumbnail')?.url || 
+                          processedImages[0].url;
+
+          // Save image record to database
           await pool.query(`
             INSERT INTO product_images (product_id, image_url, alt_text, sort_order, is_primary)
             VALUES ($1, $2, $3, $4, $5)
           `, [
             product.id,
-            processedImages.find(img => img.size === 'thumbnail')?.url || processedImages[0].url,
+            imageUrl,
             file.originalname,
             i,
             isPrimary
           ]);
+
+          console.log(`Successfully processed and stored image: ${imageUrl}`);
 
           // Clean up the original uploaded file to avoid duplicates
           try {
@@ -299,7 +311,7 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
     let paramCount = 0;
 
     Object.keys(updateData).forEach(key => {
-      if (key !== 'id' && updateData[key] !== undefined && updateData[key] !== null && key !== 'images') {
+      if (key !== 'id' && updateData[key] !== undefined && updateData[key] !== null && key !== 'images' && key !== 'remaining_image_ids') {
         paramCount++;
         updateFields.push(`${key} = $${paramCount}`);
         updateValues.push(updateData[key]);
@@ -319,10 +331,53 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
 
     const updatedProduct = await pool.query(updateQuery, updateValues);
 
+    // Handle image deletions first
+    if (updateData.remaining_image_ids) {
+      try {
+        const remainingIds = updateData.remaining_image_ids.split(',').filter(id => id.trim() !== '');
+        
+        // Get all current images for this product
+        const currentImages = await pool.query(
+          'SELECT id, image_url FROM product_images WHERE product_id = $1',
+          [id]
+        );
+        
+        // Find images to delete (not in remaining_ids)
+        const imagesToDelete = currentImages.rows.filter(img => 
+          !remainingIds.includes(img.id.toString())
+        );
+        
+        // Delete images from database
+        if (imagesToDelete.length > 0) {
+          const deleteIds = imagesToDelete.map(img => img.id);
+          await pool.query(
+            'DELETE FROM product_images WHERE id = ANY($1)',
+            [deleteIds]
+          );
+          
+          // Delete image files from filesystem
+          for (const img of imagesToDelete) {
+            try {
+              const imagePath = img.image_url.replace('/uploads/', 'uploads/');
+              if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+                console.log('Deleted image file:', imagePath);
+              }
+            } catch (fileError) {
+              console.log('Could not delete image file:', fileError.message);
+            }
+          }
+        }
+      } catch (deleteError) {
+        console.error('Image deletion error:', deleteError);
+        // Don't fail the update if image deletion fails
+      }
+    }
+
     // If there are uploaded images, process them and append to product_images (cap at 6 total)
     if (req.files && req.files.length > 0) {
       try {
-        // Count existing images
+        // Count existing images after deletion
         const existingImagesRes = await pool.query(
           'SELECT id, is_primary FROM product_images WHERE product_id = $1 ORDER BY sort_order ASC',
           [id]
@@ -334,26 +389,38 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
         const remainingSlots = Math.max(0, 6 - existingCount);
         const filesToProcess = req.files.slice(0, remainingSlots);
 
+        console.log(`Processing ${filesToProcess.length} new images for product ${id}`);
+
         for (let i = 0; i < filesToProcess.length; i++) {
           const file = filesToProcess[i];
           const isPrimary = !hasPrimary && (existingCount === 0) && i === 0; // set primary if none exists
 
+          console.log(`Processing image ${i + 1}/${filesToProcess.length}: ${file.originalname}`);
+
           const processedImages = await imageService.generateProductImages(
             file.path,
-            id
+            id,
+            i // Pass image index for unique naming
           );
+
+          // Store the medium size image URL in database (or thumbnail if medium not available)
+          const imageUrl = processedImages.find(img => img.size === 'medium')?.url || 
+                          processedImages.find(img => img.size === 'thumbnail')?.url || 
+                          processedImages[0].url;
 
           await pool.query(
             `INSERT INTO product_images (product_id, image_url, alt_text, sort_order, is_primary)
              VALUES ($1, $2, $3, $4, $5)`,
             [
               id,
-              processedImages.find(img => img.size === 'thumbnail')?.url || processedImages[0].url,
+              imageUrl,
               file.originalname,
               existingCount + i,
               isPrimary
             ]
           );
+
+          console.log(`Successfully processed and stored image: ${imageUrl}`);
 
           // cleanup original upload
           try {

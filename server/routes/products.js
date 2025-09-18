@@ -220,13 +220,16 @@ router.get('/categories', async (req, res) => {
   }
 });
 
-// @route   GET /api/products/:slug
-// @desc    Get product by slug
+// @route   GET /api/products/:identifier
+// @desc    Get product by slug or ID
 // @access  Public
-router.get('/:slug', async (req, res) => {
+router.get('/:identifier', async (req, res) => {
   try {
-    const { slug } = req.params;
-
+    const { identifier } = req.params;
+    
+    // Check if identifier is a UUID (ID) or slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier);
+    
     // Get product details
     const productResult = await query(`
       SELECT 
@@ -245,8 +248,8 @@ router.get('/:slug', async (req, res) => {
         ) as review_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = $1 AND p.is_active = true
-    `, [slug]);
+      WHERE ${isUUID ? 'p.id = $1' : 'p.slug = $1'} AND p.is_active = true
+    `, [identifier]);
 
     if (productResult.rows.length === 0) {
       return res.status(404).json({

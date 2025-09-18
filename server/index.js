@@ -83,7 +83,7 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Luxury E-commerce server running on port ${PORT}`);
+  console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
   console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
   console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

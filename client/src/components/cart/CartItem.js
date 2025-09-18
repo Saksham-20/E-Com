@@ -1,16 +1,22 @@
 import React from 'react';
-import useCart from '../../hooks/useCart';
+import { useCart } from '../../context/CartContext';
 // import Button from '../ui/Button';
 
 const CartItem = ({ item }) => {
-  const { updateQuantity, removeFromCart } = useCart();
+  const { updateItemQuantity, removeFromCart } = useCart();
 
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity < 1) return;
-    updateQuantity(item.id, newQuantity);
+    updateItemQuantity(item.id, newQuantity);
   };
 
   const handleRemove = () => {
+    console.log('Removing cart item:', item);
+    console.log('Item ID (cart item):', item.id);
+    console.log('Product ID:', item.product_id);
+    console.log('Item type:', typeof item.id);
+    console.log('Full item object keys:', Object.keys(item));
+    console.log('Item values:', Object.values(item));
     removeFromCart(item.id);
   };
 
@@ -68,15 +74,15 @@ const CartItem = ({ item }) => {
       
       <div className="text-right">
         <div className="text-lg font-semibold text-gray-900">
-          ${(item.price * item.quantity).toFixed(2)}
+          ₹{(item.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         {item.originalPrice && item.originalPrice > item.price && (
           <div className="text-sm text-gray-500 line-through">
-            ${(item.originalPrice * item.quantity).toFixed(2)}
+            ₹{(item.originalPrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         )}
         <div className="text-sm text-gray-600">
-          ${item.price} each
+          ₹{item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each
         </div>
       </div>
       

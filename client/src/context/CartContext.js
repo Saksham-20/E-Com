@@ -209,6 +209,7 @@ export const CartProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
+      // Cart data loaded successfully
         dispatch({
           type: CART_ACTIONS.SET_CART,
           payload: data.data
@@ -228,6 +229,8 @@ export const CartProvider = ({ children }) => {
   // Add item to cart
   const addToCart = async (product, quantity = 1, variantDetails = null) => {
     try {
+      // Adding product to cart
+      
       if (isAuthenticated) {
         // Add to user cart via API
         const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/add`, {
@@ -253,7 +256,13 @@ export const CartProvider = ({ children }) => {
           return { success: true };
         } else {
           const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to add item to cart');
+          // Handle error response
+          
+          if (response.status === 404) {
+            toast.error('This product is no longer available');
+          } else {
+            toast.error(errorData.message || 'Failed to add item to cart');
+          }
           return { success: false, message: errorData.message };
         }
       } else {
@@ -335,9 +344,23 @@ export const CartProvider = ({ children }) => {
   // Remove item from cart
   const removeFromCart = async (itemId) => {
     try {
+      // Removing item from cart
+      
       if (isAuthenticated) {
+        // Check if itemId is a product ID or cart item ID
+        // If it's a product ID, find the corresponding cart item ID
+        let cartItemId = itemId;
+        
+        // Check if this is a product ID by looking in the current cart items
+        const cartItem = state.items.find(item => item.product_id === itemId);
+        if (cartItem) {
+          cartItemId = cartItem.id;
+        }
+        
         // Remove via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/${itemId}`, {
+        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/${cartItemId}`;
+        
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -360,9 +383,18 @@ export const CartProvider = ({ children }) => {
         }
       } else {
         // Remove from guest cart
+        // Check if itemId is a product ID or cart item ID
+        let cartItemId = itemId;
+        
+        // Check if this is a product ID by looking in the current cart items
+        const cartItem = state.items.find(item => item.product_id === itemId);
+        if (cartItem) {
+          cartItemId = cartItem.id;
+        }
+        
         dispatch({
           type: CART_ACTIONS.REMOVE_ITEM,
-          payload: itemId
+          payload: cartItemId
         });
 
         toast.success('Item removed from cart');

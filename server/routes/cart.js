@@ -71,6 +71,8 @@ router.get('/', authenticateToken, async (req, res) => {
       };
     });
 
+    // Cart items processed successfully
+
     res.json({
       success: true,
       data: {
@@ -100,6 +102,8 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/add', authenticateToken, async (req, res) => {
   try {
     const { product_id, quantity = 1, variant_details } = req.body;
+    
+    // Adding item to cart
 
     if (!product_id) {
       return res.status(400).json({
@@ -263,7 +267,7 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
 
     // Update quantity
     await query(
-      'UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      'UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       [quantity, item_id]
     );
 
@@ -292,6 +296,7 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
 router.delete('/:item_id', authenticateToken, async (req, res) => {
   try {
     const { item_id } = req.params;
+    // Removing item from cart
 
     // Delete cart item (ensure it belongs to the user)
     const result = await query(`
@@ -301,6 +306,8 @@ router.delete('/:item_id', authenticateToken, async (req, res) => {
       )
       RETURNING id
     `, [item_id, req.user.id]);
+
+    // Item removed successfully
 
     if (result.rows.length === 0) {
       return res.status(404).json({

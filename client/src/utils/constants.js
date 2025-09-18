@@ -47,7 +47,7 @@ export const API_ENDPOINTS = {
 
 // Application Constants
 export const APP_CONSTANTS = {
-  APP_NAME: 'Luxury E-commerce',
+  APP_NAME: 'E-Commerce Shop',
   APP_VERSION: '1.0.0',
   DEFAULT_CURRENCY: 'INR',
   DEFAULT_LANGUAGE: 'en',

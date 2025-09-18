@@ -22,25 +22,41 @@ const ProductCard = React.memo(({ product, className = '' }) => {
     return Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100);
   }, [product.price, product.comparePrice]);
 
-  const isInCartState = useMemo(() => isItemInCart(product.id), [isItemInCart, product.id]);
-  const isInWishlistState = useMemo(() => isItemInWishlist(product.id), [isItemInWishlist, product.id]);
+  // Handle both product.id and product.product_id for compatibility
+  // Prioritize product_id for cart operations since it's the actual product ID
+  const productId = product.product_id || product.id;
+  
+  const isInCartState = useMemo(() => isItemInCart(productId), [isItemInCart, productId]);
+  const isInWishlistState = useMemo(() => isItemInWishlist(productId), [isItemInWishlist, productId]);
 
   // Memoize event handlers
   const handleAddToCart = useCallback(() => {
-    addToCart(product);
-  }, [addToCart, product]);
+    // Ensure we have the correct product structure for cart
+    const cartProduct = {
+      id: productId,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      compare_price: product.compare_price,
+      sku: product.sku,
+      primary_image: product.primary_image,
+      category_name: product.category_name,
+      category_slug: product.category_slug
+    };
+    addToCart(cartProduct);
+  }, [addToCart, product, productId]);
 
   const handleRemoveFromCart = useCallback(() => {
-    removeFromCart(product.id);
-  }, [removeFromCart, product.id]);
+    removeFromCart(productId);
+  }, [removeFromCart, productId]);
 
   const handleToggleWishlist = useCallback(() => {
     if (isInWishlistState) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(productId);
     } else {
       addToWishlist(product);
     }
-  }, [isInWishlistState, removeFromWishlist, addToWishlist, product]);
+  }, [isInWishlistState, removeFromWishlist, addToWishlist, product, productId]);
 
   const handleQuickView = useCallback(() => {
     // Quick view functionality can be implemented here

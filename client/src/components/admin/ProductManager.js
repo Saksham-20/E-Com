@@ -135,15 +135,33 @@ const ProductManager = () => {
     
     // Limit to 6 images maximum (including existing ones in edit mode)
     const currentCount = existingImages.length + selectedImages.length;
-    if (files.length > 6 || currentCount + files.length > 6) {
-      alert('You can only upload up to 6 images per product.');
+    const remainingSlots = 6 - currentCount;
+    
+    if (files.length > remainingSlots) {
+      alert(`You can only upload ${remainingSlots} more images. You currently have ${currentCount}/6 images.`);
       return;
     }
     
-    setSelectedImages([...selectedImages, ...files]);
+    if (currentCount >= 6) {
+      alert('You have reached the maximum of 6 images per product. Please remove some images before adding new ones.');
+      return;
+    }
+    
+    // Filter out duplicate files by name and size
+    const uniqueFiles = files.filter(newFile => 
+      !selectedImages.some(existingFile => 
+        existingFile.name === newFile.name && existingFile.size === newFile.size
+      )
+    );
+    
+    if (uniqueFiles.length !== files.length) {
+      alert('Some duplicate images were removed. Please select unique images.');
+    }
+    
+    setSelectedImages([...selectedImages, ...uniqueFiles]);
     
     // Create preview URLs
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    const newPreviews = uniqueFiles.map(file => URL.createObjectURL(file));
     setImagePreview([...imagePreview, ...newPreviews]);
   };
 
@@ -210,6 +228,11 @@ const ProductManager = () => {
           formDataToSend.append(key, formData[key]);
         }
       });
+      
+      // Send information about which existing images to keep (the ones still in existingImages)
+      const remainingImageIds = existingImages.map(img => img.id).join(',');
+      formDataToSend.append('remaining_image_ids', remainingImageIds);
+      
       // Append any newly selected images (existing ones are already on server)
       selectedImages.slice(0, 6).forEach((image) => {
         formDataToSend.append('images', image);
@@ -347,6 +370,11 @@ const ProductManager = () => {
       }
     })();
   };
+
+  const removeExistingImage = (imageId) => {
+    setExistingImages(prev => prev.filter(img => img.id !== imageId));
+  };
+
 
   const openDeleteModal = (product) => {
     setSelectedProduct(product);
@@ -899,7 +927,7 @@ const ProductManager = () => {
                   Product Images
                 </label>
 
-                {/* Existing Images (read-only preview) */}
+                {/* Existing Images with remove buttons */}
                 {existingImages && existingImages.length > 0 && (
                   <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                     {existingImages.map((img, idx) => (
@@ -912,6 +940,14 @@ const ProductManager = () => {
                         {img.is_primary && (
                           <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-green-600 text-white">Primary</span>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(img.id)}
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
                       </div>
                     ))}
                   </div>

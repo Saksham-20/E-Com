@@ -60,14 +60,11 @@ const Header = () => {
   const wishlistItemCount = wishlistItems?.length || 0;
 
   const navigationItems = [
-    { name: 'HIGH JEWELRY', href: '/products?category=high-jewelry' },
-    { name: 'JEWELRY', href: '/products?category=jewelry' },
-    { name: 'LOVE & ENGAGEMENT', href: '/products?category=love-engagement' },
-    { name: 'FINE WATCHES', href: '/products?category=fine-watches' },
-    { name: 'HOME', href: '/products?category=home-accessories' },
-    { name: 'ACCESSORIES', href: '/products?category=accessories' },
-    { name: 'GIFTS', href: '/products?category=gifts' },
-    { name: 'WORLD OF TIFFANY', href: '/collections' }
+    { name: 'NECKLACES', href: '/products?category=necklaces' },
+    { name: 'EARRINGS', href: '/products?category=earrings' },
+    { name: 'BANGLES & BRACELETS', href: '/products?category=bangles-bracelets' },
+    { name: 'RINGS', href: '/products?category=rings' },
+    { name: 'ANKLETS', href: '/products?category=anklets' }
   ];
 
   return (
@@ -110,7 +107,7 @@ const Header = () => {
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                  TIFFANY & CO.
+                  E-Commerce Shop
                 </motion.h1>
               </Link>
             </div>

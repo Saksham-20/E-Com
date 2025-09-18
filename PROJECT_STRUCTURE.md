@@ -1,4 +1,4 @@
-# Luxury E-commerce Project Structure
+# E-Commerce Shop Project Structure
 
 ## Root Directory
 ```
