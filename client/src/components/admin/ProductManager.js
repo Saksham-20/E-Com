@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import useAuth from '../../hooks/useAuth';
+// import useAuth from '../../hooks/useAuth';
 import { productService } from '../../services/productService';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -7,7 +7,7 @@ import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
 
 const ProductManager = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

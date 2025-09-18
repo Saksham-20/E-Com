@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { IoArrowForward, IoStar, IoHeart } from 'react-icons/io5';
-import { getFeaturedProducts, getRandomProducts } from '../data/jewelryProducts';
+import { getFeaturedProducts } from '../data/jewelryProducts';
 
 const HomePage = () => {
   const featuredProducts = getFeaturedProducts();

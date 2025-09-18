@@ -9,7 +9,7 @@ import Loading from '../components/ui/Loading';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cart, total, clearCart } = useCart();
+  const { cart, clearCart } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 

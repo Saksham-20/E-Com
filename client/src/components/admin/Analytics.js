@@ -29,7 +29,7 @@ const Analytics = () => {
   });
   const [topProducts, setTopProducts] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
-  const [salesChart, setSalesChart] = useState([]);
+  // const [salesChart, setSalesChart] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ const Analytics = () => {
         
         setTopProducts(data.topProducts || []);
         setRecentOrders(data.recentOrders || []);
-        setSalesChart(data.salesData || []);
+        // setSalesChart(data.salesData || []);
         setCategoryData(data.categoryData || []);
       } else {
         console.error('Failed to fetch analytics:', response.status);

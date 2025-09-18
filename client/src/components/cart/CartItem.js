@@ -1,6 +1,6 @@
 import React from 'react';
 import useCart from '../../hooks/useCart';
-import Button from '../ui/Button';
+// import Button from '../ui/Button';
 
 const CartItem = ({ item }) => {
   const { updateQuantity, removeFromCart } = useCart();

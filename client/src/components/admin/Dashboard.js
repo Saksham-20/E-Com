@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
-  const [analyticsData, setAnalyticsData] = useState(null);
+  // const [analyticsData, setAnalyticsData] = useState(null);
 
   // Helper function to safely format numbers
   const safeToFixed = (value, decimals = 2) => {
@@ -71,11 +71,11 @@ const Dashboard = () => {
       if (analyticsResponse.ok) {
         const analyticsData = await analyticsResponse.json();
         setTopProducts(analyticsData.topProducts || []);
-        setAnalyticsData(analyticsData);
+        // setAnalyticsData(analyticsData);
       } else {
         console.error('Failed to fetch analytics data:', analyticsResponse.status);
         setTopProducts([]);
-        setAnalyticsData(null);
+        // setAnalyticsData(null);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -84,7 +84,7 @@ const Dashboard = () => {
       setRecentOrders([]);
       setRecentProducts([]);
       setTopProducts([]);
-      setAnalyticsData(null);
+      // setAnalyticsData(null);
     } finally {
       setLoading(false);
     }

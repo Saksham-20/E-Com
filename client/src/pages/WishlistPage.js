@@ -3,7 +3,7 @@ import useWishlist from '../hooks/useWishlist';
 import useAuth from '../hooks/useAuth';
 import ProductCard from '../components/product/ProductCard';
 import Breadcrumb from '../components/common/Breadcrumb';
-import Loading from '../components/ui/Loading';
+// import Loading from '../components/ui/Loading';
 
 const WishlistPage = () => {
   const { items: wishlist, removeFromWishlist, clearWishlist } = useWishlist();

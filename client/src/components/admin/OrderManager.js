@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import useAuth from '../../hooks/useAuth';
-import { orderService } from '../../services/orderService';
+// import useAuth from '../../hooks/useAuth';
+// import { orderService } from '../../services/orderService';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
 
 const OrderManager = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDetailsModal, setShowDetailsModal] = useState(false);

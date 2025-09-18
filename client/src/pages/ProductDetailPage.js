@@ -1,10 +1,10 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 import ProductDetail from '../components/product/ProductDetail';
 import Breadcrumb from '../components/common/Breadcrumb';
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
+  // const { id } = useParams();
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32">

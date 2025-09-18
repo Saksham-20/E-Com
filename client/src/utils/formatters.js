@@ -176,6 +176,9 @@ export const formatPhoneNumber = (phoneNumber, format = 'US') => {
           return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
         }
         break;
+        
+      default:
+        return cleaned;
     }
     
     // Return cleaned number if no format matches
@@ -212,6 +215,9 @@ export const formatCreditCard = (cardNumber, format = 'spaced') => {
           return `${firstFour} **** **** ${lastFour}`;
         }
         break;
+        
+      default:
+        return cleaned;
     }
     
     // Return cleaned number if no format matches
@@ -366,7 +372,7 @@ export const formatPriceRange = (minPrice, maxPrice, currency = 'INR') => {
 };
 
 // Export everything
-export default {
+const formatters = {
   formatCurrency,
   formatNumber,
   formatPercentage,
@@ -383,3 +389,5 @@ export default {
   formatRating,
   formatPriceRange
 };
+
+export default formatters;
