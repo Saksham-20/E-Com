@@ -269,9 +269,9 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 // @route   PUT /api/admin/products/:id
 // @desc    Update product
 // @access  Admin
-router.put('/products/:id', [
-  body('name').trim().notEmpty().withMessage('Product name is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number')
+router.put('/products/:id', upload.array('images', 10), handleUploadError, [
+  body('name').optional().trim().notEmpty().withMessage('Product name is required'),
+  body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -280,7 +280,7 @@ router.put('/products/:id', [
     }
 
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = req.body || {};
 
     // Check if product exists
     const existingProduct = await pool.query('SELECT id FROM products WHERE id = $1', [id]);
@@ -299,7 +299,7 @@ router.put('/products/:id', [
     let paramCount = 0;
 
     Object.keys(updateData).forEach(key => {
-      if (key !== 'id') {
+      if (key !== 'id' && updateData[key] !== undefined && updateData[key] !== null && key !== 'images') {
         paramCount++;
         updateFields.push(`${key} = $${paramCount}`);
         updateValues.push(updateData[key]);
@@ -318,6 +318,57 @@ router.put('/products/:id', [
     `;
 
     const updatedProduct = await pool.query(updateQuery, updateValues);
+
+    // If there are uploaded images, process them and append to product_images (cap at 6 total)
+    if (req.files && req.files.length > 0) {
+      try {
+        // Count existing images
+        const existingImagesRes = await pool.query(
+          'SELECT id, is_primary FROM product_images WHERE product_id = $1 ORDER BY sort_order ASC',
+          [id]
+        );
+        const existingCount = existingImagesRes.rows.length;
+        const hasPrimary = existingImagesRes.rows.some(img => img.is_primary);
+
+        // Determine how many new images we can add to keep total <= 6
+        const remainingSlots = Math.max(0, 6 - existingCount);
+        const filesToProcess = req.files.slice(0, remainingSlots);
+
+        for (let i = 0; i < filesToProcess.length; i++) {
+          const file = filesToProcess[i];
+          const isPrimary = !hasPrimary && (existingCount === 0) && i === 0; // set primary if none exists
+
+          const processedImages = await imageService.generateProductImages(
+            file.path,
+            id
+          );
+
+          await pool.query(
+            `INSERT INTO product_images (product_id, image_url, alt_text, sort_order, is_primary)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+              id,
+              processedImages.find(img => img.size === 'thumbnail')?.url || processedImages[0].url,
+              file.originalname,
+              existingCount + i,
+              isPrimary
+            ]
+          );
+
+          // cleanup original upload
+          try {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
+          } catch (cleanupError) {
+            console.log('Could not clean up original file:', cleanupError.message);
+          }
+        }
+      } catch (imageError) {
+        console.error('Image processing error (update):', imageError);
+        // Do not fail the update if image processing fails
+      }
+    }
 
     res.json({
       message: 'Product updated successfully',

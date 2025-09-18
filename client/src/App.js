@@ -108,7 +108,7 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/products" element={<ProductsPage />} />
-                        <Route path="/products/:slug" element={<ProductDetailPage />} />
+                        <Route path="/products/:id" element={<ProductDetailPage />} />
                         <Route path="/collections/:slug" element={<CollectionPage />} />
                         
                         {/* Navigation Category Routes */}

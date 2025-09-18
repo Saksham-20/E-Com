@@ -26,15 +26,21 @@ const ProductDetail = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      // For now, use jewelry products data
-      const { getProductById } = await import('../../data/jewelryProducts');
-      const productData = getProductById(parseInt(id));
-      setProduct(productData);
-      if (productData && productData.variants && productData.variants.length > 0) {
-        setSelectedVariant(productData.variants[0]);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products/${id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProduct(data.data.product);
+        if (data.data.product && data.data.product.variants && data.data.product.variants.length > 0) {
+          setSelectedVariant(data.data.product.variants[0]);
+        }
+      } else {
+        console.error('Failed to fetch product:', response.status);
+        setProduct(null);
       }
     } catch (error) {
       console.error('Error fetching product:', error);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -46,7 +52,7 @@ const ProductDetail = () => {
         id: product.id,
         name: product.name,
         price: selectedVariant?.price || product.price,
-        image: product.images[0],
+        image: product.images && product.images[0] ? product.images[0].image_url : product.primary_image,
         quantity,
         variant: selectedVariant
       });
@@ -65,26 +71,26 @@ const ProductDetail = () => {
   if (!product) return <div>Product not found</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Product Images */}
-        <ProductImages images={product.images} />
+        <ProductImages images={product.images || []} />
 
         {/* Product Info */}
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-            <p className="text-lg text-gray-600 mt-2">{product.brand}</p>
+            <p className="text-lg text-gray-600 mt-2">{product.category_name}</p>
           </div>
 
           {/* Price */}
           <div className="flex items-center space-x-4">
             <span className="text-3xl font-bold text-gray-900">
-              ${selectedVariant?.price || product.price}
+              ₹{selectedVariant?.price || product.price}
             </span>
-            {product.originalPrice && (
+            {product.compare_price && (
               <span className="text-lg text-gray-500 line-through">
-                ${product.originalPrice}
+                ₹{product.compare_price}
               </span>
             )}
           </div>
@@ -152,16 +158,16 @@ const ProductDetail = () => {
             <dl className="space-y-3">
               <div className="flex justify-between">
                 <dt className="text-gray-600">Category</dt>
-                <dd className="text-gray-900">{product.category}</dd>
+                <dd className="text-gray-900">{product.category_name}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-600">SKU</dt>
-                <dd className="text-gray-900">{product.sku}</dd>
+                <dd className="text-gray-900">{product.sku || 'N/A'}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-600">Availability</dt>
                 <dd className="text-gray-900">
-                  {product.inStock ? 'In Stock' : 'Out of Stock'}
+                  {product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
                 </dd>
               </div>
             </dl>
@@ -176,7 +182,7 @@ const ProductDetail = () => {
 
       {/* Related Products */}
       <div className="mt-16">
-        <RelatedProducts categoryId={product.categoryId} currentProductId={product.id} />
+        <RelatedProducts categoryId={product.category_id} currentProductId={product.id} />
       </div>
     </div>
   );

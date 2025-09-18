@@ -31,6 +31,7 @@ const ProductManager = () => {
   });
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
+  const [existingImages, setExistingImages] = useState([]); // existing images from server for edit
 
   useEffect(() => {
     fetchProducts();
@@ -131,11 +132,19 @@ const ProductManager = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setSelectedImages(files);
+    
+    // Limit to 6 images maximum (including existing ones in edit mode)
+    const currentCount = existingImages.length + selectedImages.length;
+    if (files.length > 6 || currentCount + files.length > 6) {
+      alert('You can only upload up to 6 images per product.');
+      return;
+    }
+    
+    setSelectedImages([...selectedImages, ...files]);
     
     // Create preview URLs
-    const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreview(previews);
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setImagePreview([...imagePreview, ...newPreviews]);
   };
 
   const removeImage = (index) => {
@@ -157,8 +166,8 @@ const ProductManager = () => {
         formDataToSend.append(key, formData[key]);
       });
       
-      // Add images
-      selectedImages.forEach((image, index) => {
+      // Add images (limit to 6)
+      selectedImages.slice(0, 6).forEach((image, index) => {
         formDataToSend.append(`images`, image);
       });
 
@@ -174,12 +183,15 @@ const ProductManager = () => {
         setShowAddModal(false);
         resetForm();
         fetchProducts();
+        alert('Product created successfully!');
       } else {
         const errorData = await response.json();
         console.error('Failed to add product:', errorData.message);
+        alert(`Failed to add product: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Failed to add product:', error);
+      alert('Failed to add product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -190,26 +202,42 @@ const ProductManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      
+      // Build multipart form data so we can send new images too
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== undefined && formData[key] !== null) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      // Append any newly selected images (existing ones are already on server)
+      selectedImages.slice(0, 6).forEach((image) => {
+        formDataToSend.append('images', image);
+      });
+
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/products/${selectedProduct.id}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: formDataToSend
       });
 
       if (response.ok) {
         setShowEditModal(false);
         resetForm();
         setSelectedProduct(null);
+        setExistingImages([]);
         fetchProducts();
+        alert('Product updated successfully!');
       } else {
         const errorData = await response.json();
         console.error('Failed to update product:', errorData.message);
+        alert(`Failed to update product: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Failed to update product:', error);
+      alert('Failed to update product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -293,13 +321,31 @@ const ProductManager = () => {
       is_bestseller: product.is_bestseller || false,
       is_new_arrival: product.is_new_arrival || false
     });
-    // Set existing images for editing
-    if (product.primary_image) {
-      setImagePreview([`http://localhost:5000${product.primary_image}`]);
-    } else {
-      setImagePreview([]);
-    }
-    setShowEditModal(true);
+    // Fetch all existing images for this product to show in edit modal
+    (async () => {
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products/${product.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          const imgs = (data?.data?.product?.images || []).map(img => ({
+            id: img.id,
+            url: `http://localhost:5000${img.image_url}`,
+            is_primary: img.is_primary,
+            sort_order: img.sort_order
+          }));
+          setExistingImages(imgs);
+        } else {
+          setExistingImages([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch existing images', err);
+        setExistingImages([]);
+      } finally {
+        setImagePreview([]); // reset previews for new uploads
+        setSelectedImages([]);
+        setShowEditModal(true);
+      }
+    })();
   };
 
   const openDeleteModal = (product) => {
@@ -642,7 +688,10 @@ const ProductManager = () => {
                       Click to upload images or drag and drop
                     </p>
                     <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB each
+                      PNG, JPG, GIF up to 10MB each (Max 6 images)
+                    </p>
+                    <p className="text-xs text-tiffany-blue font-medium">
+                      {selectedImages.length}/6 images selected
                     </p>
                   </label>
                 </div>
@@ -849,6 +898,26 @@ const ProductManager = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Product Images
                 </label>
+
+                {/* Existing Images (read-only preview) */}
+                {existingImages && existingImages.length > 0 && (
+                  <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {existingImages.map((img, idx) => (
+                      <div key={img.id || idx} className="relative group">
+                        <img
+                          src={img.url}
+                          alt="Existing"
+                          className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                        />
+                        {img.is_primary && (
+                          <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-green-600 text-white">Primary</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload new images */}
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                   <input
                     type="file"
@@ -869,7 +938,10 @@ const ProductManager = () => {
                       Click to upload new images or drag and drop
                     </p>
                     <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB each
+                      PNG, JPG, GIF up to 10MB each (Max 6 images total)
+                    </p>
+                    <p className="text-xs text-tiffany-blue font-medium">
+                      {existingImages.length + selectedImages.length}/6 total images
                     </p>
                   </label>
                 </div>

@@ -62,7 +62,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
     >
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        <Link to={`/products/${product.id}`}>
+        <Link to={`/products/${product.slug || product.id}`}>
           <motion.img
             src={product.primary_image ? `http://localhost:5000${product.primary_image}` : '/placeholder-product.jpg'}
             alt={product.name}
@@ -157,7 +157,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         )}
 
         {/* Product Name */}
-        <Link to={`/products/${product.id}`}>
+        <Link to={`/products/${product.slug || product.id}`}>
           <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 hover:text-tiffany-blue transition-colors duration-200 text-center sm:text-left">
             {product.name}
           </h3>

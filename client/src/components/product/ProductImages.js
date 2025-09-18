@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 const ProductImages = ({ images = [] }) => {
   const [selectedImage, setSelectedImage] = useState(0);
 
-  if (!images || images.length === 0) {
+  // Convert API image structure to simple array
+  const imageUrls = images.length > 0 
+    ? images.map(img => img.image_url ? `http://localhost:5000${img.image_url}` : img)
+    : [];
+
+  if (!imageUrls || imageUrls.length === 0) {
     return (
       <div className="aspect-w-1 aspect-h-1 w-full">
         <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -16,31 +21,31 @@ const ProductImages = ({ images = [] }) => {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="aspect-w-1 aspect-h-1 w-full">
+      <div className="w-full bg-white rounded-lg border border-gray-200 p-4">
         <img
-          src={images[selectedImage]}
+          src={imageUrls[selectedImage]}
           alt="Product"
-          className="w-full h-96 object-cover object-center rounded-lg"
+          className="w-full h-96 object-contain object-center rounded-lg"
         />
       </div>
 
       {/* Thumbnail Images */}
-      {images.length > 1 && (
+      {imageUrls.length > 1 && (
         <div className="grid grid-cols-4 gap-2">
-          {images.map((image, index) => (
+          {imageUrls.map((imageUrl, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`aspect-w-1 aspect-h-1 rounded-lg overflow-hidden ${
+              className={`bg-white rounded-lg overflow-hidden border p-1 ${
                 selectedImage === index
-                  ? 'ring-2 ring-indigo-500'
-                  : 'ring-1 ring-gray-200'
+                  ? 'ring-2 ring-tiffany-blue border-tiffany-blue'
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <img
-                src={image}
+                src={imageUrl}
                 alt={`Product ${index + 1}`}
-                className="w-full h-20 object-cover object-center hover:opacity-75 transition-opacity"
+                className="w-full h-20 object-contain object-center hover:opacity-75 transition-opacity"
               />
             </button>
           ))}
