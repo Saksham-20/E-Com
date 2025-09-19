@@ -28,12 +28,45 @@ export const orderService = {
     try {
       console.log('OrderService: Creating order with data:', orderData);
       console.log('OrderService: API base URL:', api.baseURL);
+      console.log('OrderService: Full request URL will be:', `${api.baseURL}/orders/checkout`);
+      
+      // Validate order data before sending
+      if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
+        throw new Error('Order must contain at least one item');
+      }
+      
+      if (!orderData.shippingAddress) {
+        throw new Error('Shipping address is required');
+      }
+      
+      if (!orderData.paymentMethod) {
+        throw new Error('Payment method is required');
+      }
+      
+      console.log('OrderService: Order data validation passed');
+      
       const response = await api.post('/orders/checkout', orderData);
       console.log('OrderService: Response received:', response);
-      return response.data;
+      console.log('OrderService: Order created successfully with ID:', response?.order?.id);
+      return response;
     } catch (error) {
       console.error('OrderService: Error creating order:', error);
-      throw new Error('Failed to create order');
+      console.error('OrderService: Error details:', {
+        message: error.message,
+        status: error.status,
+        response: error.response?.data
+      });
+      
+      // Provide more specific error messages
+      if (error.message.includes('Resource not found')) {
+        throw new Error('Order service is currently unavailable. Please try again later.');
+      } else if (error.message.includes('Unauthorized')) {
+        throw new Error('Please log in to continue with your order.');
+      } else if (error.message.includes('Server error')) {
+        throw new Error('Server error occurred. Please try again later.');
+      } else {
+        throw new Error(error.message || 'Failed to create order');
+      }
     }
   },
 

@@ -1,10 +1,13 @@
 // Common validation patterns
 export const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^\+?[\d\s\-\(\)]{10,}$/,
+  phone: /^(\+?91[\s\-]?)?[6-9]\d{9}$|^(\+?1[\s\-]?)?[2-9]\d{2}[\s\-]?\d{3}[\s\-]?\d{4}$|^(\+\d{1,3}[\s\-]?)?\d{10,15}$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
   zipCode: /^\d{5}(-\d{4})?$/,
-  creditCard: /^\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}$/,
+  creditCard: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})$/,
+  cardNumber: /^\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}$/,
+  expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
+  cvv: /^[0-9]{3,4}$/,
   url: /^https?:\/\/.+/,
   date: /^\d{4}-\d{2}-\d{2}$/
 };
@@ -145,6 +148,51 @@ export const validators = {
   zipCode: (value) => {
     if (!value) return null;
     if (!patterns.zipCode.test(value)) return 'Please enter a valid ZIP code';
+    return null;
+  },
+
+  // Card number validation (formatted)
+  cardNumber: (value) => {
+    if (!value) return null;
+    const cleanNumber = value.replace(/\s/g, '');
+    if (!patterns.cardNumber.test(value)) return 'Please enter a valid card number (16 digits)';
+    if (cleanNumber.length !== 16) return 'Card number must be 16 digits';
+    return null;
+  },
+
+  // Expiry date validation
+  expiryDate: (value) => {
+    if (!value) return null;
+    if (!patterns.expiryDate.test(value)) return 'Please enter a valid expiry date (MM/YY)';
+    
+    const [month, year] = value.split('/');
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+    
+    if (parseInt(month) < 1 || parseInt(month) > 12) {
+      return 'Please enter a valid month (01-12)';
+    }
+    
+    if (parseInt(year) < currentYear || (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
+      return 'Card has expired';
+    }
+    
+    return null;
+  },
+
+  // CVV validation
+  cvv: (value) => {
+    if (!value) return null;
+    if (!patterns.cvv.test(value)) return 'Please enter a valid CVV (3-4 digits)';
+    return null;
+  },
+
+  // Cardholder name validation
+  cardholderName: (value) => {
+    if (!value) return null;
+    if (value.trim().length < 2) return 'Cardholder name must be at least 2 characters';
+    if (!/^[a-zA-Z\s]+$/.test(value)) return 'Cardholder name can only contain letters and spaces';
     return null;
   }
 };

@@ -51,7 +51,7 @@ router.get('/dashboard', async (req, res) => {
       LIMIT 5
     `);
 
-    res.json({
+    const response = {
       stats: {
         totalProducts: parseInt(totalProducts.rows[0].count),
         totalOrders: parseInt(totalOrders.rows[0].count),
@@ -60,7 +60,13 @@ router.get('/dashboard', async (req, res) => {
       },
       recentOrders: recentOrders.rows,
       lowStockProducts: lowStockProducts.rows
-    });
+    };
+    
+    console.log('Dashboard API Response:', response);
+    console.log('Total Products from DB:', totalProducts.rows[0].count);
+    console.log('Total Users from DB:', totalUsers.rows[0].count);
+    
+    res.json(response);
 
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -501,11 +507,28 @@ router.get('/orders', async (req, res) => {
     let query = `
       SELECT 
         o.*,
-        u.first_name, u.last_name, u.email,
-        COUNT(oi.id) as item_count
+        u.first_name, u.last_name, u.email, u.phone,
+        o.shipping_address->>'phone' as shipping_phone,
+        COUNT(oi.id) as item_count,
+        COALESCE(
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'id', oi.id,
+              'product_name', oi.product_name,
+              'quantity', oi.quantity,
+              'unit_price', oi.unit_price,
+              'total_price', oi.total_price,
+              'variant_details', oi.variant_details,
+              'image_url', pi.image_url
+            )
+          ) FILTER (WHERE oi.id IS NOT NULL), 
+          '[]'::json
+        ) as items
       FROM orders o
       JOIN users u ON o.user_id = u.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
       WHERE 1=1
     `;
 
@@ -524,7 +547,7 @@ router.get('/orders', async (req, res) => {
       queryParams.push(`%${search}%`);
     }
 
-    query += ` GROUP BY o.id, u.first_name, u.last_name, u.email ORDER BY o.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    query += ` GROUP BY o.id, u.first_name, u.last_name, u.email, u.phone ORDER BY o.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
     const orders = await pool.query(query, queryParams);
@@ -985,13 +1008,29 @@ router.get('/analytics', async (req, res) => {
       GROUP BY status
     `);
 
+    // Get basic stats for analytics
+    const totalProducts = await pool.query('SELECT COUNT(*) as count FROM products');
+    const totalUsers = await pool.query('SELECT COUNT(*) as count FROM users WHERE is_admin = false');
+    const totalOrders = await pool.query('SELECT COUNT(*) as count FROM orders');
+    const totalRevenue = await pool.query(`
+      SELECT COALESCE(SUM(total_amount), 0) as revenue 
+      FROM orders 
+      WHERE status IN ('delivered', 'shipped', 'processing')
+    `);
+
     res.json({
       period,
       salesData: salesData.rows,
       topProducts: topProducts.rows,
       recentOrders: recentOrders.rows,
       categoryData: categoryData.rows,
-      orderStatusBreakdown: orderStatusBreakdown.rows
+      orderStatusBreakdown: orderStatusBreakdown.rows,
+      stats: {
+        totalProducts: parseInt(totalProducts.rows[0].count),
+        totalOrders: parseInt(totalOrders.rows[0].count),
+        totalUsers: parseInt(totalUsers.rows[0].count),
+        totalRevenue: parseFloat(totalRevenue.rows[0].revenue)
+      }
     });
 
   } catch (error) {

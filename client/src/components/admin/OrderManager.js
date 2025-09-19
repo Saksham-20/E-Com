@@ -96,8 +96,10 @@ const OrderManager = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const customerName = order.first_name && order.last_name ? `${order.first_name} ${order.last_name}` : '';
     const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.email?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -171,22 +173,22 @@ const OrderManager = () => {
                     #{order.order_number}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {order.items?.length || 0} items
+                    {order.item_count || 0} items
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {order.customer_name || 'N/A'}
+                    {order.first_name && order.last_name ? `${order.first_name} ${order.last_name}` : 'N/A'}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {order.customer_email || 'N/A'}
+                    {order.email || 'N/A'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {new Date(order.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${order.total_amount}
+                  ₹{order.total_amount}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
@@ -237,15 +239,20 @@ const OrderManager = () => {
                       {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
                     </span>
                   </p>
-                  <p><span className="font-medium">Total:</span> ${selectedOrder.total_amount}</p>
+                  <p><span className="font-medium">Total:</span> ₹{selectedOrder.total_amount}</p>
                 </div>
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Customer Information</h3>
                 <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Name:</span> {selectedOrder.customer_name || 'N/A'}</p>
-                  <p><span className="font-medium">Email:</span> {selectedOrder.customer_email || 'N/A'}</p>
-                  <p><span className="font-medium">Phone:</span> {selectedOrder.customer_phone || 'N/A'}</p>
+                  <p><span className="font-medium">Name:</span> {selectedOrder.first_name && selectedOrder.last_name ? `${selectedOrder.first_name} ${selectedOrder.last_name}` : 'N/A'}</p>
+                  <p><span className="font-medium">Email:</span> {selectedOrder.email || 'N/A'}</p>
+                  <p><span className="font-medium">Phone:</span> {
+                    selectedOrder.phone || 
+                    selectedOrder.shipping_phone || 
+                    (selectedOrder.shipping_address && typeof selectedOrder.shipping_address === 'object' ? selectedOrder.shipping_address.phone : null) ||
+                    'N/A'
+                  }</p>
                 </div>
               </div>
             </div>
@@ -254,25 +261,29 @@ const OrderManager = () => {
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Order Items</h3>
               <div className="space-y-2">
-                {selectedOrder.items?.map((item, index) => (
+                {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                  selectedOrder.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <div className="flex items-center">
                       <img
-                        src={item.image_url || '/placeholder-product.jpg'}
-                        alt={item.name}
+                        src={item.image_url ? `http://localhost:5000${item.image_url}` : '/placeholder-product.jpg'}
+                        alt={item.product_name}
                         className="w-12 h-12 object-cover rounded mr-3"
                       />
                       <div>
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium">{item.product_name}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${item.price}</p>
-                      <p className="text-sm text-gray-500">Total: ${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">₹{item.unit_price}</p>
+                      <p className="text-sm text-gray-500">Total: ₹{item.total_price}</p>
                     </div>
                   </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No items found</p>
+                )}
               </div>
             </div>
 
@@ -282,8 +293,11 @@ const OrderManager = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Shipping Address</h3>
                 <div className="p-3 bg-gray-50 rounded text-sm">
                   <p>{selectedOrder.shipping_address.street}</p>
-                  <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.zip_code}</p>
+                  <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.zipCode}</p>
                   <p>{selectedOrder.shipping_address.country}</p>
+                  {selectedOrder.shipping_address.phone && (
+                    <p>Phone: {selectedOrder.shipping_address.phone}</p>
+                  )}
                 </div>
               </div>
             )}

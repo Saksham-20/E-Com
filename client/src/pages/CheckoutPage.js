@@ -38,6 +38,39 @@ const CheckoutPage = () => {
       setLoading(true);
       setError('');
       
+      console.log('CheckoutPage: Starting checkout process');
+      console.log('CheckoutPage: Cart items:', cart);
+      console.log('CheckoutPage: Form data:', formData);
+      console.log('CheckoutPage: User:', user);
+      console.log('CheckoutPage: Auth token:', localStorage.getItem('token'));
+      console.log('CheckoutPage: Is authenticated:', !!user);
+      
+      // Check if cart is empty
+      if (!cart || cart.length === 0) {
+        setError('Your cart is empty. Please add items before checkout.');
+        return;
+      }
+      
+      // Check if user is logged in
+      if (!user) {
+        setError('Please log in to continue with your order.');
+        return;
+      }
+      
+      // Check server health before proceeding
+      console.log('CheckoutPage: Checking server health...');
+      try {
+        const healthResponse = await fetch('http://localhost:5000/health');
+        if (!healthResponse.ok) {
+          throw new Error('Server is not responding');
+        }
+        console.log('CheckoutPage: Server health check passed');
+      } catch (healthError) {
+        console.error('CheckoutPage: Server health check failed:', healthError);
+        setError('Server is not available. Please try again later.');
+        return;
+      }
+      
       // Prepare order data
       const orderData = {
         items: cart.map(item => ({
@@ -48,23 +81,47 @@ const CheckoutPage = () => {
           variant: item.variant_details || item.variant || null,
           image: item.primary_image || item.image
         })),
-        shippingAddress: formData.address,
-        billingAddress: formData.address,
+        shippingAddress: {
+          ...formData.address,
+          phone: `${formData.phoneCountryCode} ${formData.phone}`
+        },
+        billingAddress: {
+          ...formData.address,
+          phone: `${formData.phoneCountryCode} ${formData.phone}`
+        },
         paymentMethod: formData.paymentMethod,
         paymentDetails: formData.paymentMethod === 'card' ? formData.payment : {},
         notes: formData.notes || ''
       };
 
+      console.log('CheckoutPage: Prepared order data:', orderData);
+      console.log('CheckoutPage: Order items count:', orderData.items.length);
+      console.log('CheckoutPage: Payment method:', orderData.paymentMethod);
+
       // Create order using the order service
+      console.log('CheckoutPage: Calling orderService.createOrder...');
       const response = await orderService.createOrder(orderData);
+      console.log('CheckoutPage: Order service response:', response);
       
       if (response) {
+        console.log('CheckoutPage: Order created successfully');
         setOrderNumber(response.orderNumber || response.order_number || 'N/A');
         setShowSuccessModal(true);
-        clearCart();
+        // Clear cart after a short delay to avoid state update during render
+        setTimeout(() => {
+          clearCart();
+        }, 100);
+      } else {
+        console.log('CheckoutPage: No response received from order service');
+        setError('No response received from order service');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
+      console.error('CheckoutPage: Checkout error:', error);
+      console.error('CheckoutPage: Error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
       setError(error.message || 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
@@ -81,7 +138,7 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb />
         

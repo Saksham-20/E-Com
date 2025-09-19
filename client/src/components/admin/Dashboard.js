@@ -53,6 +53,9 @@ const Dashboard = () => {
       if (dashboardResponse.ok) {
         const data = await dashboardResponse.json();
         console.log('Dashboard data received:', data);
+        console.log('Stats data:', data.stats);
+        console.log('Total Products:', data.stats?.totalProducts);
+        console.log('Total Users:', data.stats?.totalUsers);
         
         // Safely set data with fallbacks
         setStats(data.stats || {});
@@ -113,7 +116,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Revenue"
-          value={`$${safeToFixed(stats?.totalRevenue)}`}
+          value={`₹${safeToFixed(stats?.totalRevenue)}`}
           change={0}
           icon="💰"
           color="green"
@@ -194,8 +197,8 @@ const Dashboard = () => {
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Orders */}
+      <div className="grid grid-cols-1 gap-8">
+        {/* Recent Orders - Full Width */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -214,28 +217,41 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-4">
                 {recentOrders.slice(0, 5).map((order, index) => (
-                  <div key={order.id || index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        Order #{order.order_number || order.id}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {order.first_name || 'Unknown'} {order.last_name || 'Customer'} • {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        ${safeToFixed(order.total_amount)}
-                      </p>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'pending' ? 'bg-orange-100 text-orange-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status}
-                      </span>
+                  <div key={order.id || index} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                    <div className="flex flex-col space-y-3">
+                      {/* Order Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                           <p className="text-sm font-semibold text-gray-900">
+                             Order #{order.order_number ? order.order_number.split('-')[0] : order.id}
+                           </p>
+                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                            order.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="text-lg font-bold text-gray-900">
+                          ₹{safeToFixed(order.total_amount)}
+                        </p>
+                      </div>
+                      
+                      {/* Customer Info */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                          <span className="font-medium">
+                            {order.first_name || 'Unknown'} {order.last_name || 'Customer'}
+                          </span>
+                          <span className="hidden sm:inline text-gray-400">•</span>
+                          <span>
+                            {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -261,10 +277,10 @@ const Dashboard = () => {
             {!recentProducts || recentProducts.length === 0 ? (
               <p className="text-gray-500 text-center py-4">All products are well stocked</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {recentProducts.slice(0, 5).map((product, index) => (
-                  <div key={product.id || index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div key={product.id || index} className="flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <span className="text-gray-400 text-lg">📦</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -272,10 +288,10 @@ const Dashboard = () => {
                         {product.name || 'Unnamed Product'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        ${safeToFixed(product.price)} • SKU: {product.sku || 'N/A'}
+                        ₹{safeToFixed(product.price)} • SKU: {product.sku || 'N/A'}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-sm font-medium text-red-600">
                         {product.stock_quantity || 0} left
                       </p>
@@ -306,7 +322,7 @@ const Dashboard = () => {
                     <div className="flex items-center">
                       <span className="text-sm font-medium text-gray-500 w-6">{index + 1}</span>
                       <img
-                        src={product.image_url || '/placeholder-product.jpg'}
+                        src={product.image_url ? `http://localhost:5000${product.image_url}` : '/placeholder-product.jpg'}
                         alt={product.name}
                         className="w-12 h-12 rounded object-cover ml-3"
                       />
@@ -320,7 +336,7 @@ const Dashboard = () => {
                         {product.total_quantity || 0} sold
                       </p>
                       <p className="text-sm text-gray-500">
-                        ${safeToFixed(product.total_revenue || 0)}
+                        ₹${safeToFixed(product.total_revenue || 0)}
                       </p>
                     </div>
                   </div>

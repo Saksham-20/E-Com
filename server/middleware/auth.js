@@ -4,10 +4,17 @@ const { query } = require('../database/config');
 // Middleware to verify JWT token
 const authenticateToken = async (req, res, next) => {
   try {
+    console.log('Auth middleware: Checking authentication for:', req.path);
+    console.log('Auth middleware: Headers:', req.headers);
+    
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    console.log('Auth middleware: Auth header:', authHeader);
+    console.log('Auth middleware: Token:', token ? 'Token exists' : 'No token');
+
     if (!token) {
+      console.log('Auth middleware: No token provided');
       return res.status(401).json({ 
         success: false, 
         message: 'Access token required' 

@@ -161,7 +161,7 @@ export const isValidEmail = (email) => {
 
 // Validate phone number
 export const isValidPhone = (phone) => {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+  const phoneRegex = /^(\+?91[\s\-]?)?[6-9]\d{9}$|^(\+?1[\s\-]?)?[2-9]\d{2}[\s\-]?\d{3}[\s\-]?\d{4}$|^(\+\d{1,3}[\s\-]?)?\d{10,15}$/;
   return phoneRegex.test(phone.replace(/\s/g, ''));
 };
 

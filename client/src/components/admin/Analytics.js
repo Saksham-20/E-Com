@@ -49,26 +49,28 @@ const Analytics = () => {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Analytics data received:', data);
+        console.log('Stats from analytics:', data.stats);
         
         // Transform the data to match the expected format
         setAnalyticsData({
           revenue: {
-            total: data.salesData.reduce((sum, item) => sum + parseFloat(item.revenue || 0), 0),
+            total: data.stats?.totalRevenue || data.salesData.reduce((sum, item) => sum + parseFloat(item.revenue || 0), 0),
             change: 0, // TODO: Calculate change from previous period
             trend: 'up'
           },
           orders: {
-            total: data.salesData.reduce((sum, item) => sum + parseInt(item.orders || 0), 0),
+            total: data.stats?.totalOrders || data.salesData.reduce((sum, item) => sum + parseInt(item.orders || 0), 0),
             change: 0, // TODO: Calculate change from previous period
             trend: 'up'
           },
           customers: {
-            total: 0, // TODO: Get from dashboard stats
+            total: data.stats?.totalUsers || 0,
             change: 0,
             trend: 'up'
           },
           products: {
-            total: 0, // TODO: Get from dashboard stats
+            total: data.stats?.totalProducts || 0,
             change: 0,
             trend: 'up'
           }
@@ -89,9 +91,9 @@ const Analytics = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(amount);
   };
 
@@ -255,7 +257,7 @@ const Analytics = () => {
                     <div className="flex items-center">
                       <span className="text-sm font-medium text-gray-500 w-6">{index + 1}</span>
                       <img
-                        src={product.image || '/default-product.png'}
+                        src={product.image_url ? `http://localhost:5000${product.image_url}` : '/placeholder-product.jpg'}
                         alt={product.name}
                         className="w-10 h-10 rounded object-cover ml-3"
                       />
@@ -288,36 +290,42 @@ const Analytics = () => {
           </div>
           <div className="p-6">
             {recentOrders.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-600">
-                          #{order.order_number}
-                        </span>
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">
-                          {order.first_name} {order.last_name}
+                  <div key={order.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                    <div className="flex flex-col space-y-2">
+                      {/* Order Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <p className="text-sm font-semibold text-gray-900">
+                            Order #{order.order_number ? order.order_number.split('-')[0] : order.id}
+                          </p>
+                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-gray-900">
+                          {formatCurrency(order.total_amount)}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(order.created_at).toLocaleDateString()}
-                        </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatCurrency(order.total_amount)}
-                      </p>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status}
-                      </span>
+                      
+                      {/* Customer Info */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                          <span className="font-medium">
+                            {order.first_name || 'Unknown'} {order.last_name || 'Customer'}
+                          </span>
+                          <span className="hidden sm:inline text-gray-400">•</span>
+                          <span>
+                            {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -335,12 +343,32 @@ const Analytics = () => {
           <h3 className="text-lg font-medium text-gray-900">Sales Trend</h3>
         </div>
         <div className="p-6">
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Chart visualization would go here</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Integration with Chart.js or similar library for sales data visualization
-            </p>
-          </div>
+          {analyticsData.salesData && analyticsData.salesData.length > 0 ? (
+            <div className="h-64 bg-gray-50 rounded-lg p-4">
+              <div className="flex items-end justify-between h-full space-x-2">
+                {analyticsData.salesData.map((data, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1">
+                    <div 
+                      className="bg-blue-500 rounded-t w-full min-h-4"
+                      style={{ 
+                        height: `${Math.max(20, (data.revenue / Math.max(...analyticsData.salesData.map(d => d.revenue))) * 200)}px` 
+                      }}
+                    ></div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">
+                      {data.period}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      ₹{formatNumber(data.revenue)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <p className="text-gray-500">No sales data available for the selected period</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -359,8 +387,8 @@ const Analytics = () => {
                     <span className="ml-3 text-sm font-medium text-gray-900">{category.name}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-500">{formatNumber(category.products)} products</span>
-                    <span className="text-sm text-gray-500">{formatNumber(category.sales)} sales</span>
+                    <span className="text-sm text-gray-500">{formatNumber(category.product_count || 0)} products</span>
+                    <span className="text-sm text-gray-500">{formatNumber(category.order_count || 0)} sales</span>
                     <span className="text-sm font-medium text-gray-900">{formatCurrency(category.revenue)}</span>
                   </div>
                 </div>

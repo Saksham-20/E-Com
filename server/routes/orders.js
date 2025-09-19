@@ -200,8 +200,13 @@ router.post('/checkout', authenticateToken, [
   body('paymentMethod').isString().withMessage('Payment method is required')
 ], async (req, res) => {
   try {
+    console.log('Orders route: Checkout request received');
+    console.log('Orders route: User:', req.user);
+    console.log('Orders route: Body:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Orders route: Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -239,13 +244,14 @@ router.post('/checkout', authenticateToken, [
         INSERT INTO orders (
           user_id, order_number, status, subtotal, tax_amount, 
           shipping_amount, total_amount, payment_method, 
-          payment_intent_id, notes
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          payment_intent_id, notes, shipping_address
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *
       `, [
         req.user.id, orderNumber, initialStatus, subtotal, taxAmount,
         shippingAmount, totalAmount, paymentMethod, 
-        JSON.stringify(paymentDetails || {}), notes || ''
+        JSON.stringify(paymentDetails || {}), notes || '',
+        JSON.stringify(shippingAddress)
       ]);
 
       const order = orderResult.rows[0];
