@@ -1,4 +1,19 @@
 services:
+  # PostgreSQL Database
+  - type: pserv
+    name: luxury-ecommerce-db
+    env: postgresql
+    plan: starter
+    region: oregon
+    databaseName: luxury_ecommerce
+    databaseUser: postgres
+
+  # Redis Cache
+  - type: redis
+    name: luxury-ecommerce-redis
+    plan: starter
+    region: oregon
+
   # Backend API Service
   - type: web
     name: luxury-ecommerce-api
@@ -7,8 +22,6 @@ services:
     plan: starter
     region: oregon
     branch: main
-    buildCommand: echo "Building with Docker"
-    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -65,20 +78,3 @@ services:
         value: https://luxury-ecommerce-api.onrender.com
       - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
         sync: false
-
-  # PostgreSQL Database
-  - type: pserv
-    name: luxury-ecommerce-db
-    env: postgresql
-    plan: starter
-    region: oregon
-    databaseName: luxury_ecommerce
-    databaseUser: postgres
-    maxConnections: 100
-
-  # Redis Cache
-  - type: redis
-    name: luxury-ecommerce-redis
-    plan: starter
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
