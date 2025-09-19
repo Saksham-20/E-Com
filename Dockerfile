@@ -9,7 +9,7 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Install dependencies
-RUN npm ci --only=production && \
+RUN npm install --only=production && \
     cd client && npm ci --only=production
 
 # Build stage
@@ -22,7 +22,7 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci && \
+RUN npm install && \
     cd client && npm ci
 
 # Copy source code
@@ -44,7 +44,7 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Copy built application
 COPY --from=build /app/server ./server
