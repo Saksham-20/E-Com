@@ -8,12 +8,6 @@ services:
     databaseName: luxury_ecommerce
     databaseUser: postgres
 
-  # Redis Cache
-  - type: redis
-    name: luxury-ecommerce-redis
-    plan: starter
-    region: oregon
-
   # Backend API Service
   - type: web
     name: luxury-ecommerce-api
@@ -60,11 +54,6 @@ services:
         sync: false
       - key: CORS_ORIGIN
         value: https://luxury-ecommerce-frontend.onrender.com
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: luxury-ecommerce-redis
-          property: connectionString
 
   # Frontend Static Site
   - type: web
