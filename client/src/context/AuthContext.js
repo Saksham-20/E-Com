@@ -196,6 +196,7 @@ export const AuthProvider = ({ children }) => {
       });
       toast.error(errorMessage);
       return { success: false, message: errorMessage };
+    }
   };
 
   // Register function
