@@ -7,6 +7,12 @@ const { validateRegistration, validateLogin } = require('../middleware/validatio
 
 const router = express.Router();
 
+// Test route to verify auth routes are working
+router.get('/test', (req, res) => {
+  console.log('🧪 Auth test route hit');
+  res.json({ message: 'Auth routes are working!', timestamp: new Date().toISOString() });
+});
+
 // @route   POST /api/auth/setup-database
 // @desc    Setup database tables and seed data (for production setup)
 // @access  Public (temporary endpoint for setup)
@@ -116,6 +122,8 @@ router.post('/register', validateRegistration, async (req, res) => {
 // @access  Public
 router.post('/login', validateLogin, async (req, res) => {
   try {
+    console.log('🔐 Login attempt - Email:', req.body.email);
+    console.log('🔐 Login attempt - Headers:', req.headers);
     const { email, password } = req.body;
 
     // Check if user exists

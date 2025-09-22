@@ -41,7 +41,8 @@ app.use('/api/', limiter);
 
 // Middleware
 app.use(compression());
-app.use(cors({
+// CORS configuration with debugging
+const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [process.env.CLIENT_URL, process.env.CORS_ORIGIN]
     : true, // Allow all origins in development
@@ -50,7 +51,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
   optionsSuccessStatus: 200
-}));
+};
+
+console.log('🌐 CORS Configuration:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('CLIENT_URL:', process.env.CLIENT_URL);
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
+console.log('CORS Origin:', corsOptions.origin);
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -78,14 +87,23 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+console.log('🔗 Registering API routes...');
 app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes registered at /api/auth');
 app.use('/api/products', productRoutes);
+console.log('✅ Product routes registered at /api/products');
 app.use('/api/orders', orderRoutes);
+console.log('✅ Order routes registered at /api/orders');
 app.use('/api/users', userRoutes);
+console.log('✅ User routes registered at /api/users');
 app.use('/api/admin', adminRoutes);
+console.log('✅ Admin routes registered at /api/admin');
 app.use('/api/stripe', stripeRoutes);
+console.log('✅ Stripe routes registered at /api/stripe');
 app.use('/api/wishlist', wishlistRoutes);
+console.log('✅ Wishlist routes registered at /api/wishlist');
 app.use('/api/cart', cartRoutes);
+console.log('✅ Cart routes registered at /api/cart');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
