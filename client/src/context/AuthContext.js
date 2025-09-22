@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -114,22 +115,20 @@ export const AuthProvider = ({ children }) => {
         try {
           dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
           
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+          const response = await api.get('/auth/me', {
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Authorization': `Bearer ${token}`
             }
           });
 
-          console.log('AuthContext - checkAuthStatus - response status:', response.status);
+          console.log('AuthContext - checkAuthStatus - response:', response);
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log('AuthContext - checkAuthStatus - user data:', data.data.user);
+          if (response.data) {
+            console.log('AuthContext - checkAuthStatus - user data:', response.data.data.user);
             dispatch({
               type: AUTH_ACTIONS.LOGIN_SUCCESS,
               payload: {
-                user: data.data.user,
+                user: response.data.data.user,
                 token
               }
             });
@@ -158,39 +157,30 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthContext - login - starting login for:', email);
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+      const response = await api.post('/auth/login', { email, password });
+      console.log('AuthContext - login - response:', response);
 
-      const data = await response.json();
-      console.log('AuthContext - login - response status:', response.status);
-      console.log('AuthContext - login - response data:', data);
-
-      if (response.ok) {
+      if (response.data) {
         console.log('AuthContext - login - storing token and user data');
-        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('token', response.data.data.token);
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
           payload: {
-            user: data.data.user,
-            token: data.data.token
+            user: response.data.data.user,
+            token: response.data.data.token
           }
         });
         toast.success('Login successful!');
-        console.log('AuthContext - login - returning success with user:', data.data.user);
-        return { success: true, user: data.data.user };
+        console.log('AuthContext - login - returning success with user:', response.data.data.user);
+        return { success: true, user: response.data.data.user };
       } else {
-        console.log('AuthContext - login - login failed:', data.message);
+        console.log('AuthContext - login - login failed:', response.data?.message);
         dispatch({
           type: AUTH_ACTIONS.LOGIN_FAILURE,
-          payload: data.message || 'Login failed'
+          payload: response.data?.message || 'Login failed'
         });
-        toast.error(data.message || 'Login failed');
-        return { success: false, message: data.message };
+        toast.error(response.data?.message || 'Login failed');
+        return { success: false, message: response.data?.message };
       }
     } catch (error) {
       console.error('AuthContext - login - error:', error);
