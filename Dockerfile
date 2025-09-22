@@ -23,6 +23,12 @@ RUN npm ci
 WORKDIR /app
 COPY client/ ./client/
 
+# Create src directory and copy client there (for path compatibility)
+RUN mkdir -p src && cp -r client src/client
+
+# Verify the public directory exists before building
+RUN echo "Checking client/public:" && ls -la client/ && ls -la client/public/ && echo "Checking src/client/public:" && ls -la src/client/public/
+
 # Build the React app
 WORKDIR /app/client
 RUN npm run build

@@ -65,7 +65,7 @@ services:
   - type: web
     name: luxury-ecommerce-frontend
     env: static
-    buildCommand: chmod +x debug-build.sh && ./debug-build.sh
+    buildCommand: chmod +x fix-paths.sh && ./fix-paths.sh && cd client && npm install && npm run build
     staticPublishPath: ./client/build
     pullRequestPreviewsEnabled: true
     autoDeploy: true
