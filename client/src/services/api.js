@@ -1,5 +1,8 @@
 // Get API URL from environment or use localhost for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Temporary hardcoded fix for production
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://luxury-ecommerce-api.onrender.com/api'
+  : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
 
 // Enhanced debugging for production
 console.log('=== API SERVICE DEBUG ===');
@@ -7,12 +10,19 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 console.log('Final API_BASE_URL:', API_BASE_URL);
 console.log('Current window.location:', window.location.href);
+console.log('Is production?', process.env.NODE_ENV === 'production');
 console.log('========================');
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
     console.log('API Service: Constructor - baseURL set to:', this.baseURL);
+    
+    // Additional fallback check
+    if (this.baseURL && !this.baseURL.includes('/api')) {
+      console.warn('API Service: baseURL missing /api, adding it');
+      this.baseURL = this.baseURL + '/api';
+    }
   }
 
   // Get auth token from localStorage
