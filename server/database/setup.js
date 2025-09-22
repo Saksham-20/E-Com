@@ -12,17 +12,32 @@ async function setupDatabase() {
   console.log('DB_HOST:', process.env.DB_HOST);
   console.log('DB_NAME:', process.env.DB_NAME);
   console.log('DB_PORT:', process.env.DB_PORT);
+  console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
+  console.log('DATABASE_URL:', process.env.DATABASE_URL ? '***SET***' : 'NOT SET');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   
+  // Check if we have DATABASE_URL (Render's preferred format)
+  let dbConfig;
+  if (process.env.DATABASE_URL) {
+    console.log('📡 Using DATABASE_URL for connection');
+    dbConfig = {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    };
+  } else {
+    console.log('📡 Using individual DB environment variables');
+    dbConfig = {
+      user: process.env.DB_USER || 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      database: 'postgres', // Connect to default database first
+      password: process.env.DB_PASSWORD || 'password',
+      port: process.env.DB_PORT || 5432,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    };
+  }
+  
   // Connect to default postgres database to create our database
-  const client = new Client({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: 'postgres', // Connect to default database first
-    password: process.env.DB_PASSWORD || 'password',
-    port: process.env.DB_PORT || 5432,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  });
+  const client = new Client(dbConfig);
 
   try {
     await client.connect();
@@ -45,14 +60,27 @@ async function setupDatabase() {
     await client.end();
 
     // Now connect to our database and run schema
-    const dbClient = new Client({
-      user: process.env.DB_USER || 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      database: process.env.DB_NAME || 'luxury_ecommerce',
-      password: process.env.DB_PASSWORD || 'password',
-      port: process.env.DB_PORT || 5432,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    });
+    let dbClientConfig;
+    if (process.env.DATABASE_URL) {
+      // Use DATABASE_URL but override the database name
+      const url = new URL(process.env.DATABASE_URL);
+      url.pathname = `/${process.env.DB_NAME || 'luxury_ecommerce'}`;
+      dbClientConfig = {
+        connectionString: url.toString(),
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      };
+    } else {
+      dbClientConfig = {
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'luxury_ecommerce',
+        password: process.env.DB_PASSWORD || 'password',
+        port: process.env.DB_PORT || 5432,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      };
+    }
+    
+    const dbClient = new Client(dbClientConfig);
 
     await dbClient.connect();
     console.log('✅ Connected to luxury_ecommerce database');
