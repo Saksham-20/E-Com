@@ -152,12 +152,12 @@ router.post('/login', validateLogin, async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id },
+      { id: user.id, is_admin: user.is_admin },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    res.json({
+    const responseData = {
       success: true,
       message: 'Login successful',
       data: {
@@ -172,7 +172,10 @@ router.post('/login', validateLogin, async (req, res) => {
         },
         token
       }
-    });
+    };
+    
+    console.log('🔐 Login successful - sending response:', JSON.stringify(responseData, null, 2));
+    res.json(responseData);
 
   } catch (error) {
     console.error('Login error:', error);
