@@ -56,16 +56,12 @@ services:
         sync: false
       - key: CORS_ORIGIN
         value: https://luxury-ecommerce-frontend.onrender.com
-      - key: RATE_LIMIT_WINDOW_MS
-        value: "900000"
-      - key: RATE_LIMIT_MAX_REQUESTS
-        value: "100"
 
   # Frontend Static Site
   - type: web
     name: luxury-ecommerce-frontend
     env: static
-    buildCommand: chmod +x fix-paths.sh && ./fix-paths.sh && cd client && npm install && npm run build
+    buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/build
     pullRequestPreviewsEnabled: true
     autoDeploy: true
