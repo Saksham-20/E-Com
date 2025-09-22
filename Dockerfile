@@ -19,9 +19,9 @@ RUN npm ci
 WORKDIR /app/server
 RUN npm ci
 
-# Copy source code
+# Copy client source code (including public directory)
 WORKDIR /app
-COPY . .
+COPY client/ ./client/
 
 # Build the React app
 WORKDIR /app/client
