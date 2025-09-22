@@ -6,6 +6,14 @@ require('dotenv').config();
 async function setupDatabase() {
   console.log('🚀 Starting database setup...');
   
+  // Debug environment variables
+  console.log('🔍 Environment variables:');
+  console.log('DB_USER:', process.env.DB_USER);
+  console.log('DB_HOST:', process.env.DB_HOST);
+  console.log('DB_NAME:', process.env.DB_NAME);
+  console.log('DB_PORT:', process.env.DB_PORT);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  
   // Connect to default postgres database to create our database
   const client = new Client({
     user: process.env.DB_USER || 'postgres',
@@ -13,6 +21,7 @@ async function setupDatabase() {
     database: 'postgres', // Connect to default database first
     password: process.env.DB_PASSWORD || 'password',
     port: process.env.DB_PORT || 5432,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   });
 
   try {
@@ -42,6 +51,7 @@ async function setupDatabase() {
       database: process.env.DB_NAME || 'luxury_ecommerce',
       password: process.env.DB_PASSWORD || 'password',
       port: process.env.DB_PORT || 5432,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     });
 
     await dbClient.connect();
