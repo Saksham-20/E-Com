@@ -7,6 +7,44 @@ const { validateRegistration, validateLogin } = require('../middleware/validatio
 
 const router = express.Router();
 
+// @route   POST /api/auth/setup-database
+// @desc    Setup database tables and seed data (for production setup)
+// @access  Public (temporary endpoint for setup)
+router.post('/setup-database', async (req, res) => {
+  try {
+    console.log('🔧 Starting database setup...');
+    
+    // Import setup and seed functions
+    const setupDatabase = require('../database/setup');
+    const seedDatabase = require('../database/seed');
+    
+    // Run database setup
+    await setupDatabase();
+    console.log('✅ Database setup completed');
+    
+    // Run database seeding
+    await seedDatabase();
+    console.log('✅ Database seeding completed');
+    
+    res.json({
+      success: true,
+      message: 'Database setup and seeding completed successfully!',
+      adminCredentials: {
+        email: 'admin@luxury.com',
+        password: 'admin123'
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Database setup failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database setup failed',
+      error: error.message
+    });
+  }
+});
+
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
