@@ -115,11 +115,15 @@ class ApiService {
 
       if (!response.ok) {
         console.log('API: Response not OK, throwing error');
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        console.log('API: Error data:', data);
+        const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+        error.response = { data };
+        error.status = response.status;
+        throw error;
       }
 
       console.log('API: Request successful');
-      return data;
+      return { data };
     } catch (error) {
       console.error('API request failed:', error);
       console.error('API error details:', {

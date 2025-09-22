@@ -159,8 +159,10 @@ export const AuthProvider = ({ children }) => {
 
       const response = await api.post('/auth/login', { email, password });
       console.log('AuthContext - login - response:', response);
+      console.log('AuthContext - login - response.data:', response.data);
+      console.log('AuthContext - login - response.data.data:', response.data?.data);
 
-      if (response.data) {
+      if (response.data && response.data.data) {
         console.log('AuthContext - login - storing token and user data');
         localStorage.setItem('token', response.data.data.token);
         dispatch({
@@ -184,13 +186,16 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('AuthContext - login - error:', error);
+      console.error('AuthContext - login - error response:', error.response);
+      console.error('AuthContext - login - error message:', error.message);
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: 'Network error. Please try again.'
+        payload: errorMessage
       });
-      toast.error('Network error. Please try again.');
-      return { success: false, message: 'Network error' };
-    }
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
   };
 
   // Register function
