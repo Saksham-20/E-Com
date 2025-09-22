@@ -16,7 +16,8 @@ services:
     plan: starter
     region: oregon
     branch: main
-    healthCheckPath: /api/health
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
@@ -54,6 +55,10 @@ services:
         sync: false
       - key: CORS_ORIGIN
         value: https://luxury-ecommerce-frontend.onrender.com
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "100"
 
   # Frontend Static Site
   - type: web
@@ -62,6 +67,7 @@ services:
     buildCommand: cd client && npm ci && npm run build
     staticPublishPath: ./client/build
     pullRequestPreviewsEnabled: true
+    autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
         value: https://luxury-ecommerce-api.onrender.com
