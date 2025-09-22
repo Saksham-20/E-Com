@@ -4,10 +4,10 @@
   "description": "Backend server for luxury e-commerce website",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node database/setup.js && node database/seed.js && node index.js",
     "dev": "nodemon index.js",
     "test": "jest",
-    "build": "node database/setup.js && node database/seed.js",
+    "build": "echo 'Build completed - database setup will run on start'",
     "db:setup": "node database/setup.js",
     "db:seed": "node database/seed.js"
   },
