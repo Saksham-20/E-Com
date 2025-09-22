@@ -1,8 +1,8 @@
-// Force the correct API URL for now
-const API_BASE_URL = 'http://localhost:5000/api';
+// Get API URL from environment or use localhost for development
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 console.log('API Service: Environment API URL:', process.env.REACT_APP_API_URL);
-console.log('API Service: Forced API Base URL:', API_BASE_URL);
+console.log('API Service: Final API Base URL:', API_BASE_URL);
 
 class ApiService {
   constructor() {

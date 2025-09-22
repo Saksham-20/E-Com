@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
+import { getImageUrl, getPlaceholderImage } from '../../utils/imageUtils';
 
 const ProductManager = () => {
   // const { user } = useAuth();
@@ -455,11 +456,11 @@ const ProductManager = () => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={product.primary_image ? `http://localhost:5000${product.primary_image}` : '/placeholder-product.jpg'}
+                        src={getImageUrl(product.primary_image)}
                         alt={product.name}
                         onError={(e) => {
                           console.log('Image failed to load:', e.target.src);
-                          e.target.src = '/placeholder-product.jpg';
+                          e.target.src = getPlaceholderImage();
                         }}
                         onLoad={() => {
                           console.log('Image loaded successfully:', product.primary_image);

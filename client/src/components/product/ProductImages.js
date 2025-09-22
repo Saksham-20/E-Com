@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ProductImages = ({ images = [] }) => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -7,9 +8,9 @@ const ProductImages = ({ images = [] }) => {
   const imageUrls = images.length > 0 
     ? images.map(img => {
         if (typeof img === 'string') {
-          return img.startsWith('http') ? img : `http://localhost:5000${img}`;
+          return getImageUrl(img);
         }
-        return img.image_url ? `http://localhost:5000${img.image_url}` : img;
+        return img.image_url ? getImageUrl(img.image_url) : img;
       })
     : [];
 

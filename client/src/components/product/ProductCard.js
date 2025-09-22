@@ -5,6 +5,7 @@ import useCart from '../../hooks/useCart';
 import useWishlist from '../../hooks/useWishlist';
 import { formatCurrency as formatPrice } from '../../utils/formatters';
 import Loading from '../ui/Loading';
+import { getImageUrl, getPlaceholderImage } from '../../utils/imageUtils';
 
 const ProductCard = React.memo(({ product, className = '' }) => {
   const { addToCart, isItemInCart, removeFromCart } = useCart();
@@ -80,14 +81,14 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <Link to={`/products/${product.slug || product.id}`}>
           <motion.img
-            src={product.primary_image ? `http://localhost:5000${product.primary_image}` : '/placeholder-product.jpg'}
+            src={getImageUrl(product.primary_image)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             onError={(e) => {
               console.log('ProductCard image failed to load:', e.target.src);
               console.log('Product:', product.name, 'Primary image:', product.primary_image);
-              e.target.src = '/placeholder-product.jpg';
+              e.target.src = getPlaceholderImage();
             }}
             onLoad={() => {
               console.log('ProductCard image loaded successfully:', product.name, product.primary_image);
