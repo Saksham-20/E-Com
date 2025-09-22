@@ -10,12 +10,7 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
     "seed": "node server/database/seed.js",
-    "db:setup": "node server/database/setup.js",
-    "docker:build": "docker build -t luxury-ecommerce .",
-    "docker:run": "docker run -p 5000:5000 luxury-ecommerce",
-    "docker:dev": "docker-compose up --build",
-    "docker:down": "docker-compose down",
-    "docker:clean": "docker-compose down -v --rmi all"
+    "db:setup": "node server/database/setup.js"
   },
   "keywords": ["ecommerce", "luxury", "jewelry", "tiffany"],
   "author": "Your Name",
