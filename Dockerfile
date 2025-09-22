@@ -8,16 +8,24 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm install && \
-    cd client && npm ci && \
-    cd ../server && npm ci
+# Install root dependencies
+RUN npm install
+
+# Install client dependencies
+WORKDIR /app/client
+RUN npm ci
+
+# Install server dependencies
+WORKDIR /app/server
+RUN npm ci
 
 # Copy source code
+WORKDIR /app
 COPY . .
 
 # Build the React app
-RUN cd client && npm run build
+WORKDIR /app/client
+RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
@@ -50,7 +58,7 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:5000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start the application
 CMD ["node", "server/index.js"]
