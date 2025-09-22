@@ -11,8 +11,9 @@ services:
   # Backend API Service
   - type: web
     name: luxury-ecommerce-api
-    env: docker
-    dockerfilePath: ./Dockerfile.backend
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
     plan: starter
     region: oregon
     branch: main
@@ -64,7 +65,7 @@ services:
   - type: web
     name: luxury-ecommerce-frontend
     env: static
-    buildCommand: npm install && cd client && npm ci && npm run build
+    buildCommand: chmod +x debug-build.sh && ./debug-build.sh
     staticPublishPath: ./client/build
     pullRequestPreviewsEnabled: true
     autoDeploy: true
