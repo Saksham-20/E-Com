@@ -1,69 +1,73 @@
-// Fix for Render deployment - ensure public directory is in expected location
+// Fix for Render deployment - create public directory and index.html
 const fs = require('fs');
 const path = require('path');
 
-console.log('=== Fixing public directory path ===');
+console.log('=== Creating public directory and index.html ===');
 
 // Check if we're in the right directory
 console.log('Current working directory:', process.cwd());
 console.log('Contents of current directory:', fs.readdirSync('.'));
 
-// Check parent directory
-console.log('Contents of parent directory:', fs.readdirSync('..'));
-
-// Look for public directory in multiple locations
-let publicPath = null;
-const possiblePaths = [
-  'public',
-  '../public',
-  '../client/public',
-  '../../client/public'
-];
-
-for (const testPath of possiblePaths) {
-  if (fs.existsSync(testPath)) {
-    console.log(`✅ Found public directory at: ${testPath}`);
-    publicPath = testPath;
-    break;
-  }
+// Create public directory if it doesn't exist
+if (!fs.existsSync('public')) {
+  console.log('Creating public directory...');
+  fs.mkdirSync('public');
 }
 
-if (!publicPath) {
-  console.log('❌ public directory not found in any expected location');
-  console.log('Searched paths:', possiblePaths);
-} else {
-  console.log('Contents of public directory:', fs.readdirSync(publicPath));
-}
+// Create index.html file
+const indexHtmlContent = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#81D8D0" />
+    <meta name="description" content="Luxury e-commerce website with premium products and exceptional service" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>E-Commerce Shop | Premium Products & Exceptional Service</title>
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>`;
 
-// Check if src directory exists and create it if needed
-if (!fs.existsSync('src')) {
-  console.log('Creating src directory...');
-  fs.mkdirSync('src');
-}
+console.log('Creating index.html...');
+fs.writeFileSync('public/index.html', indexHtmlContent);
 
-// Check if src/client exists
-if (!fs.existsSync('src/client')) {
-  console.log('Creating src/client directory...');
-  fs.mkdirSync('src/client', { recursive: true });
-}
+// Create manifest.json
+const manifestContent = `{
+  "short_name": "E-Commerce Shop",
+  "name": "Luxury E-Commerce Shop",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#81D8D0",
+  "background_color": "#ffffff"
+}`;
 
-// Copy public directory to src/client/public
-if (publicPath) {
-  console.log(`Copying public directory from ${publicPath} to src/client/public...`);
-  const targetPath = 'src/client/public';
-  
-  // Remove target if it exists
-  if (fs.existsSync(targetPath)) {
-    fs.rmSync(targetPath, { recursive: true, force: true });
-  }
-  
-  // Copy public directory
-  fs.cpSync(publicPath, targetPath, { recursive: true });
-  
-  console.log('✅ Public directory copied successfully');
-  console.log('Contents of src/client/public:', fs.readdirSync('src/client/public'));
-} else {
-  console.log('❌ Cannot copy public directory - it does not exist');
-}
+console.log('Creating manifest.json...');
+fs.writeFileSync('public/manifest.json', manifestContent);
+
+// Create favicon.ico (empty file for now)
+console.log('Creating favicon.ico...');
+fs.writeFileSync('public/favicon.ico', '');
+
+console.log('✅ Public directory and files created successfully');
+console.log('Contents of public directory:', fs.readdirSync('public'));
 
 console.log('=== Path fix completed ===');
