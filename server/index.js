@@ -96,20 +96,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Serve React app in production
-if (process.env.NODE_ENV === 'production') {
-  const path = require('path');
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-} else {
-  // 404 handler for development
-  app.use('*', (req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-  });
-}
+// 404 handler for API routes
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'API route not found' });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
