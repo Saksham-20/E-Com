@@ -8,12 +8,31 @@ console.log('=== Fixing public directory path ===');
 console.log('Current working directory:', process.cwd());
 console.log('Contents of current directory:', fs.readdirSync('.'));
 
-// Check if public directory exists
-if (fs.existsSync('public')) {
-  console.log('✅ public directory exists');
-  console.log('Contents of public directory:', fs.readdirSync('public'));
+// Check parent directory
+console.log('Contents of parent directory:', fs.readdirSync('..'));
+
+// Look for public directory in multiple locations
+let publicPath = null;
+const possiblePaths = [
+  'public',
+  '../public',
+  '../client/public',
+  '../../client/public'
+];
+
+for (const testPath of possiblePaths) {
+  if (fs.existsSync(testPath)) {
+    console.log(`✅ Found public directory at: ${testPath}`);
+    publicPath = testPath;
+    break;
+  }
+}
+
+if (!publicPath) {
+  console.log('❌ public directory not found in any expected location');
+  console.log('Searched paths:', possiblePaths);
 } else {
-  console.log('❌ public directory not found');
+  console.log('Contents of public directory:', fs.readdirSync(publicPath));
 }
 
 // Check if src directory exists and create it if needed
@@ -29,9 +48,8 @@ if (!fs.existsSync('src/client')) {
 }
 
 // Copy public directory to src/client/public
-if (fs.existsSync('public')) {
-  console.log('Copying public directory to src/client/public...');
-  const publicPath = 'public';
+if (publicPath) {
+  console.log(`Copying public directory from ${publicPath} to src/client/public...`);
   const targetPath = 'src/client/public';
   
   // Remove target if it exists
