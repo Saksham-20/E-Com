@@ -200,7 +200,7 @@ export const CartProvider = ({ children }) => {
     try {
       dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -233,7 +233,7 @@ export const CartProvider = ({ children }) => {
       
       if (isAuthenticated) {
         // Add to user cart via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/add`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/add`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -302,7 +302,7 @@ export const CartProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Update via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/${itemId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/${itemId}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -358,7 +358,7 @@ export const CartProvider = ({ children }) => {
         }
         
         // Remove via API
-        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/${cartItemId}`;
+        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/${cartItemId}`;
         
         const response = await fetch(url, {
           method: 'DELETE',
@@ -412,7 +412,7 @@ export const CartProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Clear via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -457,7 +457,7 @@ export const CartProvider = ({ children }) => {
         variant_details: item.variant_details
       }));
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cart/merge`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/merge`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

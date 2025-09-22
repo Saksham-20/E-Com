@@ -60,7 +60,7 @@ const CheckoutPage = () => {
       // Check server health before proceeding
       console.log('CheckoutPage: Checking server health...');
       try {
-        const healthResponse = await fetch('http://localhost:5000/health');
+        const healthResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/health`);
         if (!healthResponse.ok) {
           throw new Error('Server is not responding');
         }

@@ -1,8 +1,13 @@
 // Get API URL from environment or use localhost for development
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-console.log('API Service: Environment API URL:', process.env.REACT_APP_API_URL);
-console.log('API Service: Final API Base URL:', API_BASE_URL);
+// Enhanced debugging for production
+console.log('=== API SERVICE DEBUG ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('Final API_BASE_URL:', API_BASE_URL);
+console.log('Current window.location:', window.location.href);
+console.log('========================');
 
 class ApiService {
   constructor() {

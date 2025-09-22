@@ -131,7 +131,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       dispatch({ type: WISHLIST_ACTIONS.SET_LOADING, payload: true });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/wishlist`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/wishlist`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -161,7 +161,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Add to user wishlist via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/wishlist`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/wishlist`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -221,7 +221,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Remove via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/wishlist/${itemId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/wishlist/${itemId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -264,7 +264,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Clear via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/wishlist`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/wishlist`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -307,7 +307,7 @@ export const WishlistProvider = ({ children }) => {
       let skippedCount = 0;
 
       for (const item of state.items) {
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/wishlist`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/wishlist`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -10,6 +10,7 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticateToken, async (req, res) => {
   try {
+    console.log('Wishlist GET - User ID:', req.user.id);
     const result = await query(`
       SELECT 
         w.id,
