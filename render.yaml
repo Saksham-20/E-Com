@@ -68,6 +68,6 @@ services:
     autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
-        value: https://luxury-ecommerce-api.onrender.com
+        value: https://luxury-ecommerce-api.onrender.com/api
       - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
         sync: false
