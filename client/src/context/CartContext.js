@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
+import api from '../services/api';
 
 const CartContext = createContext();
 
@@ -200,19 +201,17 @@ export const CartProvider = ({ children }) => {
     try {
       dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart`, {
+      const response = await api.get('/cart', {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-      // Cart data loaded successfully
+      if (response.data) {
+        // Cart data loaded successfully
         dispatch({
           type: CART_ACTIONS.SET_CART,
-          payload: data.data
+          payload: response.data.data
         });
       } else {
         throw new Error('Failed to load cart');
@@ -233,37 +232,31 @@ export const CartProvider = ({ children }) => {
       
       if (isAuthenticated) {
         // Add to user cart via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/add`, {
-          method: 'POST',
+        const response = await api.post('/cart/add', {
+          product_id: product.id,
+          quantity,
+          variant_details: variantDetails
+        }, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            product_id: product.id,
-            quantity,
-            variant_details: variantDetails
-          })
+            'Authorization': `Bearer ${token}`
+          }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          
+        if (response.data) {
           // Reload cart to get updated state
           await loadUserCart();
           
-          toast.success(data.message || 'Item added to cart');
+          toast.success(response.data.message || 'Item added to cart');
           return { success: true };
         } else {
-          const errorData = await response.json();
           // Handle error response
           
           if (response.status === 404) {
             toast.error('This product is no longer available');
           } else {
-            toast.error(errorData.message || 'Failed to add item to cart');
+            toast.error(response.data?.message || 'Failed to add item to cart');
           }
-          return { success: false, message: errorData.message };
+          return { success: false, message: response.data?.message };
         }
       } else {
         // Add to guest cart
@@ -302,27 +295,21 @@ export const CartProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Update via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/${itemId}`, {
-          method: 'PUT',
+        const response = await api.put(`/cart/${itemId}`, { quantity }, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ quantity })
+            'Authorization': `Bearer ${token}`
+          }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          
+        if (response.data) {
           // Reload cart to get updated state
           await loadUserCart();
           
-          toast.success(data.message || 'Cart updated');
+          toast.success(response.data.message || 'Cart updated');
           return { success: true };
         } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to update cart');
-          return { success: false, message: errorData.message };
+          toast.error(response.data?.message || 'Failed to update cart');
+          return { success: false, message: response.data?.message };
         }
       } else {
         // Update guest cart
@@ -358,7 +345,7 @@ export const CartProvider = ({ children }) => {
         }
         
         // Remove via API
-        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/${cartItemId}`;
+        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cart/${cartItemId}`;
         
         const response = await fetch(url, {
           method: 'DELETE',
@@ -412,26 +399,21 @@ export const CartProvider = ({ children }) => {
     try {
       if (isAuthenticated) {
         // Clear via API
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart`, {
-          method: 'DELETE',
+        const response = await api.delete('/cart', {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`
           }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          
+        if (response.data) {
           // Reload cart to get updated state
           await loadUserCart();
           
-          toast.success(data.message || 'Cart cleared');
+          toast.success(response.data.message || 'Cart cleared');
           return { success: true };
         } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to clear cart');
-          return { success: false, message: errorData.message };
+          toast.error(response.data?.message || 'Failed to clear cart');
+          return { success: false, message: response.data?.message };
         }
       } else {
         // Clear guest cart
@@ -457,7 +439,7 @@ export const CartProvider = ({ children }) => {
         variant_details: item.variant_details
       }));
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/api/cart/merge`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cart/merge`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

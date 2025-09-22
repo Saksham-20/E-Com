@@ -10,6 +10,7 @@ import {
   IoRefresh
 } from 'react-icons/io5';
 import Loading from '../ui/Loading';
+import api from '../../services/api';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -23,7 +24,7 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/dashboard`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Loading from '../ui/Loading';
 import useAuth from '../../hooks/useAuth';
+import api from '../../services/api';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ const Dashboard = () => {
       const token = localStorage.getItem('token');
       
       // Fetch dashboard stats
-      const dashboardResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard`, {
+      const dashboardResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -43,7 +44,7 @@ const Dashboard = () => {
       });
 
       // Fetch analytics data
-      const analyticsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/analytics?period=30d`, {
+      const analyticsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/analytics?period=30d`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

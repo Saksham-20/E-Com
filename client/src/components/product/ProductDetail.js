@@ -8,6 +8,7 @@ import ProductImages from './ProductImages';
 import ProductVariants from './ProductVariants';
 import ProductReviews from './ProductReviews';
 import RelatedProducts from './RelatedProducts';
+import api from '../../services/api';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -26,16 +27,15 @@ const ProductDetail = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products/${id}`);
+      const response = await api.get(`/products/${id}`);
       
-      if (response.ok) {
-        const data = await response.json();
-        setProduct(data.data.product);
-        if (data.data.product && data.data.product.variants && data.data.product.variants.length > 0) {
-          setSelectedVariant(data.data.product.variants[0]);
+      if (response.data) {
+        setProduct(response.data.data.product);
+        if (response.data.data.product && response.data.data.product.variants && response.data.data.product.variants.length > 0) {
+          setSelectedVariant(response.data.data.product.variants[0]);
         }
       } else {
-        console.error('Failed to fetch product:', response.status);
+        console.error('Failed to fetch product');
         setProduct(null);
       }
     } catch (error) {

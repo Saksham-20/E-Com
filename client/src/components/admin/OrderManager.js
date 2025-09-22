@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
+import api from '../../services/api';
 
 const OrderManager = () => {
   // const { user } = useAuth();
@@ -23,7 +24,7 @@ const OrderManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/orders?limit=100`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/orders?limit=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -47,7 +48,7 @@ const OrderManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/orders/${orderId}/status`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -4,6 +4,7 @@ import ProductGrid from '../components/product/ProductGrid';
 import SearchBar from '../components/common/SearchBar';
 import FilterSidebar from '../components/common/FilterSidebar';
 import Loading from '../components/ui/Loading';
+import api from '../services/api';
 
 const ProductsPage = ({ category: propCategory }) => {
   const { subcategory } = useParams();
@@ -62,17 +63,16 @@ const ProductsPage = ({ category: propCategory }) => {
         }
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products?${queryParams}`);
+      const response = await api.get(`/products?${queryParams}`);
       
-      if (!response.ok) {
+      if (response.data) {
+        console.log('API Response:', response.data);
+        console.log('Products:', response.data.data.products);
+        setProducts(response.data.data.products || []);
+        setError(null);
+      } else {
         throw new Error('Failed to fetch products');
       }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      console.log('Products:', data.data.products);
-      setProducts(data.data.products || []);
-      setError(null);
     } catch (err) {
       setError('Failed to load products');
       console.error('Error fetching products:', err);

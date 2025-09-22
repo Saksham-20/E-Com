@@ -8,6 +8,7 @@ import CartSummary from '../components/cart/CartSummary';
 import Breadcrumb from '../components/common/Breadcrumb';
 import Loading from '../components/ui/Loading';
 import Modal from '../components/ui/Modal';
+import api from '../services/api';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -60,8 +61,8 @@ const CheckoutPage = () => {
       // Check server health before proceeding
       console.log('CheckoutPage: Checking server health...');
       try {
-        const healthResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/health`);
-        if (!healthResponse.ok) {
+        const healthResponse = await api.get('/health');
+        if (!healthResponse.data) {
           throw new Error('Server is not responding');
         }
         console.log('CheckoutPage: Server health check passed');

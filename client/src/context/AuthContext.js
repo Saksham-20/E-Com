@@ -198,17 +198,9 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
+      const response = await api.post('/auth/register', userData);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.data) {
         // Don't automatically log in after registration
         // Just show success message and let the form handle redirect
         toast.success('Registration successful! Please log in to your account.');
@@ -216,10 +208,10 @@ export const AuthProvider = ({ children }) => {
       } else {
         dispatch({
           type: AUTH_ACTIONS.REGISTER_FAILURE,
-          payload: data.message || 'Registration failed'
+          payload: response.data?.message || 'Registration failed'
         });
-        toast.error(data.message || 'Registration failed');
-        return { success: false, message: data.message };
+        toast.error(response.data?.message || 'Registration failed');
+        return { success: false, message: response.data?.message };
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -239,13 +231,15 @@ export const AuthProvider = ({ children }) => {
       
       if (token) {
         // Call logout endpoint
-        await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        try {
+          await api.post('/auth/logout', {}, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } catch (error) {
+          console.log('Logout API call failed, but continuing with local logout');
+        }
       }
     } catch (error) {
       console.error('Logout error:', error);
@@ -261,27 +255,22 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/profile`, {
-        method: 'PUT',
+      const response = await api.put('/auth/profile', profileData, {
         headers: {
-          'Authorization': `Bearer ${state.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(profileData)
+          'Authorization': `Bearer ${state.token}`
+        }
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.data) {
         dispatch({
           type: AUTH_ACTIONS.UPDATE_PROFILE,
-          payload: data.data.user
+          payload: response.data.data.user
         });
         toast.success('Profile updated successfully!');
         return { success: true };
       } else {
-        toast.error(data.message || 'Profile update failed');
-        return { success: false, message: data.message };
+        toast.error(response.data?.message || 'Profile update failed');
+        return { success: false, message: response.data?.message };
       }
     } catch (error) {
       console.error('Profile update error:', error);
@@ -293,26 +282,21 @@ export const AuthProvider = ({ children }) => {
   // Change password function
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/change-password`, {
-        method: 'PUT',
+      const response = await api.put('/auth/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword
+      }, {
         headers: {
-          'Authorization': `Bearer ${state.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword
-        })
+          'Authorization': `Bearer ${state.token}`
+        }
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.data) {
         toast.success('Password changed successfully!');
         return { success: true };
       } else {
-        toast.error(data.message || 'Password change failed');
-        return { success: false, message: data.message };
+        toast.error(response.data?.message || 'Password change failed');
+        return { success: false, message: response.data?.message };
       }
     } catch (error) {
       console.error('Password change error:', error);
@@ -324,21 +308,17 @@ export const AuthProvider = ({ children }) => {
   // Refresh token function
   const refreshToken = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/refresh`, {
-        method: 'POST',
+      const response = await api.post('/auth/refresh', {}, {
         headers: {
-          'Authorization': `Bearer ${state.token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${state.token}`
         }
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.data.token);
+      if (response.data) {
+        localStorage.setItem('token', response.data.data.token);
         dispatch({
           type: AUTH_ACTIONS.REFRESH_TOKEN,
-          payload: { token: data.data.token }
+          payload: { token: response.data.data.token }
         });
         return { success: true };
       } else {
