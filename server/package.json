@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "jest",
+    "build": "node database/setup.js && node database/seed.js",
     "db:setup": "node database/setup.js",
     "db:seed": "node database/seed.js"
   },
