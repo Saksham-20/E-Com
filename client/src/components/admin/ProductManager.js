@@ -65,12 +65,22 @@ const ProductManager = () => {
         if (process.env.NODE_ENV === 'development') {
           console.log('Constructed image URL:', data.products?.[0]?.primary_image ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${data.products?.[0]?.primary_image}` : 'No image');
         }
-        setProducts(data.products || []);
+        // Ensure products is always an array
+        if (data && Array.isArray(data.products)) {
+          setProducts(data.products);
+        } else if (data && data.data && Array.isArray(data.data.products)) {
+          setProducts(data.data.products);
+        } else {
+          console.warn('Products response is not an array:', data);
+          setProducts([]);
+        }
       } else {
         console.error('Failed to fetch products:', response.status);
+        setProducts([]);
       }
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -82,7 +92,15 @@ const ProductManager = () => {
       console.log('Fetching categories...');
       const response = await productService.getCategories();
       console.log('Categories response:', response); // Debug log
-      setCategories(response || []);
+      // Ensure categories is always an array
+      if (response && Array.isArray(response)) {
+        setCategories(response);
+      } else if (response && response.data && Array.isArray(response.data)) {
+        setCategories(response.data);
+      } else {
+        console.warn('Categories response is not an array:', response);
+        setCategories([]);
+      }
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       // Fallback: try direct API call without auth since categories should be public
@@ -96,14 +114,24 @@ const ProductManager = () => {
         if (directResponse.ok) {
           const data = await directResponse.json();
           console.log('Direct categories response:', data); // Debug log
-          setCategories(data.data || []);
+          // Ensure categories is always an array
+          if (data && Array.isArray(data)) {
+            setCategories(data);
+          } else if (data && data.data && Array.isArray(data.data)) {
+            setCategories(data.data);
+          } else {
+            console.warn('Direct categories response is not an array:', data);
+            setCategories([]);
+          }
         } else {
           console.error('Direct API call failed with status:', directResponse.status);
           const errorText = await directResponse.text();
           console.error('Error response:', errorText);
+          setCategories([]);
         }
       } catch (directError) {
         console.error('Direct categories fetch also failed:', directError);
+        setCategories([]);
       }
     } finally {
       setCategoriesLoading(false);
@@ -459,7 +487,7 @@ const ProductManager = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {Array.isArray(products) && products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -617,7 +645,7 @@ const ProductManager = () => {
                   <option value="">
                     {categoriesLoading ? 'Loading categories...' : 'Select Category'}
                   </option>
-                  {categories.map((category) => (
+                  {Array.isArray(categories) && categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -847,7 +875,7 @@ const ProductManager = () => {
                   <option value="">
                     {categoriesLoading ? 'Loading categories...' : 'Select Category'}
                   </option>
-                  {categories.map((category) => (
+                  {Array.isArray(categories) && categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>

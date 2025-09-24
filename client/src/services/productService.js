@@ -61,7 +61,7 @@ export const productService = {
   async getCategories() {
     try {
       const response = await api.get('/products/categories');
-      return response.data;
+      return response.data.data; // Return the actual categories array
     } catch (error) {
       throw new Error('Failed to fetch categories');
     }
