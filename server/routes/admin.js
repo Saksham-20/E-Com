@@ -82,8 +82,14 @@ router.get('/dashboard', async (req, res) => {
 // @access  Admin
 router.get('/products', async (req, res) => {
   try {
+    console.log('👑 GET /api/admin/products - Request received');
+    console.log('👑 Query params:', req.query);
+    console.log('👑 User:', req.user);
+    
     const { page = 1, limit = 20, search, category, status } = req.query;
     const offset = (page - 1) * limit;
+    
+    console.log('👑 Processed params:', { page, limit, search, category, status, offset });
 
     let query = `
       SELECT 
@@ -120,7 +126,12 @@ router.get('/products', async (req, res) => {
     query += ` ORDER BY p.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
+    console.log('👑 Admin products query:', query);
+    console.log('👑 Admin products params:', queryParams);
+    
     const products = await pool.query(query, queryParams);
+    console.log('👑 Admin products found:', products.rows.length);
+    console.log('👑 First admin product:', products.rows[0]);
 
     // Get total count
     let countQuery = `

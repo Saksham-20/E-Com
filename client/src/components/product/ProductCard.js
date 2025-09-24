@@ -27,6 +27,10 @@ const ProductCard = React.memo(({ product, className = '' }) => {
   // Prioritize product_id for cart operations since it's the actual product ID
   const productId = product.product_id || product.id;
   
+  // Debug logging
+  console.log('ProductCard - Product data:', product);
+  console.log('ProductCard - Product ID:', productId);
+  
   const isInCartState = useMemo(() => isItemInCart(productId), [isItemInCart, productId]);
   const isInWishlistState = useMemo(() => isItemInWishlist(productId), [isItemInWishlist, productId]);
 

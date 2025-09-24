@@ -14,6 +14,7 @@ const useProducts = (initialFilters = {}) => {
 
   const fetchProducts = useCallback(async (newFilters = filters, page = 1) => {
     try {
+      console.log('📦 useProducts: Starting fetch with filters:', newFilters, 'page:', page);
       setLoading(true);
       setError(null);
 
@@ -24,17 +25,25 @@ const useProducts = (initialFilters = {}) => {
       });
 
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/products?${queryParams}`);
+      const url = `${apiUrl}/api/products?${queryParams}`;
+      console.log('📦 useProducts: Fetching from URL:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
 
       const data = await response.json();
+      console.log('📦 useProducts: Raw API response:', data);
       
       // Handle the correct API response format
       const products = data.data?.products || data.products || [];
       const paginationData = data.data?.pagination || data.pagination || {};
+      
+      console.log('📦 useProducts: Extracted products:', products.length);
+      console.log('📦 useProducts: First product:', products[0]);
+      console.log('📦 useProducts: Pagination data:', paginationData);
       
       setProducts(products);
       setPagination(prev => ({

@@ -103,6 +103,15 @@ app.use('*', (req, res) => {
 // Initialize database and start server
 async function startServer() {
   try {
+    console.log('🚀 Starting E-Commerce Shop server...');
+    console.log('🚀 Environment variables check:');
+    console.log('  - NODE_ENV:', process.env.NODE_ENV);
+    console.log('  - PORT:', process.env.PORT);
+    console.log('  - CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('  - CORS_ORIGIN:', process.env.CORS_ORIGIN);
+    console.log('  - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
+    console.log('  - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+    
     // Run database setup
     const setupDatabase = require('./database/setup');
     await setupDatabase();
@@ -112,6 +121,7 @@ async function startServer() {
       console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
       console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
       console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('🚀 Server startup completed successfully!');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

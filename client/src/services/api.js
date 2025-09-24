@@ -66,9 +66,7 @@ class ApiService {
     const separator = endpoint.includes('?') ? '&' : '?';
     const url = `${this.baseURL}${endpoint}${separator}_t=${Date.now()}`;
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API: Making request to:', url);
-    }
+    console.log('🌐 API: Making request to:', url);
     
     const config = {
       headers: this.getHeaders(options.includeAuth !== false),
@@ -78,9 +76,7 @@ class ApiService {
     try {
       const response = await fetch(url, config);
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('API: Response status:', response.status);
-      }
+      console.log('🌐 API: Response status:', response.status);
       
       // Handle different response statuses
       if (response.status === 401) {

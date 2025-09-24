@@ -229,6 +229,14 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product, quantity = 1, variantDetails = null) => {
     try {
       // Adding product to cart
+      console.log('Add to cart - Product data:', product);
+      console.log('Add to cart - Product ID:', product.id);
+      
+      if (!product.id) {
+        console.error('Product ID is missing:', product);
+        toast.error('Product ID is missing. Cannot add to cart.');
+        return { success: false, message: 'Product ID is missing' };
+      }
       
       if (isAuthenticated) {
         // Add to user cart via API

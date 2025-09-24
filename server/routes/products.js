@@ -11,6 +11,9 @@ const router = express.Router();
 // @access  Public
 router.get('/', validateProductQuery, async (req, res) => {
   try {
+    console.log('🔍 GET /api/products - Request received');
+    console.log('🔍 Query params:', req.query);
+    
     const {
       page = 1,
       limit = 12,
@@ -22,6 +25,8 @@ router.get('/', validateProductQuery, async (req, res) => {
       order = 'desc',
       search
     } = req.query;
+    
+    console.log('🔍 Processed params:', { page, limit, category, brand, min_price, max_price, sort, order, search });
 
     const offset = (page - 1) * limit;
 
@@ -70,6 +75,7 @@ router.get('/', validateProductQuery, async (req, res) => {
 
     const countResult = await query(countQuery, queryParams);
     const total = parseInt(countResult.rows[0].total);
+    console.log('🔍 Total products found:', total);
 
     // Get products with pagination
     const productsQuery = `
@@ -115,14 +121,19 @@ router.get('/', validateProductQuery, async (req, res) => {
       LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
     `;
 
+    console.log('🔍 Products query:', productsQuery);
+    console.log('🔍 Products params:', [...queryParams, limit, offset]);
+    
     const productsResult = await query(productsQuery, [...queryParams, limit, offset]);
+    console.log('🔍 Products result count:', productsResult.rows.length);
+    console.log('🔍 First product sample:', productsResult.rows[0]);
 
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
-    res.json({
+    const response = {
       success: true,
       data: {
         products: productsResult.rows,
@@ -135,7 +146,10 @@ router.get('/', validateProductQuery, async (req, res) => {
           has_prev_page: hasPrevPage
         }
       }
-    });
+    };
+    
+    console.log('🔍 Sending response with', productsResult.rows.length, 'products');
+    res.json(response);
 
   } catch (error) {
     console.error('Get products error:', error);
@@ -200,12 +214,17 @@ router.get('/featured', async (req, res) => {
 // @access  Public
 router.get('/categories', async (req, res) => {
   try {
+    console.log('🔍 GET /api/products/categories - Request received');
+    
     const result = await query(`
       SELECT id, name, slug, description, image_url, sort_order
       FROM categories
       WHERE is_active = true
       ORDER BY sort_order ASC, name ASC
     `);
+
+    console.log('🔍 Categories found:', result.rows.length);
+    console.log('🔍 Categories data:', result.rows);
 
     res.json({
       success: true,

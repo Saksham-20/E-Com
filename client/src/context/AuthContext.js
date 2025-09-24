@@ -102,12 +102,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('token');
-      console.log('AuthContext - checkAuthStatus - token exists:', !!token);
-      console.log('AuthContext - checkAuthStatus - current state:', state);
+      console.log('🔐 AuthContext - checkAuthStatus - token exists:', !!token);
+      console.log('🔐 AuthContext - checkAuthStatus - current state:', state);
       
       // Skip if already loading (to prevent race conditions)
       if (state.isLoading) {
-        console.log('AuthContext - checkAuthStatus - already loading, skipping');
+        console.log('🔐 AuthContext - checkAuthStatus - already loading, skipping');
         return;
       }
       
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
             }
           });
 
-          console.log('AuthContext - checkAuthStatus - response:', response);
+          console.log('🔐 AuthContext - checkAuthStatus - response:', response);
 
           if (response.data) {
             console.log('AuthContext - checkAuthStatus - user data:', response.data.data.user);

@@ -32,6 +32,7 @@ const ProductsPage = ({ category: propCategory }) => {
 
   const fetchProducts = async () => {
     try {
+      console.log('📄 ProductsPage: Starting fetchProducts');
       setLoading(true);
       
       // Build query parameters
@@ -63,13 +64,18 @@ const ProductsPage = ({ category: propCategory }) => {
         }
       }
       
-      const response = await api.get(`/products?${queryParams}`);
+      const url = `/products?${queryParams}`;
+      console.log('📄 ProductsPage: Fetching from URL:', url);
+      
+      const response = await api.get(url);
+      console.log('📄 ProductsPage: API Response:', response);
       
       if (response.data) {
-        console.log('API Response:', response.data);
+        console.log('📄 ProductsPage: Response data:', response.data);
         // Handle the correct API response format
         const products = response.data.data?.products || response.data.products || [];
-        console.log('Products:', products);
+        console.log('📄 ProductsPage: Extracted products:', products.length);
+        console.log('📄 ProductsPage: First product:', products[0]);
         setProducts(products);
         setError(null);
       } else {

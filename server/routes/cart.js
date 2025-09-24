@@ -101,11 +101,19 @@ router.get('/', authenticateToken, async (req, res) => {
 // @access  Private
 router.post('/add', authenticateToken, async (req, res) => {
   try {
+    console.log('🛒 POST /api/cart/add - Request received');
+    console.log('🛒 Request body:', req.body);
+    console.log('🛒 User ID:', req.user.id);
+    
     const { product_id, quantity = 1, variant_details } = req.body;
     
     // Adding item to cart
+    console.log('🛒 Product ID:', product_id);
+    console.log('🛒 Quantity:', quantity);
+    console.log('🛒 Variant details:', variant_details);
 
     if (!product_id) {
+      console.log('🛒 ERROR: Product ID is missing');
       return res.status(400).json({
         success: false,
         message: 'Product ID is required'
@@ -120,12 +128,16 @@ router.post('/add', authenticateToken, async (req, res) => {
     }
 
     // Check if product exists and is active
+    console.log('🛒 Checking if product exists:', product_id);
     const productResult = await query(
       'SELECT id, name, price, stock_quantity FROM products WHERE id = $1 AND is_active = true',
       [product_id]
     );
 
+    console.log('🛒 Product query result:', productResult.rows);
+
     if (productResult.rows.length === 0) {
+      console.log('🛒 ERROR: Product not found');
       return res.status(404).json({
         success: false,
         message: 'Product not found'
