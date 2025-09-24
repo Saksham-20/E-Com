@@ -1,8 +1,35 @@
 const multer = require('multer');
 const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary');
 
-// Configure storage for different file types
-const storage = multer.diskStorage({
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: (req, file) => {
+      // Determine folder based on route
+      if (req.baseUrl.includes('products')) {
+        return 'luxury-ecommerce/products';
+      } else if (req.baseUrl.includes('users')) {
+        return 'luxury-ecommerce/users';
+      }
+      return 'luxury-ecommerce/general';
+    },
+    public_id: (req, file) => {
+      // Generate unique filename
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      return file.fieldname + '-' + uniqueSuffix;
+    },
+    transformation: [
+      { width: 800, height: 600, crop: 'limit', quality: 'auto' },
+      { fetch_format: 'auto' }
+    ]
+  }
+});
+
+// Fallback to disk storage if Cloudinary is not configured
+const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadPath = 'uploads/';
     
@@ -23,6 +50,9 @@ const storage = multer.diskStorage({
   }
 });
 
+// Use Cloudinary if configured, otherwise use disk storage
+const finalStorage = process.env.CLOUDINARY_CLOUD_NAME ? storage : diskStorage;
+
 // File filter function
 const fileFilter = (req, file, cb) => {
   // Allow only images
@@ -35,9 +65,9 @@ const fileFilter = (req, file, cb) => {
 
 // Configure multer
 const upload = multer({
-  storage: storage,
+  storage: finalStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024, // Use env variable or default 5MB
   },
   fileFilter: fileFilter
 });
