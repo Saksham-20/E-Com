@@ -67,8 +67,10 @@ const ProductsPage = ({ category: propCategory }) => {
       
       if (response.data) {
         console.log('API Response:', response.data);
-        console.log('Products:', response.data.data.products);
-        setProducts(response.data.data.products || []);
+        // Handle the correct API response format
+        const products = response.data.data?.products || response.data.products || [];
+        console.log('Products:', products);
+        setProducts(products);
         setError(null);
       } else {
         throw new Error('Failed to fetch products');

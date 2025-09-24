@@ -32,12 +32,16 @@ const useProducts = (initialFilters = {}) => {
 
       const data = await response.json();
       
-      setProducts(data.products);
+      // Handle the correct API response format
+      const products = data.data?.products || data.products || [];
+      const paginationData = data.data?.pagination || data.pagination || {};
+      
+      setProducts(products);
       setPagination(prev => ({
         ...prev,
         currentPage: page,
-        totalPages: data.pagination.totalPages,
-        totalItems: data.pagination.totalItems
+        totalPages: paginationData.total_pages || paginationData.totalPages || 1,
+        totalItems: paginationData.total_items || paginationData.totalItems || 0
       }));
     } catch (err) {
       setError(err.message);
