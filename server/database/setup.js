@@ -59,17 +59,17 @@ async function setupDatabase() {
     try {
       // Check if admin user already exists
       const existingAdmin = await pool.query(
-        'SELECT id FROM users WHERE email = $1 AND role = $2',
-        [adminEmail, 'admin']
+        'SELECT id FROM users WHERE email = $1 AND is_admin = $2',
+        [adminEmail, true]
       );
 
       if (existingAdmin.rows.length === 0) {
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
         
         await pool.query(
-          `INSERT INTO users (email, password, first_name, last_name, role, is_verified, created_at, updated_at)
+          `INSERT INTO users (email, password_hash, first_name, last_name, is_admin, is_verified, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-          [adminEmail, hashedPassword, 'Admin', 'User', 'admin', true]
+          [adminEmail, hashedPassword, 'Admin', 'User', true, true]
         );
         console.log('✅ Default admin user created (admin@luxury.com / admin123)');
       } else {
@@ -83,11 +83,11 @@ async function setupDatabase() {
     // Create default categories
     try {
       const categories = [
-        { name: 'Rings', description: 'Beautiful rings for every occasion' },
-        { name: 'Necklaces', description: 'Elegant necklaces and pendants' },
-        { name: 'Earrings', description: 'Stunning earrings for all styles' },
-        { name: 'Bracelets', description: 'Charming bracelets and bangles' },
-        { name: 'Watches', description: 'Luxury timepieces' }
+        { name: 'Rings', slug: 'rings', description: 'Beautiful rings for every occasion' },
+        { name: 'Necklaces', slug: 'necklaces', description: 'Elegant necklaces and pendants' },
+        { name: 'Earrings', slug: 'earrings', description: 'Stunning earrings for all styles' },
+        { name: 'Bracelets', slug: 'bracelets', description: 'Charming bracelets and bangles' },
+        { name: 'Watches', slug: 'watches', description: 'Luxury timepieces' }
       ];
 
       for (const category of categories) {
@@ -98,8 +98,8 @@ async function setupDatabase() {
 
         if (existingCategory.rows.length === 0) {
           await pool.query(
-            'INSERT INTO categories (name, description, created_at, updated_at) VALUES ($1, $2, NOW(), NOW())',
-            [category.name, category.description]
+            'INSERT INTO categories (name, slug, description, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())',
+            [category.name, category.slug, category.description]
           );
         }
       }
