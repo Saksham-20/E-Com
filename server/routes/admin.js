@@ -1,7 +1,6 @@
 const express = require('express');
 const pool = require('../database/config');
-const { authenticateToken } = require('../middleware/auth');
-const adminAuth = require('../middleware/adminAuth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const { upload, handleUploadError } = require('../middleware/upload');
 const imageService = require('../services/imageService');
@@ -10,7 +9,7 @@ const fs = require('fs');
 const router = express.Router();
 
 // Apply admin auth to all routes
-router.use(authenticateToken, adminAuth);
+router.use(authenticateToken, requireAdmin);
 
 // @route   GET /api/admin/dashboard
 // @desc    Get admin dashboard stats

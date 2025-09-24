@@ -16,7 +16,7 @@ const adminAuth = async (req, res, next) => {
     // Check if user exists and is admin
     const result = await pool.query(
       'SELECT id, email, first_name, last_name, is_admin FROM users WHERE id = $1',
-      [decoded.userId]
+      [decoded.id]
     );
 
     if (result.rows.length === 0) {

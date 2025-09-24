@@ -345,7 +345,8 @@ export const CartProvider = ({ children }) => {
         }
         
         // Remove via API
-        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cart/${cartItemId}`;
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const url = `${apiUrl}/api/cart/${cartItemId}`;
         
         const response = await fetch(url, {
           method: 'DELETE',

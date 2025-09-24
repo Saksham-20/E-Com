@@ -23,12 +23,14 @@ const authenticateToken = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Auth middleware: Decoded token:', decoded);
     
     // Get user from database
     const result = await query(
       'SELECT id, email, first_name, last_name, is_admin, is_verified FROM users WHERE id = $1',
       [decoded.id]
     );
+    console.log('Auth middleware: Database result:', result.rows);
 
     if (result.rows.length === 0) {
       return res.status(401).json({ 
