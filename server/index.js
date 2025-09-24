@@ -17,19 +17,17 @@ const cartRoutes = require('./routes/cart');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Security middleware - enabled for production
-if (process.env.NODE_ENV === 'production') {
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:3000"],
-      },
-    },
-  }));
-}
+// Security middleware - disabled for development
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       styleSrc: ["'self'", "'unsafe-inline'"],
+//       scriptSrc: ["'self'"],
+//       imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:3000"],
+//     },
+//   },
+// }));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -41,25 +39,14 @@ app.use('/api/', limiter);
 
 // Middleware
 app.use(compression());
-// CORS configuration with debugging
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CLIENT_URL, process.env.CORS_ORIGIN]
-    : true, // Allow all origins in development
+app.use(cors({
+  origin: true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
   optionsSuccessStatus: 200
-};
-
-console.log('🌐 CORS Configuration:');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('CLIENT_URL:', process.env.CLIENT_URL);
-console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
-console.log('CORS Origin:', corsOptions.origin);
-
-app.use(cors(corsOptions));
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -68,22 +55,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Server is running',
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// API health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'API is running',
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 // API Routes
@@ -103,7 +75,6 @@ console.log('✅ Stripe routes registered at /api/stripe');
 app.use('/api/wishlist', wishlistRoutes);
 console.log('✅ Wishlist routes registered at /api/wishlist');
 app.use('/api/cart', cartRoutes);
-console.log('✅ Cart routes registered at /api/cart');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
