@@ -439,7 +439,8 @@ export const CartProvider = ({ children }) => {
         variant_details: item.variant_details
       }));
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cart/merge`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/cart/merge`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

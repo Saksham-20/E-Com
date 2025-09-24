@@ -36,7 +36,8 @@ const Dashboard = () => {
       const token = localStorage.getItem('token');
       
       // Fetch dashboard stats
-      const dashboardResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/dashboard`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const dashboardResponse = await fetch(`${apiUrl}/api/admin/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -44,7 +45,7 @@ const Dashboard = () => {
       });
 
       // Fetch analytics data
-      const analyticsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/analytics?period=30d`, {
+      const analyticsResponse = await fetch(`${apiUrl}/api/admin/analytics?period=30d`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

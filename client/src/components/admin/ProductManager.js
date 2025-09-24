@@ -49,7 +49,8 @@ const ProductManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/products?limit=100`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/products?limit=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -87,7 +88,8 @@ const ProductManager = () => {
       // Fallback: try direct API call without auth since categories should be public
       try {
         console.log('Trying direct API call...');
-        const directResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products/categories`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const directResponse = await fetch(`${apiUrl}/api/products/categories`);
         
         console.log('Direct response status:', directResponse.status);
         
@@ -193,7 +195,8 @@ const ProductManager = () => {
         formDataToSend.append(`images`, image);
       });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/products`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -242,7 +245,8 @@ const ProductManager = () => {
         formDataToSend.append('images', image);
       });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/products/${selectedProduct.id}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/products/${selectedProduct.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -274,7 +278,8 @@ const ProductManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/products/${selectedProduct.id}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/products/${selectedProduct.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -304,7 +309,8 @@ const ProductManager = () => {
   const handleStockUpdate = async (productId, newQuantity) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/products/${productId}/stock`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/products/${productId}/stock`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -351,7 +357,8 @@ const ProductManager = () => {
     // Fetch all existing images for this product to show in edit modal
     (async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products/${product.slug}`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const res = await fetch(`${apiUrl}/api/products/${product.slug}`);
         if (res.ok) {
           const data = await res.json();
           const imgs = (data?.data?.product?.images || []).map(img => ({

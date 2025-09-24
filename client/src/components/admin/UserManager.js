@@ -47,7 +47,8 @@ const UserManager = () => {
         params.append('search', searchTerm);
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/users?${params}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/users?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -73,7 +74,8 @@ const UserManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/users`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/users`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -102,7 +104,8 @@ const UserManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/users/${selectedUser.id}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -130,7 +133,8 @@ const UserManager = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/users/${selectedUser.id}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}`, {
         method: 'DELETE',
         headers: { 
           'Authorization': `Bearer ${token}`,
