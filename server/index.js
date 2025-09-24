@@ -84,6 +84,7 @@ console.log('✅ Stripe routes registered at /api/stripe');
 app.use('/api/wishlist', wishlistRoutes);
 console.log('✅ Wishlist routes registered at /api/wishlist');
 app.use('/api/cart', cartRoutes);
+console.log('✅ Cart routes registered at /api/cart');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
