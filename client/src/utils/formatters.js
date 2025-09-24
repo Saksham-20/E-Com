@@ -326,11 +326,11 @@ export const formatSocialLink = (platform, username) => {
   if (!platform || !username) return '';
   
   const platforms = {
-    facebook: 'https://facebook.com/',
-    twitter: 'https://twitter.com/',
-    instagram: 'https://instagram.com/',
+    facebook: process.env.REACT_APP_FACEBOOK_URL || 'https://facebook.com/',
+    twitter: process.env.REACT_APP_TWITTER_URL || 'https://twitter.com/',
+    instagram: process.env.REACT_APP_INSTAGRAM_URL || 'https://instagram.com/',
     linkedin: 'https://linkedin.com/in/',
-    youtube: 'https://youtube.com/',
+    youtube: process.env.REACT_APP_YOUTUBE_URL || 'https://youtube.com/',
     github: 'https://github.com/',
     website: ''
   };

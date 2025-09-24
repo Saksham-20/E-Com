@@ -62,17 +62,17 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { name: 'Facebook', icon: FaFacebook, href: 'https://facebook.com' },
-    { name: 'Twitter', icon: FaTwitter, href: 'https://twitter.com' },
-    { name: 'Instagram', icon: FaInstagram, href: 'https://instagram.com' },
-    { name: 'Pinterest', icon: FaPinterest, href: 'https://pinterest.com' },
-    { name: 'YouTube', icon: FaYoutube, href: 'https://youtube.com' }
+    { name: 'Facebook', icon: FaFacebook, href: process.env.REACT_APP_FACEBOOK_URL || 'https://facebook.com' },
+    { name: 'Twitter', icon: FaTwitter, href: process.env.REACT_APP_TWITTER_URL || 'https://twitter.com' },
+    { name: 'Instagram', icon: FaInstagram, href: process.env.REACT_APP_INSTAGRAM_URL || 'https://instagram.com' },
+    { name: 'Pinterest', icon: FaPinterest, href: process.env.REACT_APP_PINTEREST_URL || 'https://pinterest.com' },
+    { name: 'YouTube', icon: FaYoutube, href: process.env.REACT_APP_YOUTUBE_URL || 'https://youtube.com' }
   ];
 
   const contactInfo = [
-    { icon: FaPhone, text: '+1 (800) 555-0123', href: 'tel:+18005550123' },
-    { icon: FaEnvelope, text: 'service@luxuryecom.com', href: 'mailto:service@luxuryecom.com' },
-    { icon: FaMapMarkerAlt, text: '123 Luxury Ave, New York, NY 10001', href: '#' }
+    { icon: FaPhone, text: process.env.REACT_APP_APP_PHONE || '+1 (800) 555-0123', href: `tel:${process.env.REACT_APP_APP_PHONE || '+18005550123'}` },
+    { icon: FaEnvelope, text: process.env.REACT_APP_APP_EMAIL || 'service@luxuryecom.com', href: `mailto:${process.env.REACT_APP_APP_EMAIL || 'service@luxuryecom.com'}` },
+    { icon: FaMapMarkerAlt, text: `${process.env.REACT_APP_STORE_STREET || '123 Luxury Ave'}, ${process.env.REACT_APP_STORE_CITY || 'New York'}, ${process.env.REACT_APP_STORE_STATE || 'NY'} ${process.env.REACT_APP_STORE_ZIP || '10001'}`, href: '#' }
   ];
 
   return (

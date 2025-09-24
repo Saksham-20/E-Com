@@ -1,26 +1,31 @@
-// Get API URL from environment or use localhost for development
-// Temporary hardcoded fix for production
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://luxury-ecommerce-api.onrender.com/api'
-  : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+// Get API URL from environment variables
+const API_BASE_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api`
+  : 'http://localhost:5000/api';
 
-// Enhanced debugging for production
-console.log('=== API SERVICE DEBUG ===');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-console.log('Final API_BASE_URL:', API_BASE_URL);
-console.log('Current window.location:', window.location.href);
-console.log('Is production?', process.env.NODE_ENV === 'production');
-console.log('========================');
+// Enhanced debugging for development only
+if (process.env.NODE_ENV === 'development') {
+  console.log('=== API SERVICE DEBUG ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+  console.log('Final API_BASE_URL:', API_BASE_URL);
+  console.log('Current window.location:', window.location.href);
+  console.log('========================');
+}
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
-    console.log('API Service: Constructor - baseURL set to:', this.baseURL);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Service: Constructor - baseURL set to:', this.baseURL);
+    }
     
     // Additional fallback check
     if (this.baseURL && !this.baseURL.includes('/api')) {
-      console.warn('API Service: baseURL missing /api, adding it');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('API Service: baseURL missing /api, adding it');
+      }
       this.baseURL = this.baseURL + '/api';
     }
   }
@@ -47,16 +52,11 @@ class ApiService {
 
     if (includeAuth) {
       const token = this.getAuthToken();
-      console.log('API: Getting auth token:', token ? 'Token exists' : 'No token');
       if (token) {
         headers.Authorization = `Bearer ${token}`;
-        console.log('API: Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
-      } else {
-        console.log('API: No token available, request will be unauthenticated');
       }
     }
 
-    console.log('API: Final headers:', headers);
     return headers;
   }
 
@@ -65,13 +65,10 @@ class ApiService {
     // Add cache-busting parameter to prevent browser cache issues
     const separator = endpoint.includes('?') ? '&' : '?';
     const url = `${this.baseURL}${endpoint}${separator}_t=${Date.now()}`;
-    console.log('API: Base URL:', this.baseURL);
-    console.log('API: Endpoint:', endpoint);
-    console.log('API: Final URL:', url);
-    console.log('API: this.baseURL type:', typeof this.baseURL);
-    console.log('API: this.baseURL value:', JSON.stringify(this.baseURL));
-    console.log('API Request Method:', options.method || 'GET');
-    console.log('API Request Headers:', this.getHeaders(options.includeAuth !== false));
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API: Making request to:', url);
+    }
     
     const config = {
       headers: this.getHeaders(options.includeAuth !== false),
@@ -79,16 +76,14 @@ class ApiService {
     };
 
     try {
-      console.log('API: Making request to:', url);
-      console.log('API: Full URL being called:', url);
-      console.log('API: Config being used:', config);
       const response = await fetch(url, config);
-      console.log('API: Response status:', response.status);
-      console.log('API: Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('API: Response status:', response.status);
+      }
       
       // Handle different response statuses
       if (response.status === 401) {
-        console.log('API: Unauthorized - clearing token and redirecting to login');
         // Unauthorized - clear token and redirect to login
         this.setAuthToken(null);
         window.location.href = '/login';
@@ -96,51 +91,39 @@ class ApiService {
       }
 
       if (response.status === 403) {
-        console.log('API: Access forbidden');
         throw new Error('Access forbidden');
       }
 
       if (response.status === 404) {
-        console.log('API: Resource not found - endpoint may not exist');
         throw new Error('Resource not found');
       }
 
       if (response.status >= 500) {
-        console.log('API: Server error occurred');
         throw new Error('Server error occurred');
       }
 
       // Parse response
       let data;
       const contentType = response.headers.get('content-type');
-      console.log('API: Response content type:', contentType);
       
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
-        console.log('API: Response data:', data);
       } else {
         data = await response.text();
-        console.log('API: Response text:', data);
       }
 
       if (!response.ok) {
-        console.log('API: Response not OK, throwing error');
-        console.log('API: Error data:', data);
         const error = new Error(data.message || `HTTP error! status: ${response.status}`);
         error.response = { data };
         error.status = response.status;
         throw error;
       }
 
-      console.log('API: Request successful');
       return { data };
     } catch (error) {
-      console.error('API request failed:', error);
-      console.error('API error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.error('API request failed:', error);
+      }
       throw error;
     }
   }
@@ -229,5 +212,4 @@ class ApiService {
 
 // Create and export a single instance
 const apiService = new ApiService();
-console.log('API Service: Instance created with baseURL:', apiService.baseURL);
 export default apiService;

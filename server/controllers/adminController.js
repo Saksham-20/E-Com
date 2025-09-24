@@ -265,32 +265,32 @@ const getSettings = async (req, res) => {
     
     const settings = {
       store: {
-        name: 'E-Commerce Shop Store',
-        description: 'Premium products for discerning customers',
-        email: 'admin@luxurystore.com',
-        phone: '+1-555-0123',
+        name: process.env.APP_NAME || 'E-Commerce Shop Store',
+        description: process.env.APP_DESCRIPTION || 'Premium products for discerning customers',
+        email: process.env.APP_EMAIL || 'admin@luxurystore.com',
+        phone: process.env.APP_PHONE || '+1-555-0123',
         address: {
-          street: '123 Luxury Lane',
-          city: 'Beverly Hills',
-          state: 'CA',
-          zipCode: '90210',
-          country: 'US'
+          street: process.env.STORE_STREET || '123 Luxury Lane',
+          city: process.env.STORE_CITY || 'Beverly Hills',
+          state: process.env.STORE_STATE || 'CA',
+          zipCode: process.env.STORE_ZIP || '90210',
+          country: process.env.STORE_COUNTRY || 'US'
         }
       },
       shipping: {
-        freeShippingThreshold: 100,
-        defaultShippingCost: 9.99,
-        expressShippingCost: 19.99
+        freeShippingThreshold: parseFloat(process.env.FREE_SHIPPING_THRESHOLD) || 100,
+        defaultShippingCost: parseFloat(process.env.DEFAULT_SHIPPING_COST) || 9.99,
+        expressShippingCost: parseFloat(process.env.EXPRESS_SHIPPING_COST) || 19.99
       },
       payment: {
-        acceptedMethods: ['credit_card', 'paypal'],
-        currency: 'USD',
-        taxRate: 8.5
+        acceptedMethods: (process.env.ACCEPTED_PAYMENT_METHODS || 'credit_card,paypal').split(','),
+        currency: process.env.CURRENCY || 'USD',
+        taxRate: parseFloat(process.env.TAX_RATE) || 8.5
       },
       notifications: {
-        orderConfirmation: true,
-        shippingUpdates: true,
-        marketingEmails: false
+        orderConfirmation: process.env.ORDER_CONFIRMATION_EMAIL === 'true',
+        shippingUpdates: process.env.SHIPPING_UPDATES_EMAIL === 'true',
+        marketingEmails: process.env.MARKETING_EMAILS === 'true'
       }
     };
 

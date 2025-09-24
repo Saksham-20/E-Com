@@ -267,7 +267,7 @@ const OrderManager = () => {
                   <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <div className="flex items-center">
                       <img
-                        src={item.image_url ? `http://localhost:5000${item.image_url}` : '/placeholder-product.jpg'}
+                        src={item.image_url ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${item.image_url}` : '/placeholder-product.jpg'}
                         alt={item.product_name}
                         className="w-12 h-12 object-cover rounded mr-3"
                       />

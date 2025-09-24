@@ -61,7 +61,9 @@ const ProductManager = () => {
         console.log('Admin products data:', data);
         console.log('First product:', data.products?.[0]);
         console.log('First product primary_image:', data.products?.[0]?.primary_image);
-        console.log('Constructed image URL:', data.products?.[0]?.primary_image ? `http://localhost:5000${data.products?.[0]?.primary_image}` : 'No image');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Constructed image URL:', data.products?.[0]?.primary_image ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${data.products?.[0]?.primary_image}` : 'No image');
+        }
         setProducts(data.products || []);
       } else {
         console.error('Failed to fetch products:', response.status);
@@ -354,7 +356,7 @@ const ProductManager = () => {
           const data = await res.json();
           const imgs = (data?.data?.product?.images || []).map(img => ({
             id: img.id,
-            url: `http://localhost:5000${img.image_url}`,
+            url: `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${img.image_url}`,
             is_primary: img.is_primary,
             sort_order: img.sort_order
           }));
