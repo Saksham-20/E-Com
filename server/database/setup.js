@@ -152,12 +152,27 @@ async function setupDatabase() {
     }
     console.log('✅ Indian jewelry categories created');
 
+    // Optionally run seed data
+    if (process.env.RUN_SEED === 'true') {
+      console.log('🌱 Running database seed...');
+      try {
+        const seedDatabase = require('./seed');
+        await seedDatabase();
+        console.log('✅ Database seeded with sample data');
+      } catch (error) {
+        console.log('⚠️ Seed failed, continuing without sample data:', error.message);
+      }
+    }
+
     await dbClient.end();
     console.log('🎉 Database setup completed successfully!');
+    console.log('\n📋 Admin Login Credentials:');
+    console.log(`Email: ${adminEmail}`);
+    console.log(`Password: ${adminPassword}`);
     console.log('\n📋 Next steps:');
-    console.log('1. Run: npm run db:seed (to populate with sample products)');
-    console.log('2. Start the server: npm run dev');
-    console.log('3. Start the client: cd client && npm start');
+    console.log('1. Update frontend API URL to: https://luxury-ecommerce-api.onrender.com');
+    console.log('2. Add Cloudinary credentials for image uploads');
+    console.log('3. Test your deployment!');
 
   } catch (error) {
     console.error('❌ Database setup failed:', error);
