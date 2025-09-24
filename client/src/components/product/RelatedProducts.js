@@ -15,7 +15,8 @@ const RelatedProducts = ({ categoryId, currentProductId }) => {
     try {
       setLoading(true);
       // TODO: Replace with actual API call
-      const response = await fetch(`/api/products/related?categoryId=${categoryId}&excludeId=${currentProductId}&limit=4`);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/products/related?categoryId=${categoryId}&excludeId=${currentProductId}&limit=4`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {

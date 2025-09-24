@@ -23,7 +23,8 @@ const useProducts = (initialFilters = {}) => {
         ...newFilters
       });
 
-      const response = await fetch(`/api/products?${queryParams}`);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/products?${queryParams}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch products');

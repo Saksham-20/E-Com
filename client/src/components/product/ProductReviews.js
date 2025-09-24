@@ -22,7 +22,8 @@ const ProductReviews = ({ productId }) => {
     try {
       setLoading(true);
       // TODO: Replace with actual API call
-      const response = await fetch(`/api/products/${productId}/reviews`);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/products/${productId}/reviews`);
       const data = await response.json();
       setReviews(data);
     } catch (error) {
@@ -36,7 +37,8 @@ const ProductReviews = ({ productId }) => {
     e.preventDefault();
     try {
       // TODO: Replace with actual API call
-      const response = await fetch(`/api/products/${productId}/reviews`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/products/${productId}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

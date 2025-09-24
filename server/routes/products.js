@@ -553,4 +553,130 @@ router.get('/:id/reviews', validateUUID, async (req, res) => {
   }
 });
 
+// @route   GET /api/products/related
+// @desc    Get related products
+// @access  Public
+router.get('/related', async (req, res) => {
+  try {
+    const { categoryId, excludeId, limit = 4 } = req.query;
+
+    if (!categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category ID is required'
+      });
+    }
+
+    const result = await query(`
+      SELECT 
+        p.*,
+        pi.image_url as primary_image
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
+      WHERE p.category_id = $1 
+        AND p.id != $2 
+        AND p.is_active = true
+      ORDER BY p.is_featured DESC, p.created_at DESC
+      LIMIT $3
+    `, [categoryId, excludeId || null, parseInt(limit)]);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error('Get related products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   GET /api/products/:id/reviews
+// @desc    Get product reviews
+// @access  Public
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(`
+      SELECT 
+        r.*,
+        u.first_name,
+        u.last_name
+      FROM product_reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.product_id = $1 AND r.is_approved = true
+      ORDER BY r.created_at DESC
+    `, [id]);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error('Get product reviews error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// @route   POST /api/products/:id/reviews
+// @desc    Add product review
+// @access  Private
+router.post('/:id/reviews', authenticateToken, [
+  body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+  body('comment').optional().isLength({ min: 1, max: 1000 }).withMessage('Comment must be between 1 and 1000 characters')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    // Check if user already reviewed this product
+    const existingReview = await query(
+      'SELECT id FROM product_reviews WHERE product_id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (existingReview.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reviewed this product'
+      });
+    }
+
+    // Add review
+    const result = await query(`
+      INSERT INTO product_reviews (product_id, user_id, rating, comment, is_approved)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [id, req.user.id, rating, comment, true]);
+
+    res.status(201).json({
+      success: true,
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Add product review error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 module.exports = router;
