@@ -96,8 +96,23 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'API route not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
-  console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
-  console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Run database setup
+    const setupDatabase = require('./database/setup');
+    await setupDatabase();
+    
+    // Start the server
+    app.listen(PORT, () => {
+      console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
+      console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
+      console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

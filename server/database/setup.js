@@ -102,19 +102,21 @@ async function setupDatabase() {
 
     // Create default admin user
     const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@luxurystore.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
     
     const adminExists = await dbClient.query(
       "SELECT 1 FROM users WHERE email = $1",
-      ['admin@luxury.com']
+      [adminEmail]
     );
 
     if (adminExists.rows.length === 0) {
       await dbClient.query(`
         INSERT INTO users (email, password_hash, first_name, last_name, is_admin, is_verified)
         VALUES ($1, $2, $3, $4, $5, $6)
-      `, ['admin@luxury.com', hashedPassword, 'Admin', 'User', true, true]);
-      console.log('✅ Default admin user created (admin@luxury.com / admin123)');
+      `, [adminEmail, hashedPassword, 'Admin', 'User', true, true]);
+      console.log(`✅ Default admin user created (${adminEmail} / ${adminPassword})`);
     } else {
       console.log('✅ Admin user already exists');
     }
