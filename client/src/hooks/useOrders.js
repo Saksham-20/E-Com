@@ -20,7 +20,8 @@ const useOrders = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/orders?page=${page}&limit=${pagination.itemsPerPage}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/orders?page=${page}&limit=${pagination.itemsPerPage}`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -50,7 +51,8 @@ const useOrders = () => {
     if (!user) return null;
 
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/orders/${orderId}`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -71,7 +73,8 @@ const useOrders = () => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const response = await fetch('/api/orders', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +104,8 @@ const useOrders = () => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/orders/${orderId}/cancel`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`
