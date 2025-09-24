@@ -17,6 +17,9 @@ const cartRoutes = require('./routes/cart');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for rate limiting (required for Render)
+app.set('trust proxy', 1);
+
 // Security middleware - configure based on environment
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet({

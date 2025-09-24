@@ -90,14 +90,28 @@ async function setupDatabase() {
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
     try {
-      await dbClient.query(schema);
+      // Split schema into individual statements
+      const statements = schema.split(';').filter(stmt => stmt.trim().length > 0);
+      
+      for (const statement of statements) {
+        if (statement.trim()) {
+          try {
+            await dbClient.query(statement);
+          } catch (error) {
+            // Log but continue if table already exists
+            if (error.code === '42P07' || error.code === '42710') {
+              console.log(`⚠️ Table already exists, skipping: ${statement.substring(0, 50)}...`);
+            } else {
+              console.error(`❌ Error executing statement: ${statement.substring(0, 50)}...`, error.message);
+              throw error;
+            }
+          }
+        }
+      }
       console.log('✅ Database schema created successfully');
     } catch (error) {
-      if (error.code === '42710') { // Object already exists
-        console.log('✅ Database schema already exists, skipping...');
-      } else {
-        throw error;
-      }
+      console.error('❌ Schema creation failed:', error);
+      throw error;
     }
 
     // Create default admin user
