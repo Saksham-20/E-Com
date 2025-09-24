@@ -2,6 +2,7 @@ const express = require('express');
 const { query } = require('../database/config');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { validateProduct, validateProductQuery, validateUUID } = require('../middleware/validation');
+const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
