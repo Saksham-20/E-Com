@@ -89,18 +89,27 @@ async function setupDatabase() {
     const schemaPath = path.join(__dirname, 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
+    // Force schema creation by dropping and recreating
+    try {
+      console.log('🔄 Dropping existing schema if it exists...');
+      await dbClient.query('DROP SCHEMA IF EXISTS public CASCADE;');
+      await dbClient.query('CREATE SCHEMA public;');
+      await dbClient.query('GRANT ALL ON SCHEMA public TO postgres;');
+      await dbClient.query('GRANT ALL ON SCHEMA public TO public;');
+      console.log('✅ Schema dropped and recreated');
+    } catch (error) {
+      console.log('⚠️ Schema drop/recreate failed, continuing...', error.message);
+    }
+
     try {
       // Execute the entire schema as one statement to handle dollar-quoted strings
+      console.log('🔄 Creating database tables...');
       await dbClient.query(schema);
       console.log('✅ Database schema created successfully');
     } catch (error) {
-      // If schema already exists, that's okay
-      if (error.code === '42P07' || error.code === '42710' || error.message.includes('already exists')) {
-        console.log('✅ Database schema already exists, skipping...');
-      } else {
-        console.error('❌ Schema creation failed:', error);
-        throw error;
-      }
+      console.error('❌ Schema creation failed:', error.message);
+      console.error('❌ Error code:', error.code);
+      throw error;
     }
 
     // Create default admin user
