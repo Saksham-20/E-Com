@@ -56,6 +56,16 @@ services:
         sync: false
       - key: CORS_ORIGIN
         value: https://luxury-ecommerce-frontend.onrender.com
+      - key: CLOUDINARY_CLOUD_NAME
+        value: duywipohs
+      - key: CLOUDINARY_API_KEY
+        value: 381183831597114
+      - key: CLOUDINARY_API_SECRET
+        value: aZowyFfya7-P_uIIrK5dx8c0nbo
+      - key: CLOUDINARY_SECURE
+        value: "true"
+      - key: CLOUDINARY_AUTO_OPTIMIZE
+        value: "true"
 
   # Frontend Static Site
   - type: web
@@ -68,6 +78,6 @@ services:
     autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
-        value: https://luxury-ecommerce-api.onrender.com/api
+        value: https://luxury-ecommerce-api.onrender.com
       - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
         sync: false
