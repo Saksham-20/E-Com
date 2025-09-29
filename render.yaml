@@ -55,7 +55,6 @@ services:
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/build
     plan: free
-    region: singapore
     pullRequestPreviewsEnabled: false
     autoDeploy: true
     envVars:
