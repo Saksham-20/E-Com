@@ -53,7 +53,7 @@ async function setupDatabase() {
 
     // Create default admin user
     const bcrypt = require('bcryptjs');
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@luxurystore.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@luxury.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
     try {
