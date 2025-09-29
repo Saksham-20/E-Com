@@ -24,31 +24,43 @@ async function setupDatabase() {
     const testResult = await pool.query('SELECT NOW()');
     console.log('✅ Connected to PostgreSQL via shared pool');
 
-    // Read and execute schema
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    const schema = fs.readFileSync(schemaPath, 'utf8');
-
-    // Force schema creation by dropping and recreating
+    // CHECK IF DATABASE ALREADY EXISTS TO PREVENT DATA LOSS
+    let shouldCreateTables = false;
     try {
-      console.log('🔄 Dropping existing schema if it exists...');
-      await pool.query('DROP SCHEMA IF EXISTS public CASCADE;');
-      await pool.query('CREATE SCHEMA public;');
-      await pool.query('GRANT ALL ON SCHEMA public TO postgres;');
-      await pool.query('GRANT ALL ON SCHEMA public TO public;');
-      console.log('✅ Schema dropped and recreated');
-    } catch (error) {
-      console.log('⚠️ Schema drop/recreate failed, continuing...', error.message);
+      const existingTables = await pool.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'users'
+      `);
+      
+      if (existingTables.rows.length === 0) {
+        console.log('🔄 Database appears to be empty, will create tables');
+        shouldCreateTables = true;
+      } else {
+        console.log('✅ Database already initialized, skipping table creation');
+        console.log('Found existing tables, preserving data');
+        return; // Exit early to preserve existing data
+      }
+    } catch (checkError) {
+      console.log('⚠️ Could not check existing tables, assuming fresh install');
+      shouldCreateTables = true;
     }
 
-    try {
-      // Execute the entire schema as one statement to handle complex SQL
-      console.log('🔄 Creating database tables...');
-      await pool.query(schema);
-      console.log('✅ Database schema created successfully');
-    } catch (error) {
-      console.error('❌ Schema creation failed:', error.message);
-      console.error('❌ Error code:', error.code);
-      // Don't throw, continue with the rest
+    if (shouldCreateTables) {
+      // Read and execute schema
+      const schemaPath = path.join(__dirname, 'schema.sql');
+      const schema = fs.readFileSync(schemaPath, 'utf8');
+
+      try {
+        // Execute the entire schema as one statement to handle complex SQL
+        console.log('🔄 Creating database tables...');
+        await pool.query(schema);
+        console.log('✅ Database schema created successfully');
+      } catch (error) {
+        console.error('❌ Schema creation failed:', error.message);
+        console.error('❌ Error code:', error.code);
+        // Don't throw, continue with the rest
+      }
     }
 
     // Create default admin user

@@ -237,17 +237,9 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 
           console.log(`Processing image ${i + 1}/${req.files.length}: ${file.originalname}`);
 
-          // Generate product images with unique naming
-          const processedImages = await imageService.generateProductImages(
-            file.path,
-            product.id,
-            i, // Pass image index for unique naming
-          );
-
-          // Store the medium size image URL in database (or thumbnail if medium not available)
-          const imageUrl = processedImages.find(img => img.size === 'medium')?.url ||
-                          processedImages.find(img => img.size === 'thumbnail')?.url ||
-                          processedImages[0].url;
+          // For Cloudinary uploads, use the secure URL directly
+          const imageUrl = file.path.startsWith('http') ? file.path : 
+                          (file.secure_url || file.url || file.path);
 
           // Save image record to database
           await pool.query(`
@@ -263,15 +255,8 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 
           console.log(`Successfully processed and stored image: ${imageUrl}`);
 
-          // Clean up the original uploaded file to avoid duplicates
-          try {
-            if (fs.existsSync(file.path)) {
-              fs.unlinkSync(file.path);
-              console.log('Cleaned up original file:', file.path);
-            }
-          } catch (cleanupError) {
-            console.log('Could not clean up original file:', cleanupError.message);
-          }
+          // Cloudinary files don't need local cleanup
+          console.log('Cloudinary upload complete:', imageUrl);
         }
       } catch (imageError) {
         console.error('Image processing error:', imageError);
@@ -413,16 +398,9 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
 
           console.log(`Processing image ${i + 1}/${filesToProcess.length}: ${file.originalname}`);
 
-          const processedImages = await imageService.generateProductImages(
-            file.path,
-            id,
-            i, // Pass image index for unique naming
-          );
-
-          // Store the medium size image URL in database (or thumbnail if medium not available)
-          const imageUrl = processedImages.find(img => img.size === 'medium')?.url ||
-                          processedImages.find(img => img.size === 'thumbnail')?.url ||
-                          processedImages[0].url;
+          // For Cloudinary uploads, use the secure URL directly
+          const imageUrl = file.path.startsWith('http') ? file.path : 
+                          (file.secure_url || file.url || file.path);
 
           await pool.query(
             `INSERT INTO product_images (product_id, image_url, alt_text, sort_order, is_primary)
@@ -438,14 +416,8 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
 
           console.log(`Successfully processed and stored image: ${imageUrl}`);
 
-          // cleanup original upload
-          try {
-            if (fs.existsSync(file.path)) {
-              fs.unlinkSync(file.path);
-            }
-          } catch (cleanupError) {
-            console.log('Could not clean up original file:', cleanupError.message);
-          }
+          // Cloudinary files don't need local cleanup
+          console.log('Cloudinary upload complete:', imageUrl);
         }
       } catch (imageError) {
         console.error('Image processing error (update):', imageError);
