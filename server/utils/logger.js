@@ -41,7 +41,7 @@ const logFormat = winston.format.combine(
 const fileFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
   winston.format.errors({ stack: true }),
-  winston.format.json()
+  winston.format.json(),
 );
 
 // Define transports
@@ -50,7 +50,7 @@ const transports = [
   new winston.transports.Console({
     format: logFormat,
   }),
-  
+
   // Error log file
   new winston.transports.File({
     filename: path.join('logs', 'error.log'),
@@ -59,7 +59,7 @@ const transports = [
     maxsize: 5242880, // 5MB
     maxFiles: 5,
   }),
-  
+
   // Combined log file
   new winston.transports.File({
     filename: path.join('logs', 'combined.log'),
@@ -88,7 +88,7 @@ if (!fs.existsSync(logsDir)) {
 // Add request logging middleware
 const requestLogger = (req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logData = {
@@ -98,7 +98,7 @@ const requestLogger = (req, res, next) => {
       duration: `${duration}ms`,
       ip: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (res.statusCode >= 400) {
@@ -120,7 +120,7 @@ const errorLogger = (err, req, res, next) => {
     url: req.originalUrl,
     ip: req.ip || req.connection.remoteAddress,
     userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   logger.error('Application Error', errorData);
@@ -132,7 +132,7 @@ process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception', {
     error: error.message,
     stack: error.stack,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
   process.exit(1);
 });
@@ -143,7 +143,7 @@ process.on('unhandledRejection', (reason, promise) => {
     reason: reason?.message || reason,
     stack: reason?.stack,
     promise: promise.toString(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -153,5 +153,5 @@ logger.info('Logger initialized successfully');
 module.exports = {
   logger,
   requestLogger,
-  errorLogger
+  errorLogger,
 };

@@ -10,7 +10,7 @@ const router = express.Router();
 // @access  Private
 router.post('/create-payment-intent', authenticateToken, [
   body('amount').isFloat({ min: 0.5 }).withMessage('Amount must be at least $0.50'),
-  body('currency').optional().isIn(['usd', 'eur', 'gbp']).withMessage('Invalid currency')
+  body('currency').optional().isIn(['usd', 'eur', 'gbp']).withMessage('Invalid currency'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -29,7 +29,7 @@ router.post('/create-payment-intent', authenticateToken, [
       currency: currency,
       metadata: {
         user_id: req.user.id.toString(),
-        user_email: req.user.email
+        user_email: req.user.email,
       },
       automatic_payment_methods: {
         enabled: true,
@@ -38,14 +38,14 @@ router.post('/create-payment-intent', authenticateToken, [
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
+      paymentIntentId: paymentIntent.id,
     });
 
   } catch (error) {
     console.error('Create payment intent error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create payment intent',
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -62,7 +62,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+      process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
@@ -72,33 +72,33 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   try {
     // Handle the event
     switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        console.log('Payment succeeded:', paymentIntent.id);
-        
-        // Here you could update order status, send confirmation emails, etc.
-        // For now, we'll just log the success
-        break;
-        
-      case 'payment_intent.payment_failed':
-        const failedPayment = event.data.object;
-        console.log('Payment failed:', failedPayment.id);
-        
-        // Here you could update order status, send failure notifications, etc.
-        break;
-        
-      case 'charge.succeeded':
-        const charge = event.data.object;
-        console.log('Charge succeeded:', charge.id);
-        break;
-        
-      case 'charge.failed':
-        const failedCharge = event.data.object;
-        console.log('Charge failed:', failedCharge.id);
-        break;
-        
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log('Payment succeeded:', paymentIntent.id);
+
+      // Here you could update order status, send confirmation emails, etc.
+      // For now, we'll just log the success
+      break;
+
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      console.log('Payment failed:', failedPayment.id);
+
+      // Here you could update order status, send failure notifications, etc.
+      break;
+
+    case 'charge.succeeded':
+      const charge = event.data.object;
+      console.log('Charge succeeded:', charge.id);
+      break;
+
+    case 'charge.failed':
+      const failedCharge = event.data.object;
+      console.log('Charge failed:', failedCharge.id);
+      break;
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
     }
 
     res.json({ received: true });
@@ -136,14 +136,14 @@ router.post('/setup-intent', authenticateToken, async (req, res) => {
 
     res.json({
       clientSecret: setupIntent.client_secret,
-      setupIntentId: setupIntent.id
+      setupIntentId: setupIntent.id,
     });
 
   } catch (error) {
     console.error('Create setup intent error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create setup intent',
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -154,7 +154,7 @@ router.post('/setup-intent', authenticateToken, async (req, res) => {
 router.post('/refund', authenticateToken, [
   body('paymentIntentId').notEmpty().withMessage('Payment intent ID is required'),
   body('amount').optional().isFloat({ min: 0 }).withMessage('Amount must be positive'),
-  body('reason').optional().isIn(['duplicate', 'fraudulent', 'requested_by_customer']).withMessage('Invalid refund reason')
+  body('reason').optional().isIn(['duplicate', 'fraudulent', 'requested_by_customer']).withMessage('Invalid refund reason'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -182,15 +182,15 @@ router.post('/refund', authenticateToken, [
         id: refund.id,
         amount: refund.amount / 100, // Convert from cents
         status: refund.status,
-        reason: refund.reason
-      }
+        reason: refund.reason,
+      },
     });
 
   } catch (error) {
     console.error('Refund error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to process refund',
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -211,24 +211,24 @@ router.get('/balance', authenticateToken, async (req, res) => {
       balance: {
         available: balance.available.map(b => ({
           amount: b.amount / 100,
-          currency: b.currency
+          currency: b.currency,
         })),
         pending: balance.pending.map(b => ({
           amount: b.amount / 100,
-          currency: b.currency
+          currency: b.currency,
         })),
         instant_available: balance.instant_available.map(b => ({
           amount: b.amount / 100,
-          currency: b.currency
-        }))
-      }
+          currency: b.currency,
+        })),
+      },
     });
 
   } catch (error) {
     console.error('Get balance error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to get balance',
-      error: error.message 
+      error: error.message,
     });
   }
 });

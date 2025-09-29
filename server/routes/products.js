@@ -13,7 +13,7 @@ router.get('/', validateProductQuery, async (req, res) => {
   try {
     console.log('🔍 GET /api/products - Request received');
     console.log('🔍 Query params:', req.query);
-    
+
     const {
       page = 1,
       limit = 12,
@@ -23,16 +23,16 @@ router.get('/', validateProductQuery, async (req, res) => {
       max_price,
       sort = 'created_at',
       order = 'desc',
-      search
+      search,
     } = req.query;
-    
+
     console.log('🔍 Processed params:', { page, limit, category, brand, min_price, max_price, sort, order, search });
 
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereConditions = ['p.is_active = true'];
-    let queryParams = [];
+    const whereConditions = ['p.is_active = true'];
+    const queryParams = [];
     let paramCount = 0;
 
     if (category) {
@@ -123,7 +123,7 @@ router.get('/', validateProductQuery, async (req, res) => {
 
     console.log('🔍 Products query:', productsQuery);
     console.log('🔍 Products params:', [...queryParams, limit, offset]);
-    
+
     const productsResult = await query(productsQuery, [...queryParams, limit, offset]);
     console.log('🔍 Products result count:', productsResult.rows.length);
     console.log('🔍 First product sample:', productsResult.rows[0]);
@@ -143,11 +143,11 @@ router.get('/', validateProductQuery, async (req, res) => {
           total_items: total,
           items_per_page: parseInt(limit),
           has_next_page: hasNextPage,
-          has_prev_page: hasPrevPage
-        }
-      }
+          has_prev_page: hasPrevPage,
+        },
+      },
     };
-    
+
     console.log('🔍 Sending response with', productsResult.rows.length, 'products');
     res.json(response);
 
@@ -155,7 +155,7 @@ router.get('/', validateProductQuery, async (req, res) => {
     console.error('Get products error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -196,15 +196,15 @@ router.get('/featured', async (req, res) => {
     res.json({
       success: true,
       data: {
-        products: result.rows
-      }
+        products: result.rows,
+      },
     });
 
   } catch (error) {
     console.error('Get featured products error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -215,7 +215,7 @@ router.get('/featured', async (req, res) => {
 router.get('/categories', async (req, res) => {
   try {
     console.log('🔍 GET /api/products/categories - Request received');
-    
+
     const result = await query(`
       SELECT id, name, slug, description, image_url, sort_order
       FROM categories
@@ -228,14 +228,14 @@ router.get('/categories', async (req, res) => {
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows,
     });
 
   } catch (error) {
     console.error('Get categories error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -246,10 +246,10 @@ router.get('/categories', async (req, res) => {
 router.get('/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
-    
+
     // Check if identifier is a UUID (ID) or slug
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier);
-    
+
     // Get product details
     const productResult = await query(`
       SELECT 
@@ -274,7 +274,7 @@ router.get('/:identifier', async (req, res) => {
     if (productResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       });
     }
 
@@ -327,16 +327,16 @@ router.get('/:identifier', async (req, res) => {
           ...product,
           images: imagesResult.rows,
           variants: variantsResult.rows,
-          related_products: relatedResult.rows
-        }
-      }
+          related_products: relatedResult.rows,
+        },
+      },
     });
 
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -358,19 +358,19 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
       category_id,
       brand_id,
       meta_title,
-      meta_description
+      meta_description,
     } = req.body;
 
     // Check if slug already exists
     const existingProduct = await query(
       'SELECT id FROM products WHERE slug = $1',
-      [slug]
+      [slug],
     );
 
     if (existingProduct.rows.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Product with this slug already exists'
+        message: 'Product with this slug already exists',
       });
     }
 
@@ -384,22 +384,22 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
       RETURNING *
     `, [
       name, slug, description, short_description, price, compare_price,
-      sku, stock_quantity, category_id, brand_id, meta_title, meta_description
+      sku, stock_quantity, category_id, brand_id, meta_title, meta_description,
     ]);
 
     res.status(201).json({
       success: true,
       message: 'Product created successfully',
       data: {
-        product: result.rows[0]
-      }
+        product: result.rows[0],
+      },
     });
 
   } catch (error) {
     console.error('Create product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -415,13 +415,13 @@ router.put('/:id', authenticateToken, requireAdmin, validateUUID, validateProduc
     // Check if product exists
     const existingProduct = await query(
       'SELECT id FROM products WHERE id = $1',
-      [id]
+      [id],
     );
 
     if (existingProduct.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       });
     }
 
@@ -441,7 +441,7 @@ router.put('/:id', authenticateToken, requireAdmin, validateUUID, validateProduc
     if (updateFields.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No fields to update'
+        message: 'No fields to update',
       });
     }
 
@@ -462,15 +462,15 @@ router.put('/:id', authenticateToken, requireAdmin, validateUUID, validateProduc
       success: true,
       message: 'Product updated successfully',
       data: {
-        product: result.rows[0]
-      }
+        product: result.rows[0],
+      },
     });
 
   } catch (error) {
     console.error('Update product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -485,32 +485,32 @@ router.delete('/:id', authenticateToken, requireAdmin, validateUUID, async (req,
     // Check if product exists
     const existingProduct = await query(
       'SELECT id FROM products WHERE id = $1',
-      [id]
+      [id],
     );
 
     if (existingProduct.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       });
     }
 
     // Soft delete (set is_active to false)
     await query(
       'UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-      [id]
+      [id],
     );
 
     res.json({
       success: true,
-      message: 'Product deleted successfully'
+      message: 'Product deleted successfully',
     });
 
   } catch (error) {
     console.error('Delete product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -545,7 +545,7 @@ router.get('/:id/reviews', validateUUID, async (req, res) => {
     // Get total count
     const countResult = await query(
       'SELECT COUNT(*) as total FROM product_reviews WHERE product_id = $1 AND is_approved = true',
-      [id]
+      [id],
     );
 
     const total = parseInt(countResult.rows[0].total);
@@ -559,16 +559,16 @@ router.get('/:id/reviews', validateUUID, async (req, res) => {
           current_page: parseInt(page),
           total_pages: totalPages,
           total_items: total,
-          items_per_page: parseInt(limit)
-        }
-      }
+          items_per_page: parseInt(limit),
+        },
+      },
     });
 
   } catch (error) {
     console.error('Get product reviews error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -583,7 +583,7 @@ router.get('/related', async (req, res) => {
     if (!categoryId) {
       return res.status(400).json({
         success: false,
-        message: 'Category ID is required'
+        message: 'Category ID is required',
       });
     }
 
@@ -602,14 +602,14 @@ router.get('/related', async (req, res) => {
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows,
     });
 
   } catch (error) {
     console.error('Get related products error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -634,14 +634,14 @@ router.get('/:id/reviews', async (req, res) => {
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows,
     });
 
   } catch (error) {
     console.error('Get product reviews error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -651,14 +651,14 @@ router.get('/:id/reviews', async (req, res) => {
 // @access  Private
 router.post('/:id/reviews', authenticateToken, [
   body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
-  body('comment').optional().isLength({ min: 1, max: 1000 }).withMessage('Comment must be between 1 and 1000 characters')
+  body('comment').optional().isLength({ min: 1, max: 1000 }).withMessage('Comment must be between 1 and 1000 characters'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
 
@@ -668,13 +668,13 @@ router.post('/:id/reviews', authenticateToken, [
     // Check if user already reviewed this product
     const existingReview = await query(
       'SELECT id FROM product_reviews WHERE product_id = $1 AND user_id = $2',
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (existingReview.rows.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'You have already reviewed this product'
+        message: 'You have already reviewed this product',
       });
     }
 
@@ -687,14 +687,14 @@ router.post('/:id/reviews', authenticateToken, [
 
     res.status(201).json({
       success: true,
-      data: result.rows[0]
+      data: result.rows[0],
     });
 
   } catch (error) {
     console.error('Add product review error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });

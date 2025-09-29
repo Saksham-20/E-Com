@@ -12,7 +12,7 @@ const productController = {
         minPrice,
         maxPrice,
         rating,
-        sortBy = 'newest'
+        sortBy = 'newest',
       } = req.query;
 
       let query = `
@@ -67,26 +67,26 @@ const productController = {
       }
 
       // Add GROUP BY for aggregation
-      query += ` GROUP BY p.id`;
+      query += ' GROUP BY p.id';
 
       // Add sorting
       switch (sortBy) {
-        case 'price-low':
-          query += ` ORDER BY p.price ASC`;
-          break;
-        case 'price-high':
-          query += ` ORDER BY p.price DESC`;
-          break;
-        case 'rating':
-          query += ` ORDER BY average_rating DESC`;
-          break;
-        case 'popularity':
-          query += ` ORDER BY p.sales_count DESC`;
-          break;
-        case 'newest':
-        default:
-          query += ` ORDER BY p.created_at DESC`;
-          break;
+      case 'price-low':
+        query += ' ORDER BY p.price ASC';
+        break;
+      case 'price-high':
+        query += ' ORDER BY p.price DESC';
+        break;
+      case 'rating':
+        query += ' ORDER BY average_rating DESC';
+        break;
+      case 'popularity':
+        query += ' ORDER BY p.sales_count DESC';
+        break;
+      case 'newest':
+      default:
+        query += ' ORDER BY p.created_at DESC';
+        break;
       }
 
       // Add pagination
@@ -116,13 +116,13 @@ const productController = {
           currentPage: parseInt(page),
           totalPages: Math.ceil(totalCount / limit),
           totalItems: totalCount,
-          itemsPerPage: parseInt(limit)
-        }
+          itemsPerPage: parseInt(limit),
+        },
       });
     } catch (error) {
       console.error('Get products error:', error);
       res.status(500).json({
-        message: 'Internal server error while fetching products'
+        message: 'Internal server error while fetching products',
       });
     }
   },
@@ -144,7 +144,7 @@ const productController = {
 
       if (result.rows.length === 0) {
         return res.status(404).json({
-          message: 'Product not found'
+          message: 'Product not found',
         });
       }
 
@@ -153,13 +153,13 @@ const productController = {
       // Get product images
       const imagesResult = await pool.query(
         'SELECT * FROM product_images WHERE product_id = $1 ORDER BY sort_order',
-        [id]
+        [id],
       );
 
       // Get product variants
       const variantsResult = await pool.query(
         'SELECT * FROM product_variants WHERE product_id = $1 ORDER BY sort_order',
-        [id]
+        [id],
       );
 
       // Get related products
@@ -180,13 +180,13 @@ const productController = {
           ...product,
           images: imagesResult.rows,
           variants: variantsResult.rows,
-          related: relatedResult.rows
-        }
+          related: relatedResult.rows,
+        },
       });
     } catch (error) {
       console.error('Get product error:', error);
       res.status(500).json({
-        message: 'Internal server error while fetching product'
+        message: 'Internal server error while fetching product',
       });
     }
   },
@@ -203,7 +203,7 @@ const productController = {
         stock,
         sku,
         weight,
-        dimensions
+        dimensions,
       } = req.body;
 
       const result = await pool.query(`
@@ -214,12 +214,12 @@ const productController = {
 
       res.status(201).json({
         message: 'Product created successfully',
-        product: result.rows[0]
+        product: result.rows[0],
       });
     } catch (error) {
       console.error('Create product error:', error);
       res.status(500).json({
-        message: 'Internal server error while creating product'
+        message: 'Internal server error while creating product',
       });
     }
   },
@@ -245,7 +245,7 @@ const productController = {
 
       if (setClause.length === 0) {
         return res.status(400).json({
-          message: 'No fields to update'
+          message: 'No fields to update',
         });
       }
 
@@ -263,18 +263,18 @@ const productController = {
 
       if (result.rows.length === 0) {
         return res.status(404).json({
-          message: 'Product not found'
+          message: 'Product not found',
         });
       }
 
       res.json({
         message: 'Product updated successfully',
-        product: result.rows[0]
+        product: result.rows[0],
       });
     } catch (error) {
       console.error('Update product error:', error);
       res.status(500).json({
-        message: 'Internal server error while updating product'
+        message: 'Internal server error while updating product',
       });
     }
   },
@@ -286,23 +286,23 @@ const productController = {
 
       const result = await pool.query(
         'DELETE FROM products WHERE id = $1 RETURNING *',
-        [id]
+        [id],
       );
 
       if (result.rows.length === 0) {
         return res.status(404).json({
-          message: 'Product not found'
+          message: 'Product not found',
         });
       }
 
       res.json({
         message: 'Product deleted successfully',
-        product: result.rows[0]
+        product: result.rows[0],
       });
     } catch (error) {
       console.error('Delete product error:', error);
       res.status(500).json({
-        message: 'Internal server error while deleting product'
+        message: 'Internal server error while deleting product',
       });
     }
   },
@@ -318,15 +318,15 @@ const productController = {
       `);
 
       res.json({
-        categories: result.rows
+        categories: result.rows,
       });
     } catch (error) {
       console.error('Get categories error:', error);
       res.status(500).json({
-        message: 'Internal server error while fetching categories'
+        message: 'Internal server error while fetching categories',
       });
     }
-  }
+  },
 };
 
 module.exports = productController;

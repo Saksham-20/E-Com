@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === 'production') {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:3000"],
+        imgSrc: ["'self'", 'data:', 'https:', 'http://localhost:5000', 'http://localhost:3000'],
       },
     },
   }));
@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production') {
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api/', limiter);
 
@@ -43,14 +43,14 @@ app.use('/api/', limiter);
 app.use(compression());
 // CORS configuration with debugging
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? [process.env.CLIENT_URL, process.env.CORS_ORIGIN]
     : true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 console.log('🌐 CORS Configuration:');
@@ -68,21 +68,21 @@ app.use('/uploads', express.static('uploads'));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'Server is running',
     environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // API health check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'API is running',
     environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -108,9 +108,9 @@ console.log('✅ Cart routes registered at /api/cart');
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
   });
 });
 
@@ -130,11 +130,11 @@ async function startServer() {
     console.log('  - CORS_ORIGIN:', process.env.CORS_ORIGIN);
     console.log('  - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
     console.log('  - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-    
+
     // Run database setup
     const setupDatabase = require('./database/setup');
     await setupDatabase();
-    
+
     // Start the server
     app.listen(PORT, () => {
       console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);

@@ -16,7 +16,13 @@
     "install-all": "npm install && cd client && npm install",
     "seed": "node server/database/seed.js",
     "db:setup": "node server/database/setup.js",
-    "start": "NODE_ENV=production node server/index.js"
+    "lint": "eslint client/src/ server/ --ext .js,.jsx",
+    "lint:fix": "eslint client/src/ server/ --ext .js,.jsx --fix",
+    "lint:client": "eslint client/src/ --ext .js,.jsx",
+    "lint:server": "eslint server/ --ext .js",
+    "security:audit": "npm audit",
+    "security:audit:fix": "npm audit fix",
+    "test:security": "npx audit-ci --config audit-ci.json"
   },
   "keywords": [
     "ecommerce",
@@ -46,6 +52,14 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "eslint": "^8.57.0",
+    "@babel/eslint-parser": "^7.23.3",
+    "@babel/preset-react": "^7.23.3",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-security": "^1.7.1",
+    "audit-ci": "^7.0.1"
   }
 }

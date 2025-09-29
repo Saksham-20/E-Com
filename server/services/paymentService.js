@@ -11,13 +11,13 @@ class PaymentService {
   async createPaymentIntent(orderData) {
     try {
       const { amount, currency = 'usd', metadata = {} } = orderData;
-      
+
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency,
         metadata: {
           ...metadata,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         },
         automatic_payment_methods: {
           enabled: true,
@@ -28,7 +28,7 @@ class PaymentService {
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
         amount: paymentIntent.amount / 100, // Convert back to dollars
-        currency: paymentIntent.currency
+        currency: paymentIntent.currency,
       };
     } catch (error) {
       console.error('Failed to create payment intent:', error);
@@ -40,13 +40,13 @@ class PaymentService {
   async confirmPayment(paymentIntentId) {
     try {
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
-      
+
       if (paymentIntent.status === 'succeeded') {
         return {
           success: true,
           status: paymentIntent.status,
           amount: paymentIntent.amount / 100,
-          currency: paymentIntent.currency
+          currency: paymentIntent.currency,
         };
       } else if (paymentIntent.status === 'requires_confirmation') {
         const confirmedIntent = await this.stripe.paymentIntents.confirm(paymentIntentId);
@@ -54,13 +54,13 @@ class PaymentService {
           success: true,
           status: confirmedIntent.status,
           amount: confirmedIntent.amount / 100,
-          currency: confirmedIntent.currency
+          currency: confirmedIntent.currency,
         };
       } else {
         return {
           success: false,
           status: paymentIntent.status,
-          error: 'Payment requires additional action'
+          error: 'Payment requires additional action',
         };
       }
     } catch (error) {
@@ -73,15 +73,15 @@ class PaymentService {
   async processSuccessfulPayment(paymentIntentId, orderId) {
     try {
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
-      
+
       if (paymentIntent.status === 'succeeded') {
         // Update order status
         await Order.updateStatus(orderId, 'paid');
-        
+
         // Get order details for confirmation
         const order = await Order.getById(orderId);
         const user = await User.getById(order.user_id);
-        
+
         return {
           success: true,
           order,
@@ -90,8 +90,8 @@ class PaymentService {
             amount: paymentIntent.amount / 100,
             currency: paymentIntent.currency,
             paymentMethod: paymentIntent.payment_method_types[0],
-            transactionId: paymentIntent.id
-          }
+            transactionId: paymentIntent.id,
+          },
         };
       } else {
         throw new Error('Payment not successful');
@@ -111,8 +111,8 @@ class PaymentService {
         phone: userData.phone,
         metadata: {
           user_id: userData.id,
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       });
 
       return customer;
@@ -186,15 +186,15 @@ class PaymentService {
         amount: Math.round(amount * 100), // Convert to cents
         reason: reason || 'requested_by_customer',
         metadata: {
-          refunded_at: new Date().toISOString()
-        }
+          refunded_at: new Date().toISOString(),
+        },
       });
 
       return {
         success: true,
         refundId: refund.id,
         amount: refund.amount / 100,
-        status: refund.status
+        status: refund.status,
       };
     } catch (error) {
       console.error('Failed to process refund:', error);
@@ -216,7 +216,7 @@ class PaymentService {
         currency: payment.currency,
         status: payment.status,
         created: new Date(payment.created * 1000),
-        paymentMethod: payment.payment_method_types[0]
+        paymentMethod: payment.payment_method_types[0],
       }));
     } catch (error) {
       console.error('Failed to get payment history:', error);
@@ -232,7 +232,7 @@ class PaymentService {
         items: [{ price: priceId }],
         metadata: {
           ...metadata,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         },
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
@@ -272,21 +272,21 @@ class PaymentService {
   async handleWebhook(event) {
     try {
       switch (event.type) {
-        case 'payment_intent.succeeded':
-          return await this.handlePaymentSucceeded(event.data.object);
-        
-        case 'payment_intent.payment_failed':
-          return await this.handlePaymentFailed(event.data.object);
-        
-        case 'invoice.payment_succeeded':
-          return await this.handleInvoicePaymentSucceeded(event.data.object);
-        
-        case 'invoice.payment_failed':
-          return await this.handleInvoicePaymentFailed(event.data.object);
-        
-        default:
-          console.log(`Unhandled event type: ${event.type}`);
-          return { success: true, message: 'Event ignored' };
+      case 'payment_intent.succeeded':
+        return await this.handlePaymentSucceeded(event.data.object);
+
+      case 'payment_intent.payment_failed':
+        return await this.handlePaymentFailed(event.data.object);
+
+      case 'invoice.payment_succeeded':
+        return await this.handleInvoicePaymentSucceeded(event.data.object);
+
+      case 'invoice.payment_failed':
+        return await this.handleInvoicePaymentFailed(event.data.object);
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+        return { success: true, message: 'Event ignored' };
       }
     } catch (error) {
       console.error('Failed to handle webhook:', error);

@@ -66,14 +66,14 @@ const generateSKU = (category, brand, productId) => {
 const formatCurrency = (amount, currency = 'INR', locale = 'en-IN') => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: currency
+    currency: currency,
   }).format(amount);
 };
 
 // Format date
 const formatDate = (date, format = 'YYYY-MM-DD') => {
   const d = new Date(date);
-  
+
   if (format === 'YYYY-MM-DD') {
     return d.toISOString().split('T')[0];
   } else if (format === 'MM/DD/YYYY') {
@@ -83,7 +83,7 @@ const formatDate = (date, format = 'YYYY-MM-DD') => {
   } else if (format === 'relative') {
     return getRelativeTime(d);
   }
-  
+
   return d.toISOString();
 };
 
@@ -91,7 +91,7 @@ const formatDate = (date, format = 'YYYY-MM-DD') => {
 const getRelativeTime = (date) => {
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-  
+
   if (diffInSeconds < 60) {
     return 'just now';
   } else if (diffInSeconds < 3600) {
@@ -153,24 +153,24 @@ const isValidPhone = (phone) => {
 const isValidCreditCard = (cardNumber) => {
   const cleanNumber = cardNumber.replace(/\s/g, '');
   if (!/^\d+$/.test(cleanNumber)) return false;
-  
+
   let sum = 0;
   let isEven = false;
-  
+
   for (let i = cleanNumber.length - 1; i >= 0; i--) {
     let digit = parseInt(cleanNumber.charAt(i));
-    
+
     if (isEven) {
       digit *= 2;
       if (digit > 9) {
         digit -= 9;
       }
     }
-    
+
     sum += digit;
     isEven = !isEven;
   }
-  
+
   return sum % 10 === 0;
 };
 
@@ -179,9 +179,9 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
@@ -192,7 +192,7 @@ const generatePagination = (page, limit, total) => {
   const totalPages = Math.ceil(total / limit);
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
-  
+
   return {
     currentPage: page,
     totalPages,
@@ -203,7 +203,7 @@ const generatePagination = (page, limit, total) => {
     nextPage: hasNextPage ? page + 1 : null,
     prevPage: hasPrevPage ? page - 1 : null,
     startIndex: (page - 1) * limit + 1,
-    endIndex: Math.min(page * limit, total)
+    endIndex: Math.min(page * limit, total),
   };
 };
 
@@ -252,7 +252,7 @@ const throttle = (func, limit) => {
 
 // Generate UUID v4
 const generateUUID = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0;
     const v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
@@ -272,7 +272,7 @@ const isEmpty = (obj) => {
 const getNestedProperty = (obj, path, defaultValue = undefined) => {
   const keys = path.split('.');
   let result = obj;
-  
+
   for (const key of keys) {
     if (result && typeof result === 'object' && key in result) {
       result = result[key];
@@ -280,7 +280,7 @@ const getNestedProperty = (obj, path, defaultValue = undefined) => {
       return defaultValue;
     }
   }
-  
+
   return result;
 };
 
@@ -288,7 +288,7 @@ const getNestedProperty = (obj, path, defaultValue = undefined) => {
 const setNestedProperty = (obj, path, value) => {
   const keys = path.split('.');
   let current = obj;
-  
+
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
     if (!(key in current) || typeof current[key] !== 'object') {
@@ -296,7 +296,7 @@ const setNestedProperty = (obj, path, value) => {
     }
     current = current[key];
   }
-  
+
   current[keys[keys.length - 1]] = value;
   return obj;
 };
@@ -328,5 +328,5 @@ module.exports = {
   generateUUID,
   isEmpty,
   getNestedProperty,
-  setNestedProperty
+  setNestedProperty,
 };

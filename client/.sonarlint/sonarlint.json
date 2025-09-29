@@ -1,0 +1,11 @@
+{
+  "sonarlint.connectedMode.servers": [],
+  "sonarlint.rules": {
+    "javascript:S1481": "off",
+    "javascript:S1854": "off",
+    "javascript:S1118": "off"
+  },
+  "sonarlint.pathToNodeExecutable": "node",
+  "sonarlint.analyzeOpenFilesOnly": false,
+  "sonarlint.showVerboseLogs": true
+}

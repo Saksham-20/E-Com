@@ -6,7 +6,7 @@ const patterns = {
   phone: /^\+?[\d\s\-\(\)]{10,}$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
   zipCode: /^\d{5}(-\d{4})?$/,
-  creditCard: /^\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}$/
+  creditCard: /^\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}$/,
 };
 
 // Common validation messages
@@ -20,7 +20,7 @@ const messages = {
   'number.min': '{{#label}} must be at least {{#limit}}',
   'number.max': '{{#label}} must not exceed {{#limit}}',
   'any.required': '{{#label}} is required',
-  'object.unknown': '{{#label}} is not allowed'
+  'object.unknown': '{{#label}} is not allowed',
 };
 
 // User validation schemas
@@ -32,45 +32,45 @@ const userValidation = {
       .max(50)
       .required()
       .messages(messages),
-    
+
     last_name: Joi.string()
       .min(2)
       .max(50)
       .required()
       .messages(messages),
-    
+
     email: Joi.string()
       .email()
       .required()
       .messages(messages),
-    
+
     password: Joi.string()
       .pattern(patterns.password)
       .required()
       .messages({
         ...messages,
-        'string.pattern.base': 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character'
+        'string.pattern.base': 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character',
       }),
-    
+
     confirm_password: Joi.string()
       .valid(Joi.ref('password'))
       .required()
       .messages({
         ...messages,
-        'any.only': 'Passwords must match'
+        'any.only': 'Passwords must match',
       }),
-    
+
     phone: Joi.string()
       .pattern(patterns.phone)
       .optional()
       .messages(messages),
-    
+
     accept_terms: Joi.boolean()
       .valid(true)
       .required()
       .messages({
-        'any.only': 'You must accept the terms and conditions'
-      })
+        'any.only': 'You must accept the terms and conditions',
+      }),
   }),
 
   // Login validation
@@ -79,10 +79,10 @@ const userValidation = {
       .email()
       .required()
       .messages(messages),
-    
+
     password: Joi.string()
       .required()
-      .messages(messages)
+      .messages(messages),
   }),
 
   // Profile update validation
@@ -92,31 +92,31 @@ const userValidation = {
       .max(50)
       .optional()
       .messages(messages),
-    
+
     last_name: Joi.string()
       .min(2)
       .max(50)
       .optional()
       .messages(messages),
-    
+
     phone: Joi.string()
       .pattern(patterns.phone)
       .optional()
       .messages(messages),
-    
+
     address: Joi.object({
       street: Joi.string().max(100).optional(),
       city: Joi.string().max(50).optional(),
       state: Joi.string().max(50).optional(),
       zip_code: Joi.string().pattern(patterns.zipCode).optional(),
-      country: Joi.string().max(50).optional()
+      country: Joi.string().max(50).optional(),
     }).optional(),
-    
+
     preferences: Joi.object({
       newsletter: Joi.boolean().optional(),
       marketing: Joi.boolean().optional(),
-      language: Joi.string().valid('en', 'es', 'fr').optional()
-    }).optional()
+      language: Joi.string().valid('en', 'es', 'fr').optional(),
+    }).optional(),
   }),
 
   // Password change validation
@@ -124,23 +124,23 @@ const userValidation = {
     current_password: Joi.string()
       .required()
       .messages(messages),
-    
+
     new_password: Joi.string()
       .pattern(patterns.password)
       .required()
       .messages({
         ...messages,
-        'string.pattern.base': 'New password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character'
+        'string.pattern.base': 'New password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character',
       }),
-    
+
     confirm_new_password: Joi.string()
       .valid(Joi.ref('new_password'))
       .required()
       .messages({
         ...messages,
-        'any.only': 'New passwords must match'
-      })
-  })
+        'any.only': 'New passwords must match',
+      }),
+  }),
 };
 
 // Product validation schemas
@@ -152,63 +152,63 @@ const productValidation = {
       .max(200)
       .required()
       .messages(messages),
-    
+
     description: Joi.string()
       .min(10)
       .max(2000)
       .required()
       .messages(messages),
-    
+
     price: Joi.number()
       .positive()
       .precision(2)
       .required()
       .messages(messages),
-    
+
     category_id: Joi.number()
       .integer()
       .positive()
       .required()
       .messages(messages),
-    
+
     brand: Joi.string()
       .max(100)
       .optional()
       .messages(messages),
-    
+
     sku: Joi.string()
       .max(50)
       .optional()
       .messages(messages),
-    
+
     stock_quantity: Joi.number()
       .integer()
       .min(0)
       .required()
       .messages(messages),
-    
+
     weight: Joi.number()
       .positive()
       .precision(2)
       .optional()
       .messages(messages),
-    
+
     dimensions: Joi.object({
       length: Joi.number().positive().precision(2).optional(),
       width: Joi.number().positive().precision(2).optional(),
-      height: Joi.number().positive().precision(2).optional()
+      height: Joi.number().positive().precision(2).optional(),
     }).optional(),
-    
+
     tags: Joi.array()
       .items(Joi.string().max(50))
       .max(20)
       .optional()
       .messages(messages),
-    
+
     is_active: Joi.boolean()
       .default(true)
       .optional()
-      .messages(messages)
+      .messages(messages),
   }),
 
   // Product update validation
@@ -218,63 +218,63 @@ const productValidation = {
       .max(200)
       .optional()
       .messages(messages),
-    
+
     description: Joi.string()
       .min(10)
       .max(2000)
       .optional()
       .messages(messages),
-    
+
     price: Joi.number()
       .positive()
       .precision(2)
       .optional()
       .messages(messages),
-    
+
     category_id: Joi.number()
       .integer()
       .positive()
       .optional()
       .messages(messages),
-    
+
     brand: Joi.string()
       .max(100)
       .optional()
       .messages(messages),
-    
+
     sku: Joi.string()
       .max(50)
       .optional()
       .messages(messages),
-    
+
     stock_quantity: Joi.number()
       .integer()
       .min(0)
       .optional()
       .messages(messages),
-    
+
     weight: Joi.number()
       .positive()
       .precision(2)
       .optional()
       .messages(messages),
-    
+
     dimensions: Joi.object({
       length: Joi.number().positive().precision(2).optional(),
       width: Joi.number().positive().precision(2).optional(),
-      height: Joi.number().positive().precision(2).optional()
+      height: Joi.number().positive().precision(2).optional(),
     }).optional(),
-    
+
     tags: Joi.array()
       .items(Joi.string().max(50))
       .max(20)
       .optional()
       .messages(messages),
-    
+
     is_active: Joi.boolean()
       .optional()
-      .messages(messages)
-  })
+      .messages(messages),
+  }),
 };
 
 // Order validation schemas
@@ -285,12 +285,12 @@ const orderValidation = {
       .items(Joi.object({
         product_id: Joi.number().integer().positive().required(),
         quantity: Joi.number().integer().positive().required(),
-        variant_id: Joi.number().integer().positive().optional()
+        variant_id: Joi.number().integer().positive().optional(),
       }))
       .min(1)
       .required()
       .messages(messages),
-    
+
     shipping_address: Joi.object({
       first_name: Joi.string().min(2).max(50).required(),
       last_name: Joi.string().min(2).max(50).required(),
@@ -299,9 +299,9 @@ const orderValidation = {
       state: Joi.string().max(50).required(),
       zip_code: Joi.string().pattern(patterns.zipCode).required(),
       country: Joi.string().max(50).required(),
-      phone: Joi.string().pattern(patterns.phone).required()
+      phone: Joi.string().pattern(patterns.phone).required(),
     }).required(),
-    
+
     billing_address: Joi.object({
       first_name: Joi.string().min(2).max(50).required(),
       last_name: Joi.string().min(2).max(50).required(),
@@ -309,13 +309,13 @@ const orderValidation = {
       city: Joi.string().max(50).required(),
       state: Joi.string().max(50).required(),
       zip_code: Joi.string().pattern(patterns.zipCode).required(),
-      country: Joi.string().max(50).required()
+      country: Joi.string().max(50).required(),
     }).required(),
-    
+
     payment_method: Joi.string().required(),
     shipping_method: Joi.string().required(),
     discount_code: Joi.string().max(50).optional(),
-    notes: Joi.string().max(500).optional()
+    notes: Joi.string().max(500).optional(),
   }),
 
   // Order update validation
@@ -324,17 +324,17 @@ const orderValidation = {
       .valid('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded')
       .optional()
       .messages(messages),
-    
+
     tracking_number: Joi.string()
       .max(100)
       .optional()
       .messages(messages),
-    
+
     notes: Joi.string()
       .max(500)
       .optional()
-      .messages(messages)
-  })
+      .messages(messages),
+  }),
 };
 
 // Cart validation schemas
@@ -346,19 +346,19 @@ const cartValidation = {
       .positive()
       .required()
       .messages(messages),
-    
+
     quantity: Joi.number()
       .integer()
       .positive()
       .max(99)
       .required()
       .messages(messages),
-    
+
     variant_id: Joi.number()
       .integer()
       .positive()
       .optional()
-      .messages(messages)
+      .messages(messages),
   }),
 
   // Update cart item validation
@@ -368,8 +368,8 @@ const cartValidation = {
       .positive()
       .max(99)
       .required()
-      .messages(messages)
-  })
+      .messages(messages),
+  }),
 };
 
 // Review validation schemas
@@ -382,19 +382,19 @@ const reviewValidation = {
       .max(5)
       .required()
       .messages(messages),
-    
+
     title: Joi.string()
       .min(3)
       .max(100)
       .required()
       .messages(messages),
-    
+
     comment: Joi.string()
       .min(10)
       .max(1000)
       .required()
-      .messages(messages)
-  })
+      .messages(messages),
+  }),
 };
 
 // Search and filter validation
@@ -406,60 +406,60 @@ const searchValidation = {
       .max(100)
       .optional()
       .messages(messages),
-    
+
     category_id: Joi.number()
       .integer()
       .positive()
       .optional()
       .messages(messages),
-    
+
     min_price: Joi.number()
       .positive()
       .precision(2)
       .optional()
       .messages(messages),
-    
+
     max_price: Joi.number()
       .positive()
       .precision(2)
       .optional()
       .messages(messages),
-    
+
     brand: Joi.string()
       .max(100)
       .optional()
       .messages(messages),
-    
+
     rating: Joi.number()
       .integer()
       .min(1)
       .max(5)
       .optional()
       .messages(messages),
-    
+
     sort_by: Joi.string()
       .valid('name', 'price', 'rating', 'created_at', 'popularity')
       .optional()
       .messages(messages),
-    
+
     sort_order: Joi.string()
       .valid('asc', 'desc')
       .optional()
       .messages(messages),
-    
+
     page: Joi.number()
       .integer()
       .positive()
       .optional()
       .messages(messages),
-    
+
     limit: Joi.number()
       .integer()
       .positive()
       .max(100)
       .optional()
-      .messages(messages)
-  })
+      .messages(messages),
+  }),
 };
 
 // Pagination validation
@@ -469,30 +469,30 @@ const paginationValidation = {
     .positive()
     .default(1)
     .messages(messages),
-  
+
   limit: Joi.number()
     .integer()
     .positive()
     .max(100)
     .default(10)
-    .messages(messages)
+    .messages(messages),
 };
 
 // Validation helper functions
 const validate = (schema, data) => {
   const { error, value } = schema.validate(data, {
     abortEarly: false,
-    stripUnknown: true
+    stripUnknown: true,
   });
-  
+
   if (error) {
     const errors = error.details.map(detail => ({
       field: detail.path.join('.'),
-      message: detail.message
+      message: detail.message,
     }));
     throw new Error(JSON.stringify(errors));
   }
-  
+
   return value;
 };
 
@@ -500,17 +500,17 @@ const validatePartial = (schema, data) => {
   const { error, value } = schema.validate(data, {
     abortEarly: false,
     stripUnknown: true,
-    allowUnknown: true
+    allowUnknown: true,
   });
-  
+
   if (error) {
     const errors = error.details.map(detail => ({
       field: detail.path.join('.'),
-      message: detail.message
+      message: detail.message,
     }));
     throw new Error(JSON.stringify(errors));
   }
-  
+
   return value;
 };
 
@@ -525,5 +525,5 @@ module.exports = {
   searchValidation,
   paginationValidation,
   validate,
-  validatePartial
+  validatePartial,
 };

@@ -15,8 +15,8 @@ class EmailService {
         secure: false, // true for 465, false for other ports
         auth: {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
+          pass: process.env.SMTP_PASS,
+        },
       });
 
       // Verify connection
@@ -39,7 +39,7 @@ class EmailService {
         from: `"${process.env.APP_NAME || 'E-Commerce Shop'}" <${process.env.SMTP_USER}>`,
         to: user.email,
         subject: 'Welcome to E-Commerce Shop!',
-        html: this.getWelcomeEmailTemplate(user)
+        html: this.getWelcomeEmailTemplate(user),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -61,7 +61,7 @@ class EmailService {
         from: `"${process.env.APP_NAME || 'E-Commerce Shop'}" <${process.env.SMTP_USER}>`,
         to: user.email,
         subject: `Order Confirmation #${order.order_number}`,
-        html: this.getOrderConfirmationTemplate(order, user)
+        html: this.getOrderConfirmationTemplate(order, user),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -80,12 +80,12 @@ class EmailService {
       }
 
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-      
+
       const mailOptions = {
         from: `"${process.env.APP_NAME || 'E-Commerce Shop'}" <${process.env.SMTP_USER}>`,
         to: user.email,
         subject: 'Password Reset Request',
-        html: this.getPasswordResetTemplate(user, resetUrl)
+        html: this.getPasswordResetTemplate(user, resetUrl),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -107,7 +107,7 @@ class EmailService {
         from: `"${process.env.APP_NAME || 'E-Commerce Shop'}" <${process.env.SMTP_USER}>`,
         to: user.email,
         subject: `Order Status Update #${order.order_number}`,
-        html: this.getOrderStatusUpdateTemplate(order, user, status)
+        html: this.getOrderStatusUpdateTemplate(order, user, status),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -129,7 +129,7 @@ class EmailService {
         from: `"${process.env.APP_NAME || 'E-Commerce Shop'}" <${process.env.SMTP_USER}>`,
         to: user.email,
         subject: `Your Order Has Shipped #${order.order_number}`,
-        html: this.getShippingConfirmationTemplate(order, user, trackingNumber)
+        html: this.getShippingConfirmationTemplate(order, user, trackingNumber),
       };
 
       const result = await this.transporter.sendMail(mailOptions);

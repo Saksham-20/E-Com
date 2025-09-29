@@ -3,21 +3,21 @@ const db = require('../database/config');
 class Product {
   static async create(productData) {
     try {
-      const { 
-        name, 
-        description, 
-        price, 
-        originalPrice, 
-        category, 
-        brand, 
-        sku, 
-        stock, 
-        images, 
-        tags, 
+      const {
+        name,
+        description,
+        price,
+        originalPrice,
+        category,
+        brand,
+        sku,
+        stock,
+        images,
+        tags,
         specifications,
-        variants 
+        variants,
       } = productData;
-      
+
       const [result] = await db.execute(
         `INSERT INTO products (name, description, price, originalPrice, category, brand, sku, stock, images, tags, specifications, createdAt, updatedAt) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
@@ -32,12 +32,12 @@ class Product {
           stock,
           JSON.stringify(images || []),
           JSON.stringify(tags || []),
-          JSON.stringify(specifications || {})
-        ]
+          JSON.stringify(specifications || {}),
+        ],
       );
-      
+
       const productId = result.insertId;
-      
+
       // Create variants if provided
       if (variants && variants.length > 0) {
         for (const variant of variants) {
@@ -50,12 +50,12 @@ class Product {
               variant.price,
               variant.stock,
               variant.sku,
-              JSON.stringify(variant.specifications || {})
-            ]
+              JSON.stringify(variant.specifications || {}),
+            ],
           );
         }
       }
-      
+
       return productId;
     } catch (error) {
       throw error;
@@ -66,13 +66,13 @@ class Product {
     try {
       const [rows] = await db.execute(
         'SELECT * FROM products WHERE id = ?',
-        [id]
+        [id],
       );
-      
+
       if (rows.length === 0) return null;
-      
+
       const product = rows[0];
-      
+
       // Parse JSON fields
       if (product.images) {
         try {
@@ -81,7 +81,7 @@ class Product {
           product.images = [];
         }
       }
-      
+
       if (product.tags) {
         try {
           product.tags = JSON.parse(product.tags);
@@ -89,7 +89,7 @@ class Product {
           product.tags = [];
         }
       }
-      
+
       if (product.specifications) {
         try {
           product.specifications = JSON.parse(product.specifications);
@@ -97,13 +97,13 @@ class Product {
           product.specifications = {};
         }
       }
-      
+
       // Get variants
       const [variants] = await db.execute(
         'SELECT * FROM product_variants WHERE productId = ?',
-        [id]
+        [id],
       );
-      
+
       // Parse variant specifications
       variants.forEach(variant => {
         if (variant.specifications) {
@@ -114,9 +114,9 @@ class Product {
           }
         }
       });
-      
+
       product.variants = variants;
-      
+
       return product;
     } catch (error) {
       throw error;
@@ -125,50 +125,50 @@ class Product {
 
   static async findAll(options = {}) {
     try {
-      const { 
-        page = 1, 
-        limit = 12, 
-        category, 
-        brand, 
-        search, 
-        minPrice, 
-        maxPrice, 
+      const {
+        page = 1,
+        limit = 12,
+        category,
+        brand,
+        search,
+        minPrice,
+        maxPrice,
         inStock,
-        sortBy = 'createdAt', 
-        sortOrder = 'DESC' 
+        sortBy = 'createdAt',
+        sortOrder = 'DESC',
       } = options;
-      
+
       const offset = (page - 1) * limit;
-      
+
       let whereClause = 'WHERE 1=1';
       const params = [];
-      
+
       if (category) {
         whereClause += ' AND category = ?';
         params.push(category);
       }
-      
+
       if (brand) {
         whereClause += ' AND brand = ?';
         params.push(brand);
       }
-      
+
       if (search) {
         whereClause += ' AND (name LIKE ? OR description LIKE ? OR tags LIKE ?)';
         const searchTerm = `%${search}%`;
         params.push(searchTerm, searchTerm, searchTerm);
       }
-      
+
       if (minPrice !== undefined) {
         whereClause += ' AND price >= ?';
         params.push(minPrice);
       }
-      
+
       if (maxPrice !== undefined) {
         whereClause += ' AND price <= ?';
         params.push(maxPrice);
       }
-      
+
       if (inStock !== undefined) {
         if (inStock) {
           whereClause += ' AND stock > 0';
@@ -176,7 +176,7 @@ class Product {
           whereClause += ' AND stock = 0';
         }
       }
-      
+
       const countQuery = `SELECT COUNT(*) as total FROM products ${whereClause}`;
       const productsQuery = `
         SELECT * FROM products 
@@ -184,10 +184,10 @@ class Product {
         ORDER BY ${sortBy} ${sortOrder}
         LIMIT ? OFFSET ?
       `;
-      
+
       const [countResult] = await db.execute(countQuery, params);
       const [products] = await db.execute(productsQuery, [...params, parseInt(limit), offset]);
-      
+
       // Parse JSON fields for each product
       products.forEach(product => {
         if (product.images) {
@@ -197,7 +197,7 @@ class Product {
             product.images = [];
           }
         }
-        
+
         if (product.tags) {
           try {
             product.tags = JSON.parse(product.tags);
@@ -205,7 +205,7 @@ class Product {
             product.tags = [];
           }
         }
-        
+
         if (product.specifications) {
           try {
             product.specifications = JSON.parse(product.specifications);
@@ -214,17 +214,17 @@ class Product {
           }
         }
       });
-      
+
       const totalPages = Math.ceil(countResult[0].total / limit);
-      
+
       return {
         products,
         pagination: {
           currentPage: parseInt(page),
           totalPages,
           totalItems: countResult[0].total,
-          itemsPerPage: parseInt(limit)
-        }
+          itemsPerPage: parseInt(limit),
+        },
       };
     } catch (error) {
       throw error;
@@ -234,13 +234,13 @@ class Product {
   static async update(id, updateData) {
     try {
       const allowedFields = [
-        'name', 'description', 'price', 'originalPrice', 'category', 
-        'brand', 'sku', 'stock', 'images', 'tags', 'specifications'
+        'name', 'description', 'price', 'originalPrice', 'category',
+        'brand', 'sku', 'stock', 'images', 'tags', 'specifications',
       ];
-      
+
       const updates = [];
       const values = [];
-      
+
       for (const [key, value] of Object.entries(updateData)) {
         if (allowedFields.includes(key)) {
           updates.push(`${key} = ?`);
@@ -251,19 +251,19 @@ class Product {
           }
         }
       }
-      
+
       if (updates.length === 0) {
         return false;
       }
-      
+
       updates.push('updatedAt = NOW()');
       values.push(id);
-      
+
       const [result] = await db.execute(
         `UPDATE products SET ${updates.join(', ')} WHERE id = ?`,
-        values
+        values,
       );
-      
+
       return result.affectedRows > 0;
     } catch (error) {
       throw error;
@@ -275,20 +275,20 @@ class Product {
       // Start transaction
       const connection = await db.getConnection();
       await connection.beginTransaction();
-      
+
       try {
         // Delete variants first
         await connection.execute(
           'DELETE FROM product_variants WHERE productId = ?',
-          [id]
+          [id],
         );
-        
+
         // Delete product
         const [result] = await connection.execute(
           'DELETE FROM products WHERE id = ?',
-          [id]
+          [id],
         );
-        
+
         await connection.commit();
         return result.affectedRows > 0;
       } catch (error) {
@@ -312,7 +312,7 @@ class Product {
       } else {
         query = 'UPDATE products SET stock = ?, updatedAt = NOW() WHERE id = ?';
       }
-      
+
       const [result] = await db.execute(query, [quantity, id]);
       return result.affectedRows > 0;
     } catch (error) {
@@ -323,9 +323,9 @@ class Product {
   static async getCategories() {
     try {
       const [rows] = await db.execute(
-        'SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category'
+        'SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category',
       );
-      
+
       return rows.map(row => row.category);
     } catch (error) {
       throw error;
@@ -335,9 +335,9 @@ class Product {
   static async getBrands() {
     try {
       const [rows] = await db.execute(
-        'SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL ORDER BY brand'
+        'SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL ORDER BY brand',
       );
-      
+
       return rows.map(row => row.brand);
     } catch (error) {
       throw error;
@@ -351,9 +351,9 @@ class Product {
          WHERE category = ? AND id != ? 
          ORDER BY RAND() 
          LIMIT ?`,
-        [categoryId, currentProductId, limit]
+        [categoryId, currentProductId, limit],
       );
-      
+
       // Parse JSON fields
       rows.forEach(product => {
         if (product.images) {
@@ -364,7 +364,7 @@ class Product {
           }
         }
       });
-      
+
       return rows;
     } catch (error) {
       throw error;
@@ -378,9 +378,9 @@ class Product {
          WHERE featured = true 
          ORDER BY createdAt DESC 
          LIMIT ?`,
-        [limit]
+        [limit],
       );
-      
+
       // Parse JSON fields
       rows.forEach(product => {
         if (product.images) {
@@ -391,7 +391,7 @@ class Product {
           }
         }
       });
-      
+
       return rows;
     } catch (error) {
       throw error;
@@ -403,11 +403,11 @@ class Product {
       const [totalProducts] = await db.execute('SELECT COUNT(*) as total FROM products');
       const [categoryStats] = await db.execute('SELECT category, COUNT(*) as count FROM products GROUP BY category');
       const [stockStats] = await db.execute('SELECT COUNT(*) as outOfStock FROM products WHERE stock = 0');
-      
+
       return {
         totalProducts: totalProducts[0].total,
         categoryBreakdown: categoryStats,
-        outOfStock: stockStats[0].outOfStock
+        outOfStock: stockStats[0].outOfStock,
       };
     } catch (error) {
       throw error;

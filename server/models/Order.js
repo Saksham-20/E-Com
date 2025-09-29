@@ -3,75 +3,75 @@ const db = require('../database/config');
 class Order {
   static async create(orderData) {
     try {
-    const { 
-      userId, 
-      total, 
-      status = 'pending', 
-      shippingAddress, 
-      billingAddress, 
-      paymentMethod, 
-      paymentDetails,
-      items 
-    } = orderData;
-    
-    // Start transaction
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
-    
-    try {
+      const {
+        userId,
+        total,
+        status = 'pending',
+        shippingAddress,
+        billingAddress,
+        paymentMethod,
+        paymentDetails,
+        items,
+      } = orderData;
+
+      // Start transaction
+      const connection = await db.getConnection();
+      await connection.beginTransaction();
+
+      try {
       // Create order
-      const [orderResult] = await connection.execute(
-        `INSERT INTO orders (userId, total, status, shippingAddress, billingAddress, paymentMethod, paymentDetails, createdAt, updatedAt) 
+        const [orderResult] = await connection.execute(
+          `INSERT INTO orders (userId, total, status, shippingAddress, billingAddress, paymentMethod, paymentDetails, createdAt, updatedAt) 
          VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [
-          userId,
-          total,
-          status,
-          JSON.stringify(shippingAddress),
-          JSON.stringify(billingAddress),
-          paymentMethod,
-          JSON.stringify(paymentDetails)
-        ]
-      );
-      
-      const orderId = orderResult.insertId;
-      
-      // Create order items
-      for (const item of items) {
-        await connection.execute(
-          `INSERT INTO order_items (orderId, productId, quantity, price, variant) 
-           VALUES (?, ?, ?, ?, ?)`,
           [
-            orderId,
-            item.id,
-            item.quantity,
-            item.price,
-            JSON.stringify(item.variant || {})
-          ]
+            userId,
+            total,
+            status,
+            JSON.stringify(shippingAddress),
+            JSON.stringify(billingAddress),
+            paymentMethod,
+            JSON.stringify(paymentDetails),
+          ],
         );
-        
-        // Update product stock
-        if (item.variant && item.variant.id) {
+
+        const orderId = orderResult.insertId;
+
+        // Create order items
+        for (const item of items) {
           await connection.execute(
-            'UPDATE product_variants SET stock = GREATEST(0, stock - ?) WHERE id = ?',
-            [item.quantity, item.variant.id]
+            `INSERT INTO order_items (orderId, productId, quantity, price, variant) 
+           VALUES (?, ?, ?, ?, ?)`,
+            [
+              orderId,
+              item.id,
+              item.quantity,
+              item.price,
+              JSON.stringify(item.variant || {}),
+            ],
           );
-        } else {
-          await connection.execute(
-            'UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?',
-            [item.quantity, item.id]
-          );
+
+          // Update product stock
+          if (item.variant && item.variant.id) {
+            await connection.execute(
+              'UPDATE product_variants SET stock = GREATEST(0, stock - ?) WHERE id = ?',
+              [item.quantity, item.variant.id],
+            );
+          } else {
+            await connection.execute(
+              'UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?',
+              [item.quantity, item.id],
+            );
+          }
         }
+
+        await connection.commit();
+        return orderId;
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      } finally {
+        connection.release();
       }
-      
-      await connection.commit();
-      return orderId;
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
     } catch (error) {
       throw error;
     }
@@ -81,13 +81,13 @@ class Order {
     try {
       const [orders] = await db.execute(
         'SELECT * FROM orders WHERE id = ?',
-        [id]
+        [id],
       );
-      
+
       if (orders.length === 0) return null;
-      
+
       const order = orders[0];
-      
+
       // Parse JSON fields
       if (order.shippingAddress) {
         try {
@@ -96,7 +96,7 @@ class Order {
           order.shippingAddress = {};
         }
       }
-      
+
       if (order.billingAddress) {
         try {
           order.billingAddress = JSON.parse(order.billingAddress);
@@ -104,7 +104,7 @@ class Order {
           order.billingAddress = {};
         }
       }
-      
+
       if (order.paymentDetails) {
         try {
           order.paymentDetails = JSON.parse(order.paymentDetails);
@@ -112,13 +112,13 @@ class Order {
           order.paymentDetails = {};
         }
       }
-      
+
       // Get order items
       const [orderItems] = await db.execute(
         'SELECT * FROM order_items WHERE orderId = ?',
-        [id]
+        [id],
       );
-      
+
       // Parse variant JSON for each item
       orderItems.forEach(item => {
         if (item.variant) {
@@ -129,9 +129,9 @@ class Order {
           }
         }
       });
-      
+
       order.items = orderItems;
-      
+
       return order;
     } catch (error) {
       throw error;
@@ -142,15 +142,15 @@ class Order {
     try {
       const { page = 1, limit = 10, status } = options;
       const offset = (page - 1) * limit;
-      
+
       let whereClause = 'WHERE userId = ?';
       const params = [userId];
-      
+
       if (status) {
         whereClause += ' AND status = ?';
         params.push(status);
       }
-      
+
       const countQuery = `SELECT COUNT(*) as total FROM orders ${whereClause}`;
       const ordersQuery = `
         SELECT * FROM orders 
@@ -158,10 +158,10 @@ class Order {
         ORDER BY createdAt DESC 
         LIMIT ? OFFSET ?
       `;
-      
+
       const [countResult] = await db.execute(countQuery, params);
       const [orders] = await db.execute(ordersQuery, [...params, parseInt(limit), offset]);
-      
+
       // Parse JSON fields for each order
       orders.forEach(order => {
         if (order.shippingAddress) {
@@ -171,7 +171,7 @@ class Order {
             order.shippingAddress = {};
           }
         }
-        
+
         if (order.billingAddress) {
           try {
             order.billingAddress = JSON.parse(order.billingAddress);
@@ -179,7 +179,7 @@ class Order {
             order.billingAddress = {};
           }
         }
-        
+
         if (order.paymentDetails) {
           try {
             order.paymentDetails = JSON.parse(order.paymentDetails);
@@ -188,17 +188,17 @@ class Order {
           }
         }
       });
-      
+
       const totalPages = Math.ceil(countResult[0].total / limit);
-      
+
       return {
         orders,
         pagination: {
           currentPage: parseInt(page),
           totalPages,
           totalItems: countResult[0].total,
-          itemsPerPage: parseInt(limit)
-        }
+          itemsPerPage: parseInt(limit),
+        },
       };
     } catch (error) {
       throw error;
@@ -207,25 +207,25 @@ class Order {
 
   static async findAll(options = {}) {
     try {
-      const { 
-        page = 1, 
-        limit = 10, 
-        status, 
-        userId, 
-        sortBy = 'createdAt', 
-        sortOrder = 'DESC' 
+      const {
+        page = 1,
+        limit = 10,
+        status,
+        userId,
+        sortBy = 'createdAt',
+        sortOrder = 'DESC',
       } = options;
-      
+
       const offset = (page - 1) * limit;
-      
+
       let whereClause = '';
       const params = [];
-      
+
       if (status) {
         whereClause += 'WHERE status = ?';
         params.push(status);
       }
-      
+
       if (userId) {
         if (whereClause) {
           whereClause += ' AND userId = ?';
@@ -234,7 +234,7 @@ class Order {
         }
         params.push(userId);
       }
-      
+
       const countQuery = `SELECT COUNT(*) as total FROM orders ${whereClause}`;
       const ordersQuery = `
         SELECT o.*, u.firstName, u.lastName, u.email 
@@ -244,10 +244,10 @@ class Order {
         ORDER BY o.${sortBy} ${sortOrder}
         LIMIT ? OFFSET ?
       `;
-      
+
       const [countResult] = await db.execute(countQuery, params);
       const [orders] = await db.execute(ordersQuery, [...params, parseInt(limit), offset]);
-      
+
       // Parse JSON fields for each order
       orders.forEach(order => {
         if (order.shippingAddress) {
@@ -257,7 +257,7 @@ class Order {
             order.shippingAddress = {};
           }
         }
-        
+
         if (order.billingAddress) {
           try {
             order.billingAddress = JSON.parse(order.billingAddress);
@@ -265,7 +265,7 @@ class Order {
             order.billingAddress = {};
           }
         }
-        
+
         if (order.paymentDetails) {
           try {
             order.paymentDetails = JSON.parse(order.paymentDetails);
@@ -274,17 +274,17 @@ class Order {
           }
         }
       });
-      
+
       const totalPages = Math.ceil(countResult[0].total / limit);
-      
+
       return {
         orders,
         pagination: {
           currentPage: parseInt(page),
           totalPages,
           totalItems: countResult[0].total,
-          itemsPerPage: parseInt(limit)
-        }
+          itemsPerPage: parseInt(limit),
+        },
       };
     } catch (error) {
       throw error;
@@ -294,16 +294,16 @@ class Order {
   static async updateStatus(id, status) {
     try {
       const allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-      
+
       if (!allowedStatuses.includes(status)) {
         throw new Error('Invalid status');
       }
-      
+
       const [result] = await db.execute(
         'UPDATE orders SET status = ?, updatedAt = NOW() WHERE id = ?',
-        [status, id]
+        [status, id],
       );
-      
+
       return result.affectedRows > 0;
     } catch (error) {
       throw error;
@@ -315,61 +315,61 @@ class Order {
       // Start transaction
       const connection = await db.getConnection();
       await connection.beginTransaction();
-      
+
       try {
         // Get order details
         const [orders] = await connection.execute(
           'SELECT * FROM orders WHERE id = ?',
-          [id]
+          [id],
         );
-        
+
         if (orders.length === 0) {
           throw new Error('Order not found');
         }
-        
+
         const order = orders[0];
-        
+
         // Check if user can cancel this order
         if (userId && order.userId !== userId) {
           throw new Error('Access denied');
         }
-        
+
         if (order.status === 'cancelled') {
           throw new Error('Order is already cancelled');
         }
-        
+
         if (order.status === 'delivered') {
           throw new Error('Cannot cancel delivered order');
         }
-        
+
         // Update order status
         await connection.execute(
           'UPDATE orders SET status = "cancelled", updatedAt = NOW() WHERE id = ?',
-          [id]
+          [id],
         );
-        
+
         // Restore product stock
         const [orderItems] = await connection.execute(
           'SELECT * FROM order_items WHERE orderId = ?',
-          [id]
+          [id],
         );
-        
+
         for (const item of orderItems) {
           const variant = JSON.parse(item.variant || '{}');
-          
+
           if (variant.id) {
             await connection.execute(
               'UPDATE product_variants SET stock = stock + ? WHERE id = ?',
-              [item.quantity, variant.id]
+              [item.quantity, variant.id],
             );
           } else {
             await connection.execute(
               'UPDATE products SET stock = stock + ? WHERE id = ?',
-              [item.quantity, item.productId]
+              [item.quantity, item.productId],
             );
           }
         }
-        
+
         await connection.commit();
         return true;
       } catch (error) {
@@ -394,7 +394,7 @@ class Order {
         FROM orders 
         WHERE status != 'cancelled'
       `);
-      
+
       const [statusBreakdown] = await db.execute(`
         SELECT 
           status,
@@ -402,7 +402,7 @@ class Order {
         FROM orders 
         GROUP BY status
       `);
-      
+
       const [recentOrders] = await db.execute(`
         SELECT 
           o.*,
@@ -413,11 +413,11 @@ class Order {
         ORDER BY o.createdAt DESC
         LIMIT 5
       `);
-      
+
       return {
         overview: overview[0],
         statusBreakdown,
-        recentOrders
+        recentOrders,
       };
     } catch (error) {
       throw error;
@@ -431,9 +431,9 @@ class Order {
          WHERE userId = ? 
          ORDER BY createdAt DESC 
          LIMIT ?`,
-        [userId, limit]
+        [userId, limit],
       );
-      
+
       // Parse JSON fields for each order
       orders.forEach(order => {
         if (order.shippingAddress) {
@@ -443,7 +443,7 @@ class Order {
             order.shippingAddress = {};
           }
         }
-        
+
         if (order.billingAddress) {
           try {
             order.billingAddress = JSON.parse(order.billingAddress);
@@ -452,7 +452,7 @@ class Order {
           }
         }
       });
-      
+
       return orders;
     } catch (error) {
       throw error;

@@ -62,9 +62,9 @@ const getAllOrders = async (req, res) => {
           ...order,
           items: itemsResult.rows,
           customer_name: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'N/A',
-          customer_email: order.email || 'N/A'
+          customer_email: order.email || 'N/A',
         };
-      })
+      }),
     );
 
     res.json({
@@ -73,8 +73,8 @@ const getAllOrders = async (req, res) => {
         currentPage: parseInt(page),
         totalPages,
         totalItems: parseInt(countResult.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -119,9 +119,9 @@ const getUserOrders = async (req, res) => {
 
         return {
           ...order,
-          items: itemsResult.rows
+          items: itemsResult.rows,
         };
-      })
+      }),
     );
 
     res.json({
@@ -130,8 +130,8 @@ const getUserOrders = async (req, res) => {
         currentPage: parseInt(page),
         totalPages,
         totalItems: parseInt(countResult.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -229,9 +229,9 @@ const createOrder = async (req, res) => {
         RETURNING *
       `, [
         userId, orderNumber, 'pending', subtotal, taxAmount,
-        shippingAmount, totalAmount, JSON.stringify(shippingAddress), 
-        JSON.stringify(billingAddress), paymentMethod, 
-        JSON.stringify(paymentDetails), notes || ''
+        shippingAmount, totalAmount, JSON.stringify(shippingAddress),
+        JSON.stringify(billingAddress), paymentMethod,
+        JSON.stringify(paymentDetails), notes || '',
       ]);
 
       const order = orderResult.rows[0];
@@ -243,15 +243,15 @@ const createOrder = async (req, res) => {
             order_id, product_id, product_name, quantity, unit_price, total_price, variant_details
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         `, [
-          order.id, item.id, item.name, item.quantity, 
-          item.price, item.price * item.quantity, 
-          JSON.stringify(item.variant || {})
+          order.id, item.id, item.name, item.quantity,
+          item.price, item.price * item.quantity,
+          JSON.stringify(item.variant || {}),
         ]);
 
         // Update product stock
         await client.query(
           'UPDATE products SET inventory_quantity = inventory_quantity - $1 WHERE id = $2',
-          [item.quantity, item.id]
+          [item.quantity, item.id],
         );
       }
 
@@ -269,7 +269,7 @@ const createOrder = async (req, res) => {
         message: 'Order created successfully',
         order: order,
         orderNumber: order.order_number,
-        total: order.total_amount
+        total: order.total_amount,
       });
     } catch (error) {
       await client.query('ROLLBACK');
@@ -295,7 +295,7 @@ const updateOrderStatus = async (req, res) => {
 
     const result = await query(
       'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [status, id]
+      [status, id],
     );
 
     if (result.rowCount === 0) {
@@ -348,21 +348,21 @@ const cancelOrder = async (req, res) => {
       // Update order status
       await client.query(
         'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        ['cancelled', id]
+        ['cancelled', id],
       );
 
       // Restore product stock
       const itemsResult = await client.query(
         'SELECT * FROM order_items WHERE order_id = $1',
-        [id]
+        [id],
       );
 
       for (const item of itemsResult.rows) {
         const variant = JSON.parse(item.variant_details || '{}');
-        
+
         await client.query(
           'UPDATE products SET inventory_quantity = inventory_quantity + $1 WHERE id = $2',
-          [item.quantity, item.product_id]
+          [item.quantity, item.product_id],
         );
       }
 
@@ -416,7 +416,7 @@ const getOrderStats = async (req, res) => {
     res.json({
       overview: statsResult.rows[0],
       statusBreakdown: statusStatsResult.rows,
-      recentOrders: recentOrdersResult.rows
+      recentOrders: recentOrdersResult.rows,
     });
   } catch (error) {
     console.error('Error fetching order stats:', error);
@@ -431,5 +431,5 @@ module.exports = {
   createOrder,
   updateOrderStatus,
   cancelOrder,
-  getOrderStats
+  getOrderStats,
 };

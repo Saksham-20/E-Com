@@ -18,20 +18,20 @@ router.get('/dashboard', async (req, res) => {
   try {
     // Get total products
     const totalProducts = await pool.query('SELECT COUNT(*) as count FROM products');
-    
+
     // Get total orders
     const totalOrders = await pool.query('SELECT COUNT(*) as count FROM orders');
-    
+
     // Get total users
     const totalUsers = await pool.query('SELECT COUNT(*) as count FROM users WHERE is_admin = false');
-    
+
     // Get total revenue
     const totalRevenue = await pool.query(`
       SELECT COALESCE(SUM(total_amount), 0) as revenue 
       FROM orders 
       WHERE status IN ('delivered', 'shipped', 'processing')
     `);
-    
+
     // Get recent orders
     const recentOrders = await pool.query(`
       SELECT o.*, u.first_name, u.last_name, u.email
@@ -40,7 +40,7 @@ router.get('/dashboard', async (req, res) => {
       ORDER BY o.created_at DESC
       LIMIT 5
     `);
-    
+
     // Get low stock products
     const lowStockProducts = await pool.query(`
       SELECT * FROM products 
@@ -55,24 +55,24 @@ router.get('/dashboard', async (req, res) => {
         totalProducts: parseInt(totalProducts.rows[0].count),
         totalOrders: parseInt(totalOrders.rows[0].count),
         totalUsers: parseInt(totalUsers.rows[0].count),
-        totalRevenue: parseFloat(totalRevenue.rows[0].revenue)
+        totalRevenue: parseFloat(totalRevenue.rows[0].revenue),
       },
       recentOrders: recentOrders.rows,
-      lowStockProducts: lowStockProducts.rows
+      lowStockProducts: lowStockProducts.rows,
     };
-    
+
     console.log('Dashboard API Response:', response);
     console.log('Total Products from DB:', totalProducts.rows[0].count);
     console.log('Total Users from DB:', totalUsers.rows[0].count);
-    
+
     res.json(response);
 
   } catch (error) {
     console.error('Dashboard error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -85,10 +85,10 @@ router.get('/products', async (req, res) => {
     console.log('👑 GET /api/admin/products - Request received');
     console.log('👑 Query params:', req.query);
     console.log('👑 User:', req.user);
-    
+
     const { page = 1, limit = 20, search, category, status } = req.query;
     const offset = (page - 1) * limit;
-    
+
     console.log('👑 Processed params:', { page, limit, search, category, status, offset });
 
     let query = `
@@ -128,7 +128,7 @@ router.get('/products', async (req, res) => {
 
     console.log('👑 Admin products query:', query);
     console.log('👑 Admin products params:', queryParams);
-    
+
     const products = await pool.query(query, queryParams);
     console.log('👑 Admin products found:', products.rows.length);
     console.log('👑 First admin product:', products.rows[0]);
@@ -170,8 +170,8 @@ router.get('/products', async (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount.rows[0].total / limit),
         totalItems: parseInt(totalCount.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
 
   } catch (error) {
@@ -189,13 +189,13 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
       name, description, short_description, price, compare_price, sku,
       category_id, weight, dimensions,
       stock_quantity, low_stock_threshold, meta_title, meta_description,
-      is_active, is_featured, is_bestseller, is_new_arrival
+      is_active, is_featured, is_bestseller, is_new_arrival,
     } = req.body;
 
     // Validate required fields
     if (!name || !price || !category_id || !sku) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: name, price, category_id, sku' 
+      return res.status(400).json({
+        message: 'Missing required fields: name, price, category_id, sku',
       });
     }
 
@@ -221,7 +221,7 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
       name, slug, description, short_description, price, compare_price, sku,
       category_id, weight, dimensions,
       stock_quantity || 0, low_stock_threshold || 5, meta_title, meta_description,
-      is_active !== false, is_featured || false, is_bestseller || false, is_new_arrival || false
+      is_active !== false, is_featured || false, is_bestseller || false, is_new_arrival || false,
     ]);
 
     const product = newProduct.rows[0];
@@ -230,23 +230,23 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
     if (req.files && req.files.length > 0) {
       try {
         console.log(`Processing ${req.files.length} images for new product ${product.id}`);
-        
+
         for (let i = 0; i < req.files.length; i++) {
           const file = req.files[i];
           const isPrimary = i === 0; // First image is primary
-          
+
           console.log(`Processing image ${i + 1}/${req.files.length}: ${file.originalname}`);
-          
+
           // Generate product images with unique naming
           const processedImages = await imageService.generateProductImages(
-            file.path, 
+            file.path,
             product.id,
-            i // Pass image index for unique naming
+            i, // Pass image index for unique naming
           );
 
           // Store the medium size image URL in database (or thumbnail if medium not available)
-          const imageUrl = processedImages.find(img => img.size === 'medium')?.url || 
-                          processedImages.find(img => img.size === 'thumbnail')?.url || 
+          const imageUrl = processedImages.find(img => img.size === 'medium')?.url ||
+                          processedImages.find(img => img.size === 'thumbnail')?.url ||
                           processedImages[0].url;
 
           // Save image record to database
@@ -258,7 +258,7 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
             imageUrl,
             file.originalname,
             i,
-            isPrimary
+            isPrimary,
           ]);
 
           console.log(`Successfully processed and stored image: ${imageUrl}`);
@@ -281,15 +281,15 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 
     res.status(201).json({
       message: 'Product created successfully',
-      product: product
+      product: product,
     });
 
   } catch (error) {
     console.error('Create product error:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
     });
   }
 });
@@ -299,7 +299,7 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 // @access  Admin
 router.put('/products/:id', upload.array('images', 10), handleUploadError, [
   body('name').optional().trim().notEmpty().withMessage('Product name is required'),
-  body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number')
+  body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -351,26 +351,26 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
     if (updateData.remaining_image_ids) {
       try {
         const remainingIds = updateData.remaining_image_ids.split(',').filter(id => id.trim() !== '');
-        
+
         // Get all current images for this product
         const currentImages = await pool.query(
           'SELECT id, image_url FROM product_images WHERE product_id = $1',
-          [id]
+          [id],
         );
-        
+
         // Find images to delete (not in remaining_ids)
-        const imagesToDelete = currentImages.rows.filter(img => 
-          !remainingIds.includes(img.id.toString())
+        const imagesToDelete = currentImages.rows.filter(img =>
+          !remainingIds.includes(img.id.toString()),
         );
-        
+
         // Delete images from database
         if (imagesToDelete.length > 0) {
           const deleteIds = imagesToDelete.map(img => img.id);
           await pool.query(
             'DELETE FROM product_images WHERE id = ANY($1)',
-            [deleteIds]
+            [deleteIds],
           );
-          
+
           // Delete image files from filesystem
           for (const img of imagesToDelete) {
             try {
@@ -396,7 +396,7 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
         // Count existing images after deletion
         const existingImagesRes = await pool.query(
           'SELECT id, is_primary FROM product_images WHERE product_id = $1 ORDER BY sort_order ASC',
-          [id]
+          [id],
         );
         const existingCount = existingImagesRes.rows.length;
         const hasPrimary = existingImagesRes.rows.some(img => img.is_primary);
@@ -416,12 +416,12 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
           const processedImages = await imageService.generateProductImages(
             file.path,
             id,
-            i // Pass image index for unique naming
+            i, // Pass image index for unique naming
           );
 
           // Store the medium size image URL in database (or thumbnail if medium not available)
-          const imageUrl = processedImages.find(img => img.size === 'medium')?.url || 
-                          processedImages.find(img => img.size === 'thumbnail')?.url || 
+          const imageUrl = processedImages.find(img => img.size === 'medium')?.url ||
+                          processedImages.find(img => img.size === 'thumbnail')?.url ||
                           processedImages[0].url;
 
           await pool.query(
@@ -432,8 +432,8 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
               imageUrl,
               file.originalname,
               existingCount + i,
-              isPrimary
-            ]
+              isPrimary,
+            ],
           );
 
           console.log(`Successfully processed and stored image: ${imageUrl}`);
@@ -455,7 +455,7 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
 
     res.json({
       message: 'Product updated successfully',
-      product: updatedProduct.rows[0]
+      product: updatedProduct.rows[0],
     });
 
   } catch (error) {
@@ -479,10 +479,10 @@ router.delete('/products/:id', async (req, res) => {
 
     // Get product images before deletion
     const productImages = await pool.query('SELECT image_url FROM product_images WHERE product_id = $1', [id]);
-    
+
     // Delete product images from database
     await pool.query('DELETE FROM product_images WHERE product_id = $1', [id]);
-    
+
     // Delete product from database (hard delete)
     await pool.query('DELETE FROM products WHERE id = $1', [id]);
 
@@ -593,8 +593,8 @@ router.get('/orders', async (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount.rows[0].total / limit),
         totalItems: parseInt(totalCount.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
 
   } catch (error) {
@@ -607,7 +607,7 @@ router.get('/orders', async (req, res) => {
 // @desc    Update order status
 // @access  Admin
 router.put('/orders/:id/status', [
-  body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status')
+  body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -627,7 +627,7 @@ router.put('/orders/:id/status', [
     // Update status
     await pool.query(
       'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [status, id]
+      [status, id],
     );
 
     res.json({ message: 'Order status updated successfully' });
@@ -644,7 +644,7 @@ router.put('/orders/:id/status', [
 router.post('/users', [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('email').isEmail().withMessage('Valid email is required')
+  body('email').isEmail().withMessage('Valid email is required'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -674,7 +674,7 @@ router.post('/users', [
 
     res.status(201).json({
       message: 'User created successfully',
-      user: newUser.rows[0]
+      user: newUser.rows[0],
     });
 
   } catch (error) {
@@ -748,8 +748,8 @@ router.get('/users', async (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount.rows[0].total / limit),
         totalItems: parseInt(totalCount.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
 
   } catch (error) {
@@ -790,7 +790,7 @@ router.get('/users/:id', async (req, res) => {
 router.put('/users/:id', [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('email').isEmail().withMessage('Valid email is required')
+  body('email').isEmail().withMessage('Valid email is required'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -810,7 +810,7 @@ router.put('/users/:id', [
     // Check if email is already taken by another user
     const emailCheck = await pool.query(
       'SELECT id FROM users WHERE email = $1 AND id != $2',
-      [email, id]
+      [email, id],
     );
     if (emailCheck.rows.length > 0) {
       return res.status(400).json({ message: 'Email already taken' });
@@ -870,7 +870,7 @@ router.delete('/users/:id', async (req, res) => {
 // @desc    Update product stock quantity
 // @access  Admin
 router.put('/products/:id/stock', [
-  body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer')
+  body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -890,12 +890,12 @@ router.put('/products/:id/stock', [
     // Update stock quantity
     const updatedProduct = await pool.query(
       'UPDATE products SET stock_quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
-      [quantity, id]
+      [quantity, id],
     );
 
     res.json({
       message: 'Stock updated successfully',
-      product: updatedProduct.rows[0]
+      product: updatedProduct.rows[0],
     });
 
   } catch (error) {
@@ -910,32 +910,32 @@ router.put('/products/:id/stock', [
 router.get('/analytics', async (req, res) => {
   try {
     const { period = '30d' } = req.query;
-    
+
     // Calculate date range based on period
     let dateFilter = '';
     let groupBy = '';
-    
+
     switch (period) {
-      case '24h':
-        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'24 hours\'';
-        groupBy = 'DATE(o.created_at)';
-        break;
-      case '7d':
-        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'7 days\'';
-        groupBy = 'DATE(o.created_at)';
-        break;
-      case '30d':
-        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'30 days\'';
-        groupBy = 'DATE(o.created_at)';
-        break;
-      case '90d':
-        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'90 days\'';
-        groupBy = 'DATE(o.created_at)';
-        break;
-      case '1y':
-        dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'1 year\'';
-        groupBy = 'DATE_TRUNC(\'month\', o.created_at)';
-        break;
+    case '24h':
+      dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'24 hours\'';
+      groupBy = 'DATE(o.created_at)';
+      break;
+    case '7d':
+      dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'7 days\'';
+      groupBy = 'DATE(o.created_at)';
+      break;
+    case '30d':
+      dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'30 days\'';
+      groupBy = 'DATE(o.created_at)';
+      break;
+    case '90d':
+      dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'90 days\'';
+      groupBy = 'DATE(o.created_at)';
+      break;
+    case '1y':
+      dateFilter = 'AND o.created_at >= NOW() - INTERVAL \'1 year\'';
+      groupBy = 'DATE_TRUNC(\'month\', o.created_at)';
+      break;
     }
 
     // Get sales data
@@ -1039,8 +1039,8 @@ router.get('/analytics', async (req, res) => {
         totalProducts: parseInt(totalProducts.rows[0].count),
         totalOrders: parseInt(totalOrders.rows[0].count),
         totalUsers: parseInt(totalUsers.rows[0].count),
-        totalRevenue: parseFloat(totalRevenue.rows[0].revenue)
-      }
+        totalRevenue: parseFloat(totalRevenue.rows[0].revenue),
+      },
     });
 
   } catch (error) {

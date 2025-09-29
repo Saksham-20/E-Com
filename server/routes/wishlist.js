@@ -54,15 +54,15 @@ router.get('/', authenticateToken, async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: result.rows
-      }
+        items: result.rows,
+      },
     });
 
   } catch (error) {
     console.error('Get wishlist error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -73,47 +73,47 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { product_id } = req.body;
-    
+
     // Adding item to wishlist
 
     if (!product_id) {
       return res.status(400).json({
         success: false,
-        message: 'Product ID is required'
+        message: 'Product ID is required',
       });
     }
 
     // Check if product exists and is active
     const productResult = await query(
       'SELECT id, name FROM products WHERE id = $1 AND is_active = true',
-      [product_id]
+      [product_id],
     );
 
     if (productResult.rows.length === 0) {
-      
+
       return res.status(404).json({
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       });
     }
 
     // Check if item already exists in wishlist
     const existingItem = await query(
       'SELECT id FROM wishlist WHERE user_id = $1 AND product_id = $2',
-      [req.user.id, product_id]
+      [req.user.id, product_id],
     );
 
     if (existingItem.rows.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Product already in wishlist'
+        message: 'Product already in wishlist',
       });
     }
 
     // Add to wishlist
     const result = await query(
       'INSERT INTO wishlist (user_id, product_id) VALUES ($1, $2) RETURNING id',
-      [req.user.id, product_id]
+      [req.user.id, product_id],
     );
 
     res.status(201).json({
@@ -121,15 +121,15 @@ router.post('/', authenticateToken, async (req, res) => {
       message: 'Item added to wishlist',
       data: {
         wishlist_item_id: result.rows[0].id,
-        product_name: productResult.rows[0].name
-      }
+        product_name: productResult.rows[0].name,
+      },
     });
 
   } catch (error) {
     console.error('Add to wishlist error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -140,40 +140,40 @@ router.post('/', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Removing item from wishlist
 
     // First try to delete by wishlist item ID
     let result = await query(
       'DELETE FROM wishlist WHERE id = $1 AND user_id = $2 RETURNING id',
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     // If no rows affected, try to delete by product ID
     if (result.rows.length === 0) {
       result = await query(
         'DELETE FROM wishlist WHERE product_id = $1 AND user_id = $2 RETURNING id',
-        [id, req.user.id]
+        [id, req.user.id],
       );
     }
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Wishlist item not found'
+        message: 'Wishlist item not found',
       });
     }
 
     res.json({
       success: true,
-      message: 'Item removed from wishlist'
+      message: 'Item removed from wishlist',
     });
 
   } catch (error) {
     console.error('Remove from wishlist error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -186,19 +186,19 @@ router.delete('/', authenticateToken, async (req, res) => {
     // Clear all items from user's wishlist
     await query(
       'DELETE FROM wishlist WHERE user_id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     res.json({
       success: true,
-      message: 'Wishlist cleared successfully'
+      message: 'Wishlist cleared successfully',
     });
 
   } catch (error) {
     console.error('Clear wishlist error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });

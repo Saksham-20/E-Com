@@ -34,8 +34,8 @@ const getDashboardStats = async (req, res) => {
 
     const currentMonthSales = salesChangeResult[0]?.currentMonthSales || 0;
     const previousMonthSales = previousMonthSalesResult[0]?.previousMonthSales || 0;
-    const salesChange = previousMonthSales > 0 
-      ? ((currentMonthSales - previousMonthSales) / previousMonthSales) * 100 
+    const salesChange = previousMonthSales > 0
+      ? ((currentMonthSales - previousMonthSales) / previousMonthSales) * 100
       : 0;
 
     // Get total customers
@@ -60,8 +60,8 @@ const getDashboardStats = async (req, res) => {
 
     const currentMonthCustomers = customersChangeResult[0]?.currentMonthCustomers || 0;
     const previousMonthCustomers = previousMonthCustomersResult[0]?.previousMonthCustomers || 0;
-    const customersChange = previousMonthCustomers > 0 
-      ? ((currentMonthCustomers - previousMonthCustomers) / previousMonthCustomers) * 100 
+    const customersChange = previousMonthCustomers > 0
+      ? ((currentMonthCustomers - previousMonthCustomers) / previousMonthCustomers) * 100
       : 0;
 
     // Get total products
@@ -84,8 +84,8 @@ const getDashboardStats = async (req, res) => {
 
     const currentMonthProducts = productsChangeResult[0]?.currentMonthProducts || 0;
     const previousMonthProducts = previousMonthProductsResult[0]?.previousMonthProducts || 0;
-    const productsChange = previousMonthProducts > 0 
-      ? ((currentMonthProducts - previousMonthProducts) / previousMonthProducts) * 100 
+    const productsChange = previousMonthProducts > 0
+      ? ((currentMonthProducts - previousMonthProducts) / previousMonthProducts) * 100
       : 0;
 
     // Get recent orders
@@ -154,23 +154,23 @@ const getDashboardStats = async (req, res) => {
         totalOrders: salesResult[0]?.totalOrders || 0,
         totalCustomers: customersResult[0]?.totalCustomers || 0,
         totalProducts: productsResult[0]?.totalProducts || 0,
-        averageOrderValue: salesResult[0]?.averageOrderValue || 0
+        averageOrderValue: salesResult[0]?.averageOrderValue || 0,
       },
       changes: {
         salesChange: Math.round(salesChange * 100) / 100,
         ordersChange: 0, // TODO: Calculate orders change
         customersChange: Math.round(customersChange * 100) / 100,
-        productsChange: Math.round(productsChange * 100) / 100
+        productsChange: Math.round(productsChange * 100) / 100,
       },
       recentActivity: {
         orders: recentOrders,
-        products: recentProducts
+        products: recentProducts,
       },
       analytics: {
         topProducts,
         orderStatusBreakdown,
-        salesByCategory
-      }
+        salesByCategory,
+      },
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -182,26 +182,26 @@ const getDashboardStats = async (req, res) => {
 const getAnalytics = async (req, res) => {
   try {
     const { period = 'month' } = req.query;
-    
+
     let dateFilter = '';
     let groupBy = '';
-    
+
     switch (period) {
-      case 'week':
-        dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)';
-        groupBy = 'DATE(createdAt)';
-        break;
-      case 'month':
-        dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)';
-        groupBy = 'DATE(createdAt)';
-        break;
-      case 'year':
-        dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)';
-        groupBy = 'MONTH(createdAt)';
-        break;
-      default:
-        dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)';
-        groupBy = 'DATE(createdAt)';
+    case 'week':
+      dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)';
+      groupBy = 'DATE(createdAt)';
+      break;
+    case 'month':
+      dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)';
+      groupBy = 'DATE(createdAt)';
+      break;
+    case 'year':
+      dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)';
+      groupBy = 'MONTH(createdAt)';
+      break;
+    default:
+      dateFilter = 'AND createdAt >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)';
+      groupBy = 'DATE(createdAt)';
     }
 
     // Get sales data
@@ -249,7 +249,7 @@ const getAnalytics = async (req, res) => {
       period,
       salesData,
       customerData,
-      productData
+      productData,
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);
@@ -262,7 +262,7 @@ const getSettings = async (req, res) => {
   try {
     // TODO: Implement settings retrieval from database
     // For now, return default settings
-    
+
     const settings = {
       store: {
         name: process.env.APP_NAME || 'E-Commerce Shop Store',
@@ -274,24 +274,24 @@ const getSettings = async (req, res) => {
           city: process.env.STORE_CITY || 'Beverly Hills',
           state: process.env.STORE_STATE || 'CA',
           zipCode: process.env.STORE_ZIP || '90210',
-          country: process.env.STORE_COUNTRY || 'US'
-        }
+          country: process.env.STORE_COUNTRY || 'US',
+        },
       },
       shipping: {
         freeShippingThreshold: parseFloat(process.env.FREE_SHIPPING_THRESHOLD) || 100,
         defaultShippingCost: parseFloat(process.env.DEFAULT_SHIPPING_COST) || 9.99,
-        expressShippingCost: parseFloat(process.env.EXPRESS_SHIPPING_COST) || 19.99
+        expressShippingCost: parseFloat(process.env.EXPRESS_SHIPPING_COST) || 19.99,
       },
       payment: {
         acceptedMethods: (process.env.ACCEPTED_PAYMENT_METHODS || 'credit_card,paypal').split(','),
         currency: process.env.CURRENCY || 'USD',
-        taxRate: parseFloat(process.env.TAX_RATE) || 8.5
+        taxRate: parseFloat(process.env.TAX_RATE) || 8.5,
       },
       notifications: {
         orderConfirmation: process.env.ORDER_CONFIRMATION_EMAIL === 'true',
         shippingUpdates: process.env.SHIPPING_UPDATES_EMAIL === 'true',
-        marketingEmails: process.env.MARKETING_EMAILS === 'true'
-      }
+        marketingEmails: process.env.MARKETING_EMAILS === 'true',
+      },
     };
 
     res.json(settings);
@@ -305,13 +305,13 @@ const getSettings = async (req, res) => {
 const updateSettings = async (req, res) => {
   try {
     const settings = req.body;
-    
+
     // TODO: Implement settings update in database
     // For now, just return success
-    
-    res.json({ 
+
+    res.json({
       message: 'Settings updated successfully',
-      settings 
+      settings,
     });
   } catch (error) {
     console.error('Error updating settings:', error);
@@ -325,36 +325,36 @@ const getSystemHealth = async (req, res) => {
     // Check database connection
     const [dbResult] = await db.execute('SELECT 1 as health');
     const dbHealth = dbResult.length > 0 ? 'healthy' : 'unhealthy';
-    
+
     // Check disk space (placeholder)
     const diskHealth = 'healthy'; // TODO: Implement actual disk space check
-    
+
     // Check memory usage (placeholder)
     const memoryHealth = 'healthy'; // TODO: Implement actual memory check
-    
+
     // Get uptime
     const uptime = process.uptime();
-    
+
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       services: {
         database: dbHealth,
         disk: diskHealth,
-        memory: memoryHealth
+        memory: memoryHealth,
       },
       uptime: {
         seconds: Math.floor(uptime),
         minutes: Math.floor(uptime / 60),
         hours: Math.floor(uptime / 3600),
-        days: Math.floor(uptime / 86400)
-      }
+        days: Math.floor(uptime / 86400),
+      },
     });
   } catch (error) {
     console.error('Error checking system health:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'unhealthy',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -364,5 +364,5 @@ module.exports = {
   getAnalytics,
   getSettings,
   updateSettings,
-  getSystemHealth
+  getSystemHealth,
 };

@@ -17,7 +17,7 @@ class Wishlist {
         WHERE w.user_id = ?
         ORDER BY w.created_at DESC
       `;
-      
+
       const [rows] = await db.execute(query, [userId]);
       return rows;
     } catch (error) {
@@ -34,11 +34,11 @@ class Wishlist {
         WHERE user_id = ? AND product_id = ?
       `;
       const [existing] = await db.execute(existingQuery, [userId, productId]);
-      
+
       if (existing.length > 0) {
         throw new Error('Product already in wishlist');
       }
-      
+
       // Add new item
       const insertQuery = `
         INSERT INTO ${this.tableName} (user_id, product_id, created_at) 
@@ -94,13 +94,13 @@ class Wishlist {
   async moveToCart(userId, productId, cartId) {
     try {
       // Get product details
-      const productQuery = `SELECT * FROM products WHERE id = ?`;
+      const productQuery = 'SELECT * FROM products WHERE id = ?';
       const [products] = await db.execute(productQuery, [productId]);
-      
+
       if (products.length === 0) {
         throw new Error('Product not found');
       }
-      
+
       // Add to cart (you'll need to implement cart functionality)
       // This is a placeholder - you might want to use the Cart model here
       const cartQuery = `
@@ -108,10 +108,10 @@ class Wishlist {
         VALUES (?, ?, 1, NOW())
       `;
       await db.execute(cartQuery, [cartId, productId]);
-      
+
       // Remove from wishlist
       await this.removeItem(userId, productId);
-      
+
       return { success: true, message: 'Item moved to cart' };
     } catch (error) {
       throw new Error(`Error moving item to cart: ${error.message}`);
@@ -132,22 +132,22 @@ class Wishlist {
         ORDER BY w.created_at DESC
         LIMIT ? OFFSET ?
       `;
-      
+
       const [rows] = await db.execute(query, [userId, limit, offset]);
-      
+
       // Get total count for pagination
       const countQuery = `SELECT COUNT(*) as total FROM ${this.tableName} WHERE user_id = ?`;
       const [countResult] = await db.execute(countQuery, [userId]);
       const total = countResult[0].total;
-      
+
       return {
         items: rows,
         pagination: {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
-        }
+          pages: Math.ceil(total / limit),
+        },
       };
     } catch (error) {
       throw new Error(`Error fetching wishlist: ${error.message}`);

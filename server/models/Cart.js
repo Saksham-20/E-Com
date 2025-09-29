@@ -19,7 +19,7 @@ class Cart {
         WHERE c.user_id = ?
         ORDER BY ci.created_at DESC
       `;
-      
+
       const [rows] = await db.execute(query, [userId]);
       return this.formatCartData(rows);
     } catch (error) {
@@ -47,11 +47,11 @@ class Cart {
         WHERE cart_id = ? AND product_id = ? AND variant_id = ?
       `;
       const [existing] = await db.execute(existingQuery, [cartId, productId, variantId || null]);
-      
+
       if (existing.length > 0) {
         // Update existing item quantity
         const newQuantity = existing[0].quantity + quantity;
-        const updateQuery = `UPDATE cart_items SET quantity = ? WHERE id = ?`;
+        const updateQuery = 'UPDATE cart_items SET quantity = ? WHERE id = ?';
         await db.execute(updateQuery, [newQuantity, existing[0].id]);
         return existing[0].id;
       } else {
@@ -75,8 +75,8 @@ class Cart {
         // Remove item if quantity is 0 or negative
         return await this.removeItem(itemId);
       }
-      
-      const query = `UPDATE cart_items SET quantity = ? WHERE id = ?`;
+
+      const query = 'UPDATE cart_items SET quantity = ? WHERE id = ?';
       const [result] = await db.execute(query, [quantity, itemId]);
       return result.affectedRows > 0;
     } catch (error) {
@@ -87,7 +87,7 @@ class Cart {
   // Remove item from cart
   async removeItem(itemId) {
     try {
-      const query = `DELETE FROM cart_items WHERE id = ?`;
+      const query = 'DELETE FROM cart_items WHERE id = ?';
       const [result] = await db.execute(query, [itemId]);
       return result.affectedRows > 0;
     } catch (error) {
@@ -98,7 +98,7 @@ class Cart {
   // Clear cart
   async clear(cartId) {
     try {
-      const query = `DELETE FROM cart_items WHERE cart_id = ?`;
+      const query = 'DELETE FROM cart_items WHERE cart_id = ?';
       const [result] = await db.execute(query, [cartId]);
       return result.affectedRows > 0;
     } catch (error) {
@@ -124,7 +124,7 @@ class Cart {
         LEFT JOIN product_variants pv ON ci.variant_id = pv.id
         WHERE ci.cart_id = ?
       `;
-      
+
       const [rows] = await db.execute(query, [cartId]);
       return rows[0] || { item_count: 0, total_quantity: 0, subtotal: 0 };
     } catch (error) {
@@ -151,13 +151,13 @@ class Cart {
         variant_id: row.variant_id,
         variant_name: row.variant_name,
         price_adjustment: row.price_adjustment || 0,
-        total_price: (row.price + (row.price_adjustment || 0)) * row.quantity
+        total_price: (row.price + (row.price_adjustment || 0)) * row.quantity,
       }));
 
     const summary = {
       item_count: items.length,
       total_quantity: items.reduce((sum, item) => sum + item.quantity, 0),
-      subtotal: items.reduce((sum, item) => sum + item.total_price, 0)
+      subtotal: items.reduce((sum, item) => sum + item.total_price, 0),
     };
 
     return { id: cartId, items, summary };

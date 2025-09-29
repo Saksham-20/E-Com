@@ -5,7 +5,7 @@ require('dotenv').config();
 
 async function setupDatabase() {
   console.log('🚀 Starting database setup...');
-  
+
   // Debug environment variables
   console.log('🔍 Environment variables:');
   console.log('DB_USER:', process.env.DB_USER);
@@ -15,7 +15,7 @@ async function setupDatabase() {
   console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
   console.log('DATABASE_URL:', process.env.DATABASE_URL ? '***SET***' : 'NOT SET');
   console.log('NODE_ENV:', process.env.NODE_ENV);
-  
+
   // Use the shared pool from config.js
   console.log('📡 Using shared database pool for connection');
 
@@ -27,7 +27,7 @@ async function setupDatabase() {
     // Read and execute schema
     const schemaPath = path.join(__dirname, 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
-    
+
     // Force schema creation by dropping and recreating
     try {
       console.log('🔄 Dropping existing schema if it exists...');
@@ -60,16 +60,16 @@ async function setupDatabase() {
       // Check if admin user already exists
       const existingAdmin = await pool.query(
         'SELECT id FROM users WHERE email = $1 AND is_admin = $2',
-        [adminEmail, true]
+        [adminEmail, true],
       );
 
       if (existingAdmin.rows.length === 0) {
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
-        
+
         await pool.query(
           `INSERT INTO users (email, password_hash, first_name, last_name, is_admin, is_verified, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-          [adminEmail, hashedPassword, 'Admin', 'User', true, true]
+          [adminEmail, hashedPassword, 'Admin', 'User', true, true],
         );
         console.log('✅ Default admin user created (admin@luxury.com / admin123)');
       } else {
@@ -87,19 +87,19 @@ async function setupDatabase() {
         { name: 'Necklaces', slug: 'necklaces', description: 'Elegant necklaces and pendants' },
         { name: 'Earrings', slug: 'earrings', description: 'Stunning earrings for all styles' },
         { name: 'Bracelets', slug: 'bracelets', description: 'Charming bracelets and bangles' },
-        { name: 'Watches', slug: 'watches', description: 'Luxury timepieces' }
+        { name: 'Watches', slug: 'watches', description: 'Luxury timepieces' },
       ];
 
       for (const category of categories) {
         const existingCategory = await pool.query(
           'SELECT id FROM categories WHERE name = $1',
-          [category.name]
+          [category.name],
         );
 
         if (existingCategory.rows.length === 0) {
           await pool.query(
             'INSERT INTO categories (name, slug, description, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())',
-            [category.name, category.slug, category.description]
+            [category.name, category.slug, category.description],
           );
         }
       }

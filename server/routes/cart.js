@@ -11,9 +11,9 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req, res) => {
   try {
     // Get or create cart for user
-    let cartResult = await query(
+    const cartResult = await query(
       'SELECT id FROM cart WHERE user_id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     let cartId;
@@ -21,7 +21,7 @@ router.get('/', authenticateToken, async (req, res) => {
       // Create new cart
       const newCartResult = await query(
         'INSERT INTO cart (user_id) VALUES ($1) RETURNING id',
-        [req.user.id]
+        [req.user.id],
       );
       cartId = newCartResult.rows[0].id;
     } else {
@@ -64,10 +64,10 @@ router.get('/', authenticateToken, async (req, res) => {
       const itemTotal = item.price * item.quantity;
       subtotal += itemTotal;
       itemCount += item.quantity;
-      
+
       return {
         ...item,
-        item_total: itemTotal
+        item_total: itemTotal,
       };
     });
 
@@ -82,16 +82,16 @@ router.get('/', authenticateToken, async (req, res) => {
           item_count: itemCount,
           subtotal: parseFloat(subtotal.toFixed(2)),
           estimated_tax: parseFloat((subtotal * 0.08).toFixed(2)), // 8% tax
-          estimated_total: parseFloat((subtotal * 1.08).toFixed(2))
-        }
-      }
+          estimated_total: parseFloat((subtotal * 1.08).toFixed(2)),
+        },
+      },
     });
 
   } catch (error) {
     console.error('Get cart error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -104,9 +104,9 @@ router.post('/add', authenticateToken, async (req, res) => {
     console.log('🛒 POST /api/cart/add - Request received');
     console.log('🛒 Request body:', req.body);
     console.log('🛒 User ID:', req.user.id);
-    
+
     const { product_id, quantity = 1, variant_details } = req.body;
-    
+
     // Adding item to cart
     console.log('🛒 Product ID:', product_id);
     console.log('🛒 Quantity:', quantity);
@@ -116,14 +116,14 @@ router.post('/add', authenticateToken, async (req, res) => {
       console.log('🛒 ERROR: Product ID is missing');
       return res.status(400).json({
         success: false,
-        message: 'Product ID is required'
+        message: 'Product ID is required',
       });
     }
 
     if (quantity < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Quantity must be at least 1'
+        message: 'Quantity must be at least 1',
       });
     }
 
@@ -131,7 +131,7 @@ router.post('/add', authenticateToken, async (req, res) => {
     console.log('🛒 Checking if product exists:', product_id);
     const productResult = await query(
       'SELECT id, name, price, stock_quantity FROM products WHERE id = $1 AND is_active = true',
-      [product_id]
+      [product_id],
     );
 
     console.log('🛒 Product query result:', productResult.rows);
@@ -140,7 +140,7 @@ router.post('/add', authenticateToken, async (req, res) => {
       console.log('🛒 ERROR: Product not found');
       return res.status(404).json({
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       });
     }
 
@@ -150,21 +150,21 @@ router.post('/add', authenticateToken, async (req, res) => {
     if (product.stock_quantity < quantity) {
       return res.status(400).json({
         success: false,
-        message: `Only ${product.stock_quantity} items available in stock`
+        message: `Only ${product.stock_quantity} items available in stock`,
       });
     }
 
     // Get or create cart for user
-    let cartResult = await query(
+    const cartResult = await query(
       'SELECT id FROM cart WHERE user_id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     let cartId;
     if (cartResult.rows.length === 0) {
       const newCartResult = await query(
         'INSERT INTO cart (user_id) VALUES ($1) RETURNING id',
-        [req.user.id]
+        [req.user.id],
       );
       cartId = newCartResult.rows[0].id;
     } else {
@@ -174,23 +174,23 @@ router.post('/add', authenticateToken, async (req, res) => {
     // Check if item already exists in cart
     const existingItemResult = await query(
       'SELECT id, quantity FROM cart_items WHERE cart_id = $1 AND product_id = $2',
-      [cartId, product_id]
+      [cartId, product_id],
     );
 
     if (existingItemResult.rows.length > 0) {
       // Update existing item quantity
       const newQuantity = existingItemResult.rows[0].quantity + quantity;
-      
+
       if (newQuantity > product.stock_quantity) {
         return res.status(400).json({
           success: false,
-          message: `Cannot add ${quantity} more items. Only ${product.stock_quantity - existingItemResult.rows[0].quantity} additional items available.`
+          message: `Cannot add ${quantity} more items. Only ${product.stock_quantity - existingItemResult.rows[0].quantity} additional items available.`,
         });
       }
 
       await query(
         'UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        [newQuantity, existingItemResult.rows[0].id]
+        [newQuantity, existingItemResult.rows[0].id],
       );
 
       res.json({
@@ -198,8 +198,8 @@ router.post('/add', authenticateToken, async (req, res) => {
         message: 'Cart item quantity updated',
         data: {
           cart_item_id: existingItemResult.rows[0].id,
-          new_quantity: newQuantity
-        }
+          new_quantity: newQuantity,
+        },
       });
     } else {
       // Add new item to cart
@@ -216,8 +216,8 @@ router.post('/add', authenticateToken, async (req, res) => {
           cart_item_id: newItemResult.rows[0].id,
           product_name: product.name,
           quantity,
-          price: product.price
-        }
+          price: product.price,
+        },
       });
     }
 
@@ -225,7 +225,7 @@ router.post('/add', authenticateToken, async (req, res) => {
     console.error('Add to cart error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -241,7 +241,7 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
     if (!quantity || quantity < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Valid quantity is required'
+        message: 'Valid quantity is required',
       });
     }
 
@@ -263,7 +263,7 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
     if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Cart item not found'
+        message: 'Cart item not found',
       });
     }
 
@@ -273,14 +273,14 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
     if (quantity > item.stock_quantity) {
       return res.status(400).json({
         success: false,
-        message: `Only ${item.stock_quantity} items available in stock`
+        message: `Only ${item.stock_quantity} items available in stock`,
       });
     }
 
     // Update quantity
     await query(
       'UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [quantity, item_id]
+      [quantity, item_id],
     );
 
     res.json({
@@ -289,15 +289,15 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
       data: {
         cart_item_id: item_id,
         new_quantity: quantity,
-        item_total: item.price * quantity
-      }
+        item_total: item.price * quantity,
+      },
     });
 
   } catch (error) {
     console.error('Update cart item error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -324,20 +324,20 @@ router.delete('/:item_id', authenticateToken, async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Cart item not found'
+        message: 'Cart item not found',
       });
     }
 
     res.json({
       success: true,
-      message: 'Item removed from cart'
+      message: 'Item removed from cart',
     });
 
   } catch (error) {
     console.error('Remove cart item error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -357,14 +357,14 @@ router.delete('/', authenticateToken, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Cart cleared successfully'
+      message: 'Cart cleared successfully',
     });
 
   } catch (error) {
     console.error('Clear cart error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -387,15 +387,15 @@ router.get('/count', authenticateToken, async (req, res) => {
     res.json({
       success: true,
       data: {
-        item_count: itemCount
-      }
+        item_count: itemCount,
+      },
     });
 
   } catch (error) {
     console.error('Get cart count error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });
@@ -410,21 +410,21 @@ router.post('/merge', authenticateToken, async (req, res) => {
     if (!guest_items || !Array.isArray(guest_items)) {
       return res.status(400).json({
         success: false,
-        message: 'Guest items array is required'
+        message: 'Guest items array is required',
       });
     }
 
     // Get or create cart for user
-    let cartResult = await query(
+    const cartResult = await query(
       'SELECT id FROM cart WHERE user_id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     let cartId;
     if (cartResult.rows.length === 0) {
       const newCartResult = await query(
         'INSERT INTO cart (user_id) VALUES ($1) RETURNING id',
-        [req.user.id]
+        [req.user.id],
       );
       cartId = newCartResult.rows[0].id;
     } else {
@@ -440,7 +440,7 @@ router.post('/merge', authenticateToken, async (req, res) => {
       // Check if product exists and is active
       const productResult = await query(
         'SELECT id, stock_quantity FROM products WHERE id = $1 AND is_active = true',
-        [product_id]
+        [product_id],
       );
 
       if (productResult.rows.length === 0) {
@@ -453,24 +453,24 @@ router.post('/merge', authenticateToken, async (req, res) => {
       // Check if item already exists in cart
       const existingItemResult = await query(
         'SELECT id, quantity FROM cart_items WHERE cart_id = $1 AND product_id = $2',
-        [cartId, product_id]
+        [cartId, product_id],
       );
 
       if (existingItemResult.rows.length > 0) {
         // Update existing item quantity
         const newQuantity = Math.min(
           existingItemResult.rows[0].quantity + quantity,
-          product.stock_quantity
+          product.stock_quantity,
         );
 
         await query(
           'UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-          [newQuantity, existingItemResult.rows[0].id]
+          [newQuantity, existingItemResult.rows[0].id],
         );
       } else {
         // Add new item to cart
         const addQuantity = Math.min(quantity, product.stock_quantity);
-        
+
         await query(`
           INSERT INTO cart_items (cart_id, product_id, quantity, variant_details)
           VALUES ($1, $2, $3, $4)
@@ -485,15 +485,15 @@ router.post('/merge', authenticateToken, async (req, res) => {
       message: 'Guest cart merged successfully',
       data: {
         merged_items: mergedCount,
-        skipped_items: skippedCount
-      }
+        skipped_items: skippedCount,
+      },
     });
 
   } catch (error) {
     console.error('Merge cart error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 });

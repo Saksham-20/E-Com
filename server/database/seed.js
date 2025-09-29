@@ -14,7 +14,7 @@ async function seedDatabase() {
         first_name: 'John',
         last_name: 'Doe',
         phone: '+1-555-0123',
-        is_admin: false
+        is_admin: false,
       },
       {
         email: 'jane.smith@example.com',
@@ -22,17 +22,17 @@ async function seedDatabase() {
         first_name: 'Jane',
         last_name: 'Smith',
         phone: '+1-555-0124',
-        is_admin: false
-      }
+        is_admin: false,
+      },
     ];
 
     for (const user of users) {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       const exists = await query(
-        "SELECT 1 FROM users WHERE email = $1",
-        [user.email]
+        'SELECT 1 FROM users WHERE email = $1',
+        [user.email],
       );
-      
+
       if (exists.rows.length === 0) {
         await query(`
           INSERT INTO users (email, password_hash, first_name, last_name, phone, is_verified)
@@ -43,7 +43,7 @@ async function seedDatabase() {
     console.log('✅ Sample users created');
 
     // Get category IDs
-    const categories = await query("SELECT id, slug FROM categories");
+    const categories = await query('SELECT id, slug FROM categories');
     const categoryMap = {};
     categories.rows.forEach(cat => categoryMap[cat.slug] = cat.id);
 
@@ -59,7 +59,7 @@ async function seedDatabase() {
         discount_type: 'percentage',
         discount_value: 20,
         minimum_order_amount: 1000,
-        usage_limit: 100
+        usage_limit: 100,
       },
       {
         code: 'LUXURY50',
@@ -68,16 +68,16 @@ async function seedDatabase() {
         discount_type: 'fixed',
         discount_value: 50,
         minimum_order_amount: 500,
-        usage_limit: 50
-      }
+        usage_limit: 50,
+      },
     ];
 
     for (const coupon of coupons) {
       const exists = await query(
-        "SELECT 1 FROM coupons WHERE code = $1",
-        [coupon.code]
+        'SELECT 1 FROM coupons WHERE code = $1',
+        [coupon.code],
       );
-      
+
       if (exists.rows.length === 0) {
         await query(`
           INSERT INTO coupons (code, name, description, discount_type, discount_value, minimum_order_amount, usage_limit)
@@ -85,7 +85,7 @@ async function seedDatabase() {
         `, [
           coupon.code, coupon.name, coupon.description,
           coupon.discount_type, coupon.discount_value,
-          coupon.minimum_order_amount, coupon.usage_limit
+          coupon.minimum_order_amount, coupon.usage_limit,
         ]);
       }
     }

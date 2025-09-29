@@ -20,13 +20,13 @@ const createPaymentIntent = async (req, res) => {
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
+      paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create payment intent',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -46,26 +46,26 @@ const confirmPayment = async (req, res) => {
       res.json({
         success: true,
         message: 'Payment confirmed successfully',
-        paymentIntent
+        paymentIntent,
       });
     } else if (paymentIntent.status === 'requires_payment_method') {
       res.status(400).json({
         success: false,
         message: 'Payment method is required',
-        paymentIntent
+        paymentIntent,
       });
     } else {
       res.status(400).json({
         success: false,
         message: 'Payment failed',
-        paymentIntent
+        paymentIntent,
       });
     }
   } catch (error) {
     console.error('Error confirming payment:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to confirm payment',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -88,23 +88,23 @@ const createCustomer = async (req, res) => {
         city: address.city,
         state: address.state,
         postal_code: address.zipCode,
-        country: address.country
+        country: address.country,
       } : undefined,
       metadata: {
-        source: 'ecommerce_platform'
-      }
+        source: 'ecommerce_platform',
+      },
     });
 
     res.json({
       success: true,
       customerId: customer.id,
-      customer
+      customer,
     });
   } catch (error) {
     console.error('Error creating customer:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create customer',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -124,19 +124,19 @@ const updateCustomer = async (req, res) => {
         city: address.city,
         state: address.state,
         postal_code: address.zipCode,
-        country: address.country
-      } : undefined
+        country: address.country,
+      } : undefined,
     });
 
     res.json({
       success: true,
-      customer
+      customer,
     });
   } catch (error) {
     console.error('Error updating customer:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to update customer',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -150,13 +150,13 @@ const getCustomer = async (req, res) => {
 
     res.json({
       success: true,
-      customer
+      customer,
     });
   } catch (error) {
     console.error('Error retrieving customer:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to retrieve customer',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -182,13 +182,13 @@ const createSubscription = async (req, res) => {
     res.json({
       success: true,
       subscriptionId: subscription.id,
-      subscription
+      subscription,
     });
   } catch (error) {
     console.error('Error creating subscription:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create subscription',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -203,13 +203,13 @@ const cancelSubscription = async (req, res) => {
     res.json({
       success: true,
       message: 'Subscription cancelled successfully',
-      subscription
+      subscription,
     });
   } catch (error) {
     console.error('Error cancelling subscription:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to cancel subscription',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -223,13 +223,13 @@ const getSubscription = async (req, res) => {
 
     res.json({
       success: true,
-      subscription
+      subscription,
     });
   } catch (error) {
     console.error('Error retrieving subscription:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to retrieve subscription',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -246,19 +246,19 @@ const createRefund = async (req, res) => {
     const refund = await stripe.refunds.create({
       payment_intent: paymentIntentId,
       amount: amount ? Math.round(amount * 100) : undefined, // Convert to cents
-      reason
+      reason,
     });
 
     res.json({
       success: true,
       refundId: refund.id,
-      refund
+      refund,
     });
   } catch (error) {
     console.error('Error creating refund:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to create refund',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -272,7 +272,7 @@ const handleWebhook = async (req, res) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+      process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
@@ -282,46 +282,46 @@ const handleWebhook = async (req, res) => {
   try {
     // Handle the event
     switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        console.log('Payment succeeded:', paymentIntent.id);
-        // TODO: Update order status, send confirmation email, etc.
-        break;
-      
-      case 'payment_intent.payment_failed':
-        const failedPayment = event.data.object;
-        console.log('Payment failed:', failedPayment.id);
-        // TODO: Update order status, send failure notification, etc.
-        break;
-      
-      case 'customer.subscription.created':
-        const subscription = event.data.object;
-        console.log('Subscription created:', subscription.id);
-        // TODO: Handle subscription creation
-        break;
-      
-      case 'customer.subscription.updated':
-        const updatedSubscription = event.data.object;
-        console.log('Subscription updated:', updatedSubscription.id);
-        // TODO: Handle subscription updates
-        break;
-      
-      case 'customer.subscription.deleted':
-        const deletedSubscription = event.data.object;
-        console.log('Subscription deleted:', deletedSubscription.id);
-        // TODO: Handle subscription deletion
-        break;
-      
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log('Payment succeeded:', paymentIntent.id);
+      // TODO: Update order status, send confirmation email, etc.
+      break;
+
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      console.log('Payment failed:', failedPayment.id);
+      // TODO: Update order status, send failure notification, etc.
+      break;
+
+    case 'customer.subscription.created':
+      const subscription = event.data.object;
+      console.log('Subscription created:', subscription.id);
+      // TODO: Handle subscription creation
+      break;
+
+    case 'customer.subscription.updated':
+      const updatedSubscription = event.data.object;
+      console.log('Subscription updated:', updatedSubscription.id);
+      // TODO: Handle subscription updates
+      break;
+
+    case 'customer.subscription.deleted':
+      const deletedSubscription = event.data.object;
+      console.log('Subscription deleted:', deletedSubscription.id);
+      // TODO: Handle subscription deletion
+      break;
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
     }
 
     res.json({ received: true });
   } catch (error) {
     console.error('Error handling webhook:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Webhook handling failed',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -338,13 +338,13 @@ const getCustomerPaymentMethods = async (req, res) => {
 
     res.json({
       success: true,
-      paymentMethods: paymentMethods.data
+      paymentMethods: paymentMethods.data,
     });
   } catch (error) {
     console.error('Error retrieving payment methods:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to retrieve payment methods',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -365,13 +365,13 @@ const attachPaymentMethod = async (req, res) => {
 
     res.json({
       success: true,
-      paymentMethod
+      paymentMethod,
     });
   } catch (error) {
     console.error('Error attaching payment method:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to attach payment method',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -386,13 +386,13 @@ const detachPaymentMethod = async (req, res) => {
     res.json({
       success: true,
       message: 'Payment method detached successfully',
-      paymentMethod
+      paymentMethod,
     });
   } catch (error) {
     console.error('Error detaching payment method:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to detach payment method',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -410,5 +410,5 @@ module.exports = {
   handleWebhook,
   getCustomerPaymentMethods,
   attachPaymentMethod,
-  detachPaymentMethod
+  detachPaymentMethod,
 };

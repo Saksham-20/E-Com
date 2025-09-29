@@ -28,7 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // Get total count
     const totalCount = await query(
       'SELECT COUNT(*) as total FROM orders WHERE user_id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     res.json({
@@ -37,8 +37,8 @@ router.get('/', authenticateToken, async (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount.rows[0].total / limit),
         totalItems: parseInt(totalCount.rows[0].total),
-        itemsPerPage: parseInt(limit)
-      }
+        itemsPerPage: parseInt(limit),
+      },
     });
 
   } catch (error) {
@@ -61,7 +61,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
        LEFT JOIN user_addresses ua ON o.shipping_address_id = ua.id
        LEFT JOIN user_addresses ba ON o.billing_address_id = ba.id
        WHERE o.id = $1 AND o.user_id = $2`,
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (order.rows.length === 0) {
@@ -83,7 +83,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     res.json({
       order: order.rows[0],
-      items: orderItems.rows
+      items: orderItems.rows,
     });
 
   } catch (error) {
@@ -99,7 +99,7 @@ router.post('/', authenticateToken, [
   body('items').isArray().withMessage('Items are required'),
   body('shipping_address').isObject().withMessage('Shipping address is required'),
   body('billing_address').isObject().withMessage('Billing address is required'),
-  body('payment_method').notEmpty().withMessage('Payment method is required')
+  body('payment_method').notEmpty().withMessage('Payment method is required'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -123,7 +123,7 @@ router.post('/', authenticateToken, [
         req.user.id, 'shipping', shipping_address.first_name, shipping_address.last_name,
         shipping_address.company, shipping_address.address_line_1, shipping_address.address_line_2,
         shipping_address.city, shipping_address.state, shipping_address.postal_code,
-        shipping_address.country, shipping_address.phone, false
+        shipping_address.country, shipping_address.phone, false,
       ]);
 
       // Create billing address
@@ -135,7 +135,7 @@ router.post('/', authenticateToken, [
         req.user.id, 'billing', billing_address.first_name, billing_address.last_name,
         billing_address.company, billing_address.address_line_1, billing_address.address_line_2,
         billing_address.city, billing_address.state, billing_address.postal_code,
-        billing_address.country, billing_address.phone, false
+        billing_address.country, billing_address.phone, false,
       ]);
 
       // Calculate totals
@@ -159,7 +159,7 @@ router.post('/', authenticateToken, [
       `, [
         orderNumber, req.user.id, 'pending', subtotal, taxAmount, shippingAmount,
         totalAmount, 'pending', payment_method, shippingResult.rows[0].id,
-        billingResult.rows[0].id, notes
+        billingResult.rows[0].id, notes,
       ]);
 
       // Create order items
@@ -179,7 +179,7 @@ router.post('/', authenticateToken, [
 
       res.status(201).json({
         success: true,
-        order: orderResult.rows[0]
+        order: orderResult.rows[0],
       });
 
     } catch (error) {
@@ -205,7 +205,7 @@ router.post('/:id/cancel', authenticateToken, async (req, res) => {
     // Check if order exists and belongs to user
     const order = await query(
       'SELECT * FROM orders WHERE id = $1 AND user_id = $2',
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (order.rows.length === 0) {
@@ -229,19 +229,19 @@ router.post('/:id/cancel', authenticateToken, async (req, res) => {
       // Update order status
       await client.query(
         'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        ['cancelled', id]
+        ['cancelled', id],
       );
 
       // Restore product stock
       const orderItems = await client.query(
         'SELECT product_id, quantity FROM order_items WHERE order_id = $1',
-        [id]
+        [id],
       );
 
       for (const item of orderItems.rows) {
         await client.query(
           'UPDATE products SET stock_quantity = stock_quantity + $1 WHERE id = $2',
-          [item.quantity, item.product_id]
+          [item.quantity, item.product_id],
         );
       }
 
@@ -273,7 +273,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     // Check if user is admin
     const user = await query(
       'SELECT is_admin FROM users WHERE id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     if (!user.rows[0]?.is_admin) {
@@ -283,7 +283,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     // Update order
     const result = await query(
       'UPDATE orders SET status = $1, tracking_number = $2, notes = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *',
-      [status, tracking_number, notes, id]
+      [status, tracking_number, notes, id],
     );
 
     if (result.rows.length === 0) {

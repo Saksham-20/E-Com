@@ -10,8 +10,8 @@ const handleValidationErrors = (req, res, next) => {
       errors: errors.array().map(error => ({
         field: error.path,
         message: error.msg,
-        value: error.value
-      }))
+        value: error.value,
+      })),
     });
   }
   next();
@@ -40,7 +40,7 @@ const validateRegistration = [
     .optional()
     .isMobilePhone()
     .withMessage('Please provide a valid phone number'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // User login validation
@@ -52,7 +52,7 @@ const validateLogin = [
   body('password')
     .notEmpty()
     .withMessage('Password is required'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Product creation/update validation
@@ -93,7 +93,7 @@ const validateProduct = [
     .optional()
     .isUUID()
     .withMessage('Valid brand ID is required'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Product search/listing validation
@@ -132,7 +132,7 @@ const validateProductQuery = [
     .optional()
     .isIn(['asc', 'desc'])
     .withMessage('Order must be either asc or desc'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Review validation
@@ -150,7 +150,7 @@ const validateReview = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage('Review comment must be less than 1000 characters'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Address validation
@@ -187,7 +187,7 @@ const validateAddress = [
     .optional()
     .isMobilePhone()
     .withMessage('Please provide a valid phone number'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Order validation
@@ -211,7 +211,7 @@ const validateOrder = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Shipping method is required'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Coupon validation
@@ -239,7 +239,7 @@ const validateCoupon = [
     .optional()
     .isInt({ min: 1 })
     .withMessage('Usage limit must be a positive integer'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // UUID parameter validation
@@ -247,7 +247,7 @@ const validateUUID = [
   param('id')
     .isUUID()
     .withMessage('Valid UUID is required'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 // Pagination validation
@@ -260,7 +260,7 @@ const validatePagination = [
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('Limit must be between 1 and 100'),
-  handleValidationErrors
+  handleValidationErrors,
 ];
 
 module.exports = {
@@ -274,5 +274,5 @@ module.exports = {
   validateOrder,
   validateCoupon,
   validateUUID,
-  validatePagination
+  validatePagination,
 };

@@ -13,7 +13,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const user = await query(
       'SELECT id, email, first_name, last_name, phone, created_at FROM users WHERE id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     if (user.rows.length === 0) {
@@ -33,7 +33,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 router.put('/profile', authenticateToken, [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('phone').optional().isMobilePhone().withMessage('Invalid phone number')
+  body('phone').optional().isMobilePhone().withMessage('Invalid phone number'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -45,7 +45,7 @@ router.put('/profile', authenticateToken, [
 
     await query(
       'UPDATE users SET first_name = $1, last_name = $2, phone = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4',
-      [firstName, lastName, phone, req.user.id]
+      [firstName, lastName, phone, req.user.id],
     );
 
     res.json({ message: 'Profile updated successfully' });
@@ -60,7 +60,7 @@ router.put('/profile', authenticateToken, [
 // @access  Private
 router.put('/password', authenticateToken, [
   body('currentPassword').notEmpty().withMessage('Current password is required'),
-  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -73,7 +73,7 @@ router.put('/password', authenticateToken, [
     // Get current user with password
     const user = await query(
       'SELECT password_hash FROM users WHERE id = $1',
-      [req.user.id]
+      [req.user.id],
     );
 
     if (user.rows.length === 0) {
@@ -93,7 +93,7 @@ router.put('/password', authenticateToken, [
     // Update password
     await query(
       'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [newPasswordHash, req.user.id]
+      [newPasswordHash, req.user.id],
     );
 
     res.json({ message: 'Password changed successfully' });
@@ -134,7 +134,7 @@ router.get('/wishlist', authenticateToken, async (req, res) => {
 // @desc    Add item to wishlist
 // @access  Private
 router.post('/wishlist', authenticateToken, [
-  body('productId').isInt().withMessage('Product ID must be a valid integer')
+  body('productId').isInt().withMessage('Product ID must be a valid integer'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -147,7 +147,7 @@ router.post('/wishlist', authenticateToken, [
     // Check if product exists
     const product = await query(
       'SELECT id FROM products WHERE id = $1 AND is_active = true',
-      [productId]
+      [productId],
     );
 
     if (product.rows.length === 0) {
@@ -157,7 +157,7 @@ router.post('/wishlist', authenticateToken, [
     // Check if already in wishlist
     const existingItem = await query(
       'SELECT id FROM wishlist WHERE user_id = $1 AND product_id = $2',
-      [req.user.id, productId]
+      [req.user.id, productId],
     );
 
     if (existingItem.rows.length > 0) {
@@ -167,7 +167,7 @@ router.post('/wishlist', authenticateToken, [
     // Add to wishlist
     await query(
       'INSERT INTO wishlist (user_id, product_id) VALUES ($1, $2)',
-      [req.user.id, productId]
+      [req.user.id, productId],
     );
 
     res.json({ message: 'Product added to wishlist successfully' });
@@ -187,7 +187,7 @@ router.delete('/wishlist/:id', authenticateToken, async (req, res) => {
     // Check if wishlist item belongs to user
     const wishlistItem = await query(
       'SELECT id FROM wishlist WHERE id = $1 AND user_id = $2',
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (wishlistItem.rows.length === 0) {
