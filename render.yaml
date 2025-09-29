@@ -54,7 +54,6 @@ services:
     env: static
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/build
-    plan: free
     pullRequestPreviewsEnabled: false
     autoDeploy: true
     envVars:
