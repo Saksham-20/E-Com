@@ -153,4 +153,17 @@ async function setupDatabase() {
   }
 }
 
+// Run setup if this file is executed directly
+if (require.main === module) {
+  setupDatabase()
+    .then(() => {
+      console.log('✅ Database setup completed successfully');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Database setup failed:', error);
+      process.exit(1);
+    });
+}
+
 module.exports = setupDatabase;
