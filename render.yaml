@@ -5,8 +5,8 @@ services:
     env: node
     buildCommand: cd server && npm install
     startCommand: cd server && npm start
-    plan: starter
-    region: oregon
+    plan: free
+    region: singapore
     branch: main
     healthCheckPath: /health
     autoDeploy: true
@@ -54,7 +54,9 @@ services:
     env: static
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/build
-    pullRequestPreviewsEnabled: true
+    plan: free
+    region: singapore
+    pullRequestPreviewsEnabled: false
     autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
