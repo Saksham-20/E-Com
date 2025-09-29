@@ -41,24 +41,9 @@ async function setupDatabase() {
     }
 
     try {
-      // Split schema into individual statements and execute them one by one
+      // Execute the entire schema as one statement to handle complex SQL
       console.log('🔄 Creating database tables...');
-      const statements = schema
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
-
-      for (const statement of statements) {
-        if (statement.trim()) {
-          try {
-            await pool.query(statement);
-            console.log('✅ Executed:', statement.substring(0, 50) + '...');
-          } catch (stmtError) {
-            console.log('⚠️ Statement failed (might already exist):', stmtError.message);
-            // Continue with next statement
-          }
-        }
-      }
+      await pool.query(schema);
       console.log('✅ Database schema created successfully');
     } catch (error) {
       console.error('❌ Schema creation failed:', error.message);
