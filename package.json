@@ -16,11 +16,7 @@
     "install-all": "npm install && cd client && npm install",
     "seed": "node server/database/seed.js",
     "db:setup": "node server/database/setup.js",
-    "db:setup:prod": "NODE_ENV=production node server/database/setup.js",
-    "test": "cd client && npm test",
-    "test:coverage": "cd client && npm test -- --coverage",
-    "lint": "cd client && npm run lint",
-    "lint:fix": "cd client && npm run lint:fix"
+    "start": "NODE_ENV=production node server/index.js"
   },
   "keywords": [
     "ecommerce",

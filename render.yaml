@@ -1,0 +1,73 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: luxury-ecommerce-db
+    env: postgresql
+    plan: starter
+    region: oregon
+    databaseName: luxury_ecommerce
+    databaseUser: postgres
+
+  # Backend API Service
+  - type: web
+    name: luxury-ecommerce-api
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CLIENT_URL
+        value: https://luxury-ecommerce-frontend.onrender.com
+      - key: DB_HOST
+        fromDatabase:
+          name: luxury-ecommerce-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: luxury-ecommerce-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: luxury-ecommerce-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: luxury-ecommerce-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: luxury-ecommerce-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://luxury-ecommerce-frontend.onrender.com
+
+  # Frontend Static Site
+  - type: web
+    name: luxury-ecommerce-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    rootDirectory: client
+    pullRequestPreviewsEnabled: true
+    autoDeploy: true
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://luxury-ecommerce-api.onrender.com/api
+      - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
+        sync: false
