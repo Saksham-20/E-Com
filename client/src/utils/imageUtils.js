@@ -5,7 +5,7 @@ const getImageUrl = (imagePath) => {
   
   if (!imagePath) {
     console.log('🖼️ getImageUrl: No image path, returning placeholder');
-    return '/placeholder-product.jpg';
+    return getPlaceholderImage();
   }
   
   // If it's already a full URL, return as is
@@ -26,7 +26,8 @@ const getImageUrl = (imagePath) => {
 };
 
 const getPlaceholderImage = () => {
-  return '/placeholder-product.jpg';
+  // Use a reliable placeholder service for production
+  return 'https://via.placeholder.com/400x400/f0f0f0/666666?text=No+Image';
 };
 
 export { getImageUrl, getPlaceholderImage };
