@@ -18,15 +18,15 @@ services:
       - key: CLIENT_URL
         value: https://luxury-ecommerce-frontend.onrender.com
       - key: DB_HOST
-        sync: false
+        value: dpg-d3d6k9q4d50c73d4ek1g-a.singapore-postgres.render.com
       - key: DB_PORT
-        sync: false
+        value: 5432
       - key: DB_NAME
-        sync: false
+        value: luxury_ecommerce_db_e7z8
       - key: DB_USER
-        sync: false
+        value: luxury_ecommerce_db_e7z8_user
       - key: DB_PASSWORD
-        sync: false
+        value: wwZwzCLXOL1sg4l3bCCQsn2gW1nBZXJW
       - key: JWT_SECRET
         generateValue: true
       - key: STRIPE_SECRET_KEY
