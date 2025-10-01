@@ -89,10 +89,6 @@ const validateProduct = [
   body('category_id')
     .isUUID()
     .withMessage('Valid category ID is required'),
-  body('brand_id')
-    .optional()
-    .isUUID()
-    .withMessage('Valid brand ID is required'),
   handleValidationErrors,
 ];
 

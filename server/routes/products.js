@@ -315,10 +315,10 @@ router.get('/:identifier', async (req, res) => {
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.is_active = true 
         AND p.id != $1 
-        AND (p.category_id = $2 OR p.brand_id = $3)
+        AND p.category_id = $2
       ORDER BY p.is_featured DESC, p.created_at DESC
       LIMIT 4
-    `, [product.id, product.category_id, product.brand_id]);
+    `, [product.id, product.category_id]);
 
     res.json({
       success: true,
@@ -356,7 +356,6 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
       sku,
       stock_quantity,
       category_id,
-      brand_id,
       meta_title,
       meta_description,
     } = req.body;
@@ -378,13 +377,13 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
     const result = await query(`
       INSERT INTO products (
         name, slug, description, short_description, price, compare_price,
-        sku, stock_quantity, category_id, brand_id, meta_title, meta_description
+        sku, stock_quantity, category_id, meta_title, meta_description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `, [
       name, slug, description, short_description, price, compare_price,
-      sku, stock_quantity, category_id, brand_id, meta_title, meta_description,
+      sku, stock_quantity, category_id, meta_title, meta_description,
     ]);
 
     res.status(201).json({

@@ -23,8 +23,6 @@ router.get('/', authenticateToken, async (req, res) => {
         p.sku,
         c.name as category_name,
         c.slug as category_slug,
-        b.name as brand_name,
-        b.slug as brand_slug,
         (
           SELECT pi.image_url
           FROM product_images pi
@@ -34,7 +32,6 @@ router.get('/', authenticateToken, async (req, res) => {
       FROM wishlist w
       JOIN products p ON w.product_id = p.id
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN brands b ON p.brand_id = b.id
       WHERE w.user_id = $1 AND p.is_active = true
       ORDER BY w.created_at DESC
     `, [req.user.id]);
