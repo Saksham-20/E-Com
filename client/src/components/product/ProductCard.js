@@ -36,6 +36,10 @@ const ProductCard = React.memo(({ product, className = '' }) => {
 
   // Memoize event handlers
   const handleAddToCart = useCallback(() => {
+    console.log('🛒 ProductCard - handleAddToCart called');
+    console.log('🛒 ProductCard - product:', product);
+    console.log('🛒 ProductCard - productId:', productId);
+    
     // Ensure we have the correct product structure for cart
     const cartProduct = {
       id: productId,
@@ -48,6 +52,8 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       category_name: product.category_name,
       category_slug: product.category_slug
     };
+    
+    console.log('🛒 ProductCard - cartProduct:', cartProduct);
     addToCart(cartProduct);
   }, [addToCart, product, productId]);
 
