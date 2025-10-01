@@ -25,9 +25,18 @@ const ProductReviews = ({ productId }) => {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiUrl}/api/products/${productId}/reviews`);
       const data = await response.json();
-      setReviews(data);
+      
+      if (Array.isArray(data)) {
+        setReviews(data);
+      } else if (data && Array.isArray(data.reviews)) {
+        setReviews(data.reviews);
+      } else {
+        console.error('Reviews data is not an array:', data);
+        setReviews([]);
+      }
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setReviews([]);
     } finally {
       setLoading(false);
     }
@@ -175,7 +184,7 @@ const ProductReviews = ({ productId }) => {
 
       {/* Reviews List */}
       <div className="space-y-6">
-        {reviews.length === 0 ? (
+        {!reviews || !Array.isArray(reviews) || reviews.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
         ) : (
           reviews.map((review) => (

@@ -231,7 +231,16 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={isInCartState ? handleRemoveFromCart : handleAddToCart}
+          onClick={() => {
+            console.log('🛒 ProductCard - Button clicked!');
+            console.log('🛒 ProductCard - isInCartState:', isInCartState);
+            console.log('🛒 ProductCard - product:', product);
+            if (isInCartState) {
+              handleRemoveFromCart();
+            } else {
+              handleAddToCart();
+            }
+          }}
           disabled={product.stock_quantity <= 0}
           className={`w-full py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
             isInCartState
