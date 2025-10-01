@@ -30,6 +30,10 @@ const ProductReviews = ({ productId }) => {
         setReviews(data);
       } else if (data && Array.isArray(data.reviews)) {
         setReviews(data.reviews);
+      } else if (data && data.success && data.data && Array.isArray(data.data)) {
+        setReviews(data.data);
+      } else if (data && data.success && data.data && Array.isArray(data.data.reviews)) {
+        setReviews(data.data.reviews);
       } else {
         console.error('Reviews data is not an array:', data);
         setReviews([]);

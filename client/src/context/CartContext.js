@@ -246,12 +246,10 @@ export const CartProvider = ({ children }) => {
           variant_details: variantDetails
         };
         
-        console.log('🛒 CartContext - Sending request data:', requestData);
-        console.log('🛒 CartContext - Product ID in request:', product.id);
-        
         const response = await api.post('/cart/add', requestData, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         });
 

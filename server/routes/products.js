@@ -578,8 +578,13 @@ router.get('/:id/reviews', validateUUID, async (req, res) => {
 router.get('/related', async (req, res) => {
   try {
     const { categoryId, excludeId, limit = 4 } = req.query;
+    
+    console.log('🔗 Related Products - categoryId:', categoryId);
+    console.log('🔗 Related Products - excludeId:', excludeId);
+    console.log('🔗 Related Products - limit:', limit);
 
     if (!categoryId) {
+      console.log('🔗 Related Products - ERROR: Category ID is missing');
       return res.status(400).json({
         success: false,
         message: 'Category ID is required',
@@ -598,6 +603,9 @@ router.get('/related', async (req, res) => {
       ORDER BY p.is_featured DESC, p.created_at DESC
       LIMIT $3
     `, [categoryId, excludeId || null, parseInt(limit)]);
+
+    console.log('🔗 Related Products - Query result count:', result.rows.length);
+    console.log('🔗 Related Products - Query result:', result.rows);
 
     res.json({
       success: true,

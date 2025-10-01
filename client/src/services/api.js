@@ -134,11 +134,6 @@ class ApiService {
 
   // POST request
   async post(endpoint, data, options = {}) {
-    console.log('🌐 API POST - endpoint:', endpoint);
-    console.log('🌐 API POST - data:', data);
-    console.log('🌐 API POST - data type:', typeof data);
-    console.log('🌐 API POST - data stringified:', JSON.stringify(data));
-    
     return this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),

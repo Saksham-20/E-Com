@@ -36,10 +36,6 @@ const ProductCard = React.memo(({ product, className = '' }) => {
 
   // Memoize event handlers
   const handleAddToCart = useCallback(() => {
-    console.log('🛒 ProductCard - handleAddToCart called');
-    console.log('🛒 ProductCard - product:', product);
-    console.log('🛒 ProductCard - productId:', productId);
-    
     // Ensure we have the correct product structure for cart
     const cartProduct = {
       id: productId,
@@ -53,7 +49,6 @@ const ProductCard = React.memo(({ product, className = '' }) => {
       category_slug: product.category_slug
     };
     
-    console.log('🛒 ProductCard - cartProduct:', cartProduct);
     addToCart(cartProduct);
   }, [addToCart, product, productId]);
 
@@ -231,16 +226,7 @@ const ProductCard = React.memo(({ product, className = '' }) => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            console.log('🛒 ProductCard - Button clicked!');
-            console.log('🛒 ProductCard - isInCartState:', isInCartState);
-            console.log('🛒 ProductCard - product:', product);
-            if (isInCartState) {
-              handleRemoveFromCart();
-            } else {
-              handleAddToCart();
-            }
-          }}
+          onClick={isInCartState ? handleRemoveFromCart : handleAddToCart}
           disabled={product.stock_quantity <= 0}
           className={`w-full py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
             isInCartState

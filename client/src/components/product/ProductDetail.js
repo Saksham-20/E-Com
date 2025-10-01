@@ -182,7 +182,10 @@ const ProductDetail = () => {
 
       {/* Related Products */}
       <div className="mt-16">
-        <RelatedProducts categoryId={product.category_id} currentProductId={product.id} />
+        <RelatedProducts 
+          categoryId={product.category_id} 
+          currentProductId={product.id} 
+        />
       </div>
     </div>
   );
