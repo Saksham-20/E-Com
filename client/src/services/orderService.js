@@ -45,7 +45,18 @@ export const orderService = {
       
       console.log('OrderService: Order data validation passed');
       
-      const response = await api.post('/orders/checkout', orderData);
+      // Transform data to match backend expectations
+      const transformedOrderData = {
+        items: orderData.items,
+        shipping_address: orderData.shippingAddress,
+        billing_address: orderData.billingAddress,
+        payment_method: orderData.paymentMethod,
+        notes: orderData.notes
+      };
+      
+      console.log('OrderService: Transformed order data:', transformedOrderData);
+      
+      const response = await api.post('/orders', transformedOrderData);
       console.log('OrderService: Response received:', response);
       console.log('OrderService: Order created successfully with ID:', response?.order?.id);
       return response;
