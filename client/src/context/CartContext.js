@@ -240,11 +240,16 @@ export const CartProvider = ({ children }) => {
       
       if (isAuthenticated) {
         // Add to user cart via API
-        const response = await api.post('/cart/add', {
+        const requestData = {
           product_id: product.id,
           quantity,
           variant_details: variantDetails
-        }, {
+        };
+        
+        console.log('🛒 CartContext - Sending request data:', requestData);
+        console.log('🛒 CartContext - Product ID in request:', product.id);
+        
+        const response = await api.post('/cart/add', requestData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

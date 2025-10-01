@@ -14,13 +14,19 @@ const RelatedProducts = ({ categoryId, currentProductId }) => {
   const fetchRelatedProducts = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiUrl}/api/products/related?categoryId=${categoryId}&excludeId=${currentProductId}&limit=4`);
       const data = await response.json();
-      setProducts(data);
+      
+      if (data.success && data.data) {
+        setProducts(data.data);
+      } else {
+        console.error('Error in related products response:', data);
+        setProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching related products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -28,13 +34,13 @@ const RelatedProducts = ({ categoryId, currentProductId }) => {
 
   if (loading) return <Loading />;
 
-  if (products.length === 0) return null;
+  if (!products || !Array.isArray(products) || products.length === 0) return null;
 
   return (
     <div>
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
+        {products && Array.isArray(products) && products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
