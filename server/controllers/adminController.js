@@ -265,15 +265,15 @@ const getSettings = async (req, res) => {
 
     const settings = {
       store: {
-        name: process.env.APP_NAME || 'E-Commerce Shop Store',
-        description: process.env.APP_DESCRIPTION || 'Premium products for discerning customers',
-        email: process.env.APP_EMAIL || 'admin@luxurystore.com',
+        name: process.env.APP_NAME || 'ECOM',
+        description: process.env.APP_DESCRIPTION || 'Luxury jewelry, modern heirlooms, and collectible accessories.',
+        email: process.env.APP_EMAIL || 'hello@ecom.example',
         phone: process.env.APP_PHONE || '+1-555-0123',
         address: {
-          street: process.env.STORE_STREET || '123 Luxury Lane',
-          city: process.env.STORE_CITY || 'Beverly Hills',
-          state: process.env.STORE_STATE || 'CA',
-          zipCode: process.env.STORE_ZIP || '90210',
+          street: process.env.STORE_STREET || '12 Atelier Row',
+          city: process.env.STORE_CITY || 'New York',
+          state: process.env.STORE_STATE || 'NY',
+          zipCode: process.env.STORE_ZIP || '10001',
           country: process.env.STORE_COUNTRY || 'US',
         },
       },

@@ -1,11 +1,11 @@
 // Common validation patterns
 export const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^(\+?91[\s\-]?)?[6-9]\d{9}$|^(\+?1[\s\-]?)?[2-9]\d{2}[\s\-]?\d{3}[\s\-]?\d{4}$|^(\+\d{1,3}[\s\-]?)?\d{10,15}$/,
+  phone: /^(\+?91[\s-]?)?[6-9]\d{9}$|^(\+?1[\s-]?)?[2-9]\d{2}[\s-]?\d{3}[\s-]?\d{4}$|^(\+\d{1,3}[\s-]?)?\d{10,15}$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
   zipCode: /^\d{5}(-\d{4})?$/,
   creditCard: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})$/,
-  cardNumber: /^\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}$/,
+  cardNumber: /^\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}$/,
   expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
   cvv: /^[0-9]{3,4}$/,
   url: /^https?:\/\/.+/,
@@ -268,6 +268,9 @@ export const validateForm = (formData, validationRules) => {
         case 'custom':
           error = rule.validator(value, formData);
           break;
+        default:
+          // Unknown rule type, skip
+          break;
       }
       
       if (error) {
@@ -341,6 +344,9 @@ export const validateField = (value, rules) => {
         error = validators.zipCode(value);
         break;
         
+        default:
+          // Unknown rule type, skip
+          break;
       case 'custom':
         error = rule.validator(value);
         break;
@@ -390,7 +396,7 @@ export const commonRules = {
 };
 
 // Export everything
-export default {
+const validationModule = {
   patterns,
   messages,
   validators,
@@ -398,3 +404,5 @@ export default {
   validateField,
   commonRules
 };
+
+export default validationModule;

@@ -12,11 +12,9 @@ import api from '../services/api';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { items: cart, clearCart, summary } = useCart();
+  const { items: cart, clearCart } = useCart();
   const { user } = useAuth();
   
-  // Calculate total from summary
-  const total = summary?.estimated_total || 0;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);

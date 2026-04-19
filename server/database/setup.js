@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { pool } = require('./config');
+const { seedCategories } = require('./catalogSeedData');
 require('dotenv').config();
 
 async function setupDatabase() {
@@ -58,12 +59,14 @@ async function setupDatabase() {
         slug VARCHAR(100) UNIQUE NOT NULL,
         description TEXT,
         image_url VARCHAR(500),
+        parent_id UUID,
         sort_order INTEGER DEFAULT 0,
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `, 'Ensured categories table');
+    await runSafeQuery("ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id UUID", 'Ensured categories.parent_id column');
 
     await runSafeQuery(`
       CREATE TABLE IF NOT EXISTS products (
@@ -74,8 +77,15 @@ async function setupDatabase() {
         short_description VARCHAR(500),
         price DECIMAL(10,2) NOT NULL DEFAULT 0,
         compare_price DECIMAL(10,2),
+        cost_price DECIMAL(10,2),
         sku VARCHAR(100),
+        barcode VARCHAR(100),
+        weight DECIMAL(8,2),
+        dimensions VARCHAR(100),
+        attributes JSONB DEFAULT '{}'::jsonb,
         stock_quantity INTEGER DEFAULT 0,
+        low_stock_threshold INTEGER DEFAULT 5,
+        allow_backorders BOOLEAN DEFAULT FALSE,
         category_id UUID,
         is_active BOOLEAN DEFAULT TRUE,
         is_featured BOOLEAN DEFAULT FALSE,
@@ -83,6 +93,7 @@ async function setupDatabase() {
         is_new_arrival BOOLEAN DEFAULT FALSE,
         meta_title VARCHAR(255),
         meta_description TEXT,
+        meta_keywords TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
@@ -92,8 +103,15 @@ async function setupDatabase() {
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255)", 'Ensured products.slug column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description VARCHAR(500)", 'Ensured products.short_description column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_price DECIMAL(10,2)", 'Ensured products.compare_price column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price DECIMAL(10,2)", 'Ensured products.cost_price column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS sku VARCHAR(100)", 'Ensured products.sku column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode VARCHAR(100)", 'Ensured products.barcode column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS weight DECIMAL(8,2)", 'Ensured products.weight column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions VARCHAR(100)", 'Ensured products.dimensions column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS attributes JSONB DEFAULT '{}'::jsonb", 'Ensured products.attributes column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER DEFAULT 0", 'Ensured products.stock_quantity column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS low_stock_threshold INTEGER DEFAULT 5", 'Ensured products.low_stock_threshold column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS allow_backorders BOOLEAN DEFAULT FALSE", 'Ensured products.allow_backorders column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS category_id UUID", 'Ensured products.category_id column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE", 'Ensured products.is_active column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE", 'Ensured products.is_featured column');
@@ -101,6 +119,7 @@ async function setupDatabase() {
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_new_arrival BOOLEAN DEFAULT FALSE", 'Ensured products.is_new_arrival column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS meta_title VARCHAR(255)", 'Ensured products.meta_title column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS meta_description TEXT", 'Ensured products.meta_description column');
+    await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS meta_keywords TEXT", 'Ensured products.meta_keywords column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP", 'Ensured products.created_at column');
     await runSafeQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP", 'Ensured products.updated_at column');
 
@@ -131,10 +150,27 @@ async function setupDatabase() {
       )
     `, 'Ensured product_reviews table');
 
+    await runSafeQuery(`
+      CREATE TABLE IF NOT EXISTS product_variants (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        product_id UUID,
+        name VARCHAR(100) NOT NULL,
+        value VARCHAR(100) NOT NULL,
+        attributes JSONB DEFAULT '{}'::jsonb,
+        price_adjustment DECIMAL(10,2) DEFAULT 0,
+        stock_quantity INTEGER DEFAULT 0,
+        sku VARCHAR(100),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `, 'Ensured product_variants table');
+    await runSafeQuery("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS attributes JSONB DEFAULT '{}'::jsonb", 'Ensured product_variants.attributes column');
+
     await runSafeQuery("CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id)", 'Ensured products.category_id index');
     await runSafeQuery("CREATE INDEX IF NOT EXISTS idx_products_is_active ON products(is_active)", 'Ensured products.is_active index');
     await runSafeQuery("CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id)", 'Ensured product_images.product_id index');
     await runSafeQuery("CREATE INDEX IF NOT EXISTS idx_product_reviews_product_id ON product_reviews(product_id)", 'Ensured product_reviews.product_id index');
+    await runSafeQuery("CREATE INDEX IF NOT EXISTS idx_product_variants_product_id ON product_variants(product_id)", 'Ensured product_variants.product_id index');
   };
 
   try {
@@ -194,28 +230,28 @@ async function setupDatabase() {
 
     // Create default categories
     try {
-      const categories = [
-        { name: 'Rings', slug: 'rings', description: 'Beautiful rings for every occasion' },
-        { name: 'Necklaces', slug: 'necklaces', description: 'Elegant necklaces and pendants' },
-        { name: 'Earrings', slug: 'earrings', description: 'Stunning earrings for all styles' },
-        { name: 'Bracelets', slug: 'bracelets', description: 'Charming bracelets and bangles' },
-        { name: 'Watches', slug: 'watches', description: 'Luxury timepieces' },
-      ];
-
-      for (const category of categories) {
-        const existingCategory = await pool.query(
-          'SELECT id FROM categories WHERE name = $1',
-          [category.name],
+      for (const category of seedCategories) {
+        await pool.query(
+          `
+            INSERT INTO categories (name, slug, description, sort_order, is_active, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, true, NOW(), NOW())
+            ON CONFLICT (slug)
+            DO UPDATE SET
+              name = EXCLUDED.name,
+              description = EXCLUDED.description,
+              sort_order = EXCLUDED.sort_order,
+              is_active = true,
+              updated_at = NOW()
+          `,
+          [
+            category.name,
+            category.slug,
+            category.description,
+            category.sortOrder || 0,
+          ],
         );
-
-        if (existingCategory.rows.length === 0) {
-          await pool.query(
-            'INSERT INTO categories (name, slug, description, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())',
-            [category.name, category.slug, category.description],
-          );
-        }
       }
-      console.log('✅ Indian jewelry categories created');
+      console.log('✅ Starter catalog categories created');
     } catch (error) {
       console.error('❌ Category creation failed:', error.message);
       // Don't throw, continue
@@ -223,19 +259,21 @@ async function setupDatabase() {
 
     console.log('🎉 Database setup completed successfully!');
     console.log('📋 Next steps:');
-    console.log('1. Update frontend API URL to: https://luxury-ecommerce-api.onrender.com');
+    console.log('1. Update frontend API URL to match your deployed API host');
     console.log('2. Add Cloudinary credentials for image uploads');
     console.log('3. Test your deployment!');
 
-    // Optionally run seed data
-    if (process.env.RUN_SEED === 'true') {
-      console.log('🌱 Running database seed...');
+    const productCountResult = await pool.query('SELECT COUNT(*)::int AS count FROM products');
+    const shouldSeedCatalog = process.env.RUN_SEED === 'true' || productCountResult.rows[0].count === 0;
+
+    if (shouldSeedCatalog) {
+      console.log('🌱 Ensuring starter catalog is available...');
       try {
         const seedDatabase = require('./seed');
         await seedDatabase();
-        console.log('✅ Database seeded with sample data');
+        console.log('✅ Database seeded with starter catalog');
       } catch (error) {
-        console.log('⚠️ Seed failed, continuing without sample data:', error.message);
+        console.log('⚠️ Seed failed, continuing without starter catalog:', error.message);
       }
     }
 

@@ -42,17 +42,22 @@ const Header = () => {
 
   const navigationItems = [
     { name: 'Collections', href: '/products' },
-    { name: 'High Jewelry', href: '/high-jewelry' },
-    { name: 'Heritage', href: '/collections/heritage' },
-    { name: 'Bespoke', href: '/about' }
+    { name: 'Rings', href: '/products?category=rings' },
+    { name: 'Necklaces', href: '/products?category=necklaces' },
+    { name: 'Earrings', href: '/products?category=earrings' },
+    { name: 'Bracelets', href: '/products?category=bracelets' },
+    { name: 'About', href: '/about' },
   ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-atelier-ivory/90 backdrop-blur-xl tonal-shift-bottom border-b border-atelier-outline/20">
       <div className="atelier-container h-full flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 lg:gap-10">
-          <Link to="/" className="font-headline text-2xl lg:text-3xl tracking-[0.18em] uppercase leading-none">
-            L'ATELIER
+          <Link to="/" className="leading-none">
+            <span className="block font-headline text-2xl lg:text-3xl tracking-[0.22em] uppercase">
+              ECOM
+            </span>
+            <span className="atelier-label text-atelier-muted">Fine Jewelry</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-4 lg:gap-8">
@@ -151,7 +156,7 @@ const Header = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search"
+                placeholder="Search rings, necklaces, and more"
                 className="atelier-input"
               />
               <button type="submit" className="atelier-primary-btn px-6 py-2">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Loading from '../ui/Loading';
-import api from '../../services/api';
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
@@ -35,6 +34,7 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
   const fetchAnalytics = async () => {

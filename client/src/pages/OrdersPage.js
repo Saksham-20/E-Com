@@ -20,6 +20,7 @@ const OrdersPage = () => {
     if (user) {
       fetchOrders();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, statusFilter]);
 
   const fetchOrders = async () => {

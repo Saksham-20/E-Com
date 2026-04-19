@@ -222,7 +222,7 @@ const MobileMenu = () => {
               </h3>
               <div className="space-y-2 text-sm text-gray-600">
                 <p>Customer Service: +1 (555) 123-4567</p>
-                <p>Email: hello@luxuryecommerce.com</p>
+                <p>Email: hello@ecom.example</p>
                 <p>Hours: Mon-Fri 9AM-6PM EST</p>
               </div>
             </div>

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
-import api from '../../services/api';
 
 const OrderManager = () => {
   // const { user } = useAuth();

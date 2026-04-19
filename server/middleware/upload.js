@@ -10,11 +10,11 @@ const storage = new CloudinaryStorage({
     folder: (req, file) => {
       // Determine folder based on route
       if (req.baseUrl.includes('products')) {
-        return 'luxury-ecommerce/products';
+        return 'ecom/products';
       } else if (req.baseUrl.includes('users')) {
-        return 'luxury-ecommerce/users';
+        return 'ecom/users';
       }
-      return 'luxury-ecommerce/general';
+      return 'ecom/general';
     },
     public_id: (req, file) => {
       // Generate unique filename

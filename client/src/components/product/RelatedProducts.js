@@ -9,6 +9,7 @@ const RelatedProducts = ({ categoryId, currentProductId }) => {
 
   useEffect(() => {
     fetchRelatedProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId, currentProductId]);
 
   const fetchRelatedProducts = async () => {

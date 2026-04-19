@@ -3,7 +3,6 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
-import api from '../../services/api';
 
 const UserManager = () => {
   const [users, setUsers] = useState([]);
@@ -28,6 +27,7 @@ const UserManager = () => {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, roleFilter, searchTerm]);
 
   const fetchUsers = async () => {

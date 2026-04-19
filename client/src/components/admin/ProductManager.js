@@ -6,7 +6,6 @@ import Input from '../ui/Input';
 import Modal from '../ui/Modal';
 import Loading from '../ui/Loading';
 import { getImageUrl, getPlaceholderImage } from '../../utils/imageUtils';
-import api from '../../services/api';
 
 const ProductManager = () => {
   // const { user } = useAuth();

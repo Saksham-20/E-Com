@@ -124,7 +124,7 @@ app.use('*', (req, res) => {
 // Initialize database and start server
 async function startServer() {
   try {
-    console.log('🚀 Starting E-Commerce Shop server...');
+    console.log('🚀 Starting ECOM server...');
     console.log('🚀 Environment variables check:');
     console.log('  - NODE_ENV:', process.env.NODE_ENV);
     console.log('  - PORT:', process.env.PORT);
@@ -139,7 +139,7 @@ async function startServer() {
 
     // Start the server
     app.listen(PORT, () => {
-      console.log(`🚀 E-Commerce Shop server running on port ${PORT}`);
+      console.log(`🚀 ECOM server running on port ${PORT}`);
       console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
       console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log('🚀 Server startup completed successfully!');

@@ -7,13 +7,13 @@ const Footer = () => {
 
   const footerSections = [
     {
-      title: 'The Maison',
+      title: 'The House',
       links: [
         { name: 'Our Story', href: '/about' },
         { name: 'Craftsmanship', href: '/about' },
-        { name: 'Sustainability', href: '/about' },
-        { name: 'Boutique Finder', href: '/about' }
-      ]
+        { name: 'Editorial Curation', href: '/about' },
+        { name: 'Private Appointments', href: '/about' },
+      ],
     },
     {
       title: 'Customer Care',
@@ -21,18 +21,18 @@ const Footer = () => {
         { name: 'Contact Us', href: '/profile' },
         { name: 'Shipping & Returns', href: '/orders' },
         { name: 'Care Guide', href: '/about' },
-        { name: 'Privacy Policy', href: '/about' }
-      ]
+        { name: 'Privacy Policy', href: '/about' },
+      ],
     },
     {
       title: 'Services',
       links: [
-        { name: 'Bespoke Creations', href: '/about' },
-        { name: 'Valuation', href: '/about' },
-        { name: 'Contact Us', href: '/profile' },
-        { name: 'Shipping', href: '/orders' }
-      ]
-    }
+        { name: 'Bespoke Design', href: '/about' },
+        { name: 'Gift Concierge', href: '/about' },
+        { name: 'Bridal Styling', href: '/products?category=rings' },
+        { name: 'Collectible Watches', href: '/products?category=watches' },
+      ],
+    },
   ];
 
   return (
@@ -40,10 +40,10 @@ const Footer = () => {
       <div className="atelier-container grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
           <Link to="/" className="font-headline text-2xl tracking-tight">
-            L'Atelier
+            ECOM
           </Link>
           <p className="mt-5 atelier-label text-atelier-muted leading-relaxed max-w-[240px]">
-            Crafting timeless beauty through precision jewelry design.
+            Fine jewelry, polished gifting, and modern heirlooms curated with an editorial luxury lens.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ const Footer = () => {
       </div>
 
       <div className="atelier-container mt-14 border-t border-atelier-outline/30 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="atelier-label text-atelier-muted">&copy; {currentYear} L'Atelier d'Excellence. All rights reserved.</p>
+        <p className="atelier-label text-atelier-muted">&copy; {currentYear} ECOM Fine Jewelry. All rights reserved.</p>
         <div className="flex items-center gap-3 text-atelier-muted">
           <FiGlobe className="h-3.5 w-3.5" />
           <span className="atelier-label">Global - English</span>

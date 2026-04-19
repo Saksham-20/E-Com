@@ -124,6 +124,7 @@ export const WishlistProvider = ({ children }) => {
     if (isAuthenticated && token) {
       loadUserWishlist();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   // Load user wishlist from API

@@ -194,6 +194,7 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && token) {
       loadUserCart();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   // Load user cart from API

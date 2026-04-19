@@ -6,8 +6,8 @@ import { IoHome, IoSearch, IoArrowBack } from 'react-icons/io5';
 const NotFoundPage = () => {
   const quickLinks = [
     { name: 'Home', href: '/', icon: IoHome, description: 'Return to homepage' },
-    { name: 'Products', href: '/products', icon: IoSearch, description: 'Browse our collections' },
-    { name: 'Collections', href: '/collections', icon: IoSearch, description: 'Explore categories' }
+    { name: 'Products', href: '/products', icon: IoSearch, description: 'Browse the ECOM vault' },
+    { name: 'Curated Edit', href: '/products?sort=curated', icon: IoSearch, description: 'Explore featured jewelry' }
   ];
 
   return (
@@ -36,8 +36,8 @@ const NotFoundPage = () => {
             Page Not Found
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            We're sorry, but the page you're looking for seems to have wandered off. 
-            Perhaps it's exploring our luxury collections or enjoying a moment of elegance elsewhere.
+            We're sorry, but the page you're looking for seems to have wandered off.
+            Perhaps it is exploring the ECOM jewelry vault or taking the scenic route through another collection.
           </p>
         </motion.div>
 
@@ -116,7 +116,7 @@ const NotFoundPage = () => {
             Need Help Finding Something?
           </h3>
           <p className="text-gray-600 mb-4">
-            Our customer service team is here to help you navigate our luxury collections 
+            Our customer service team is here to help you navigate the ECOM catalog
             and find exactly what you're looking for.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -128,7 +128,7 @@ const NotFoundPage = () => {
               Call us: +1 (555) 123-4567
             </a>
             <a
-              href="mailto:hello@luxuryecommerce.com"
+              href="mailto:hello@ecom.example"
               className="text-tiffany-blue hover:text-tiffany-blue-dark font-semibold flex items-center justify-center group"
             >
               <span className="mr-2">✉️</span>

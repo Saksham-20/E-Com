@@ -18,6 +18,7 @@ const OrderConfirmationPage = () => {
     if (orderId && user) {
       fetchOrderDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, user]);
 
   const fetchOrderDetails = async () => {
