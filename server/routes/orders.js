@@ -1,7 +1,9 @@
 const express = require('express');
 const { query, pool } = require('../database/config');
 const { authenticateToken } = require('../middleware/auth');
+const { validateUUID } = require('../middleware/validation');
 const { body, validationResult } = require('express-validator');
+const { checkoutLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -50,13 +52,35 @@ router.get('/', authenticateToken, async (req, res) => {
 // @route   GET /api/orders/:id
 // @desc    Get order details
 // @access  Private
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticateToken, validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 
     // Get order
     const order = await query(
-      `SELECT o.*, ua.*, ba.*
+      `SELECT o.*,
+              ua.id as shipping_address_id,
+              ua.first_name as shipping_first_name,
+              ua.last_name as shipping_last_name,
+              ua.company as shipping_company,
+              ua.address_line_1 as shipping_address_line_1,
+              ua.address_line_2 as shipping_address_line_2,
+              ua.city as shipping_city,
+              ua.state as shipping_state,
+              ua.postal_code as shipping_postal_code,
+              ua.country as shipping_country,
+              ua.phone as shipping_phone,
+              ba.id as billing_address_id,
+              ba.first_name as billing_first_name,
+              ba.last_name as billing_last_name,
+              ba.company as billing_company,
+              ba.address_line_1 as billing_address_line_1,
+              ba.address_line_2 as billing_address_line_2,
+              ba.city as billing_city,
+              ba.state as billing_state,
+              ba.postal_code as billing_postal_code,
+              ba.country as billing_country,
+              ba.phone as billing_phone
        FROM orders o
        LEFT JOIN user_addresses ua ON o.shipping_address_id = ua.id
        LEFT JOIN user_addresses ba ON o.billing_address_id = ba.id
@@ -95,7 +119,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // @route   POST /api/orders
 // @desc    Create a new order
 // @access  Private
-router.post('/', authenticateToken, [
+router.post('/', authenticateToken, checkoutLimiter, [
   body('items').isArray().withMessage('Items are required'),
   body('shipping_address').isObject().withMessage('Shipping address is required'),
   body('billing_address').isObject().withMessage('Billing address is required'),
@@ -109,10 +133,51 @@ router.post('/', authenticateToken, [
 
     const { items, shipping_address, billing_address, payment_method, notes } = req.body;
 
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'At least one item is required' });
+    }
+
+    for (const item of items) {
+      if (!item.product_id || !Number.isInteger(item.quantity) || item.quantity < 1) {
+        return res.status(400).json({ message: 'Each item must include a valid product_id and quantity' });
+      }
+    }
+
     // Start transaction
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+
+      const productIds = [...new Set(items.map((item) => item.product_id))];
+      const productsResult = await client.query(
+        `SELECT id, name, sku, price, stock_quantity
+         FROM products
+         WHERE id = ANY($1::uuid[]) AND is_active = true
+         FOR UPDATE`,
+        [productIds],
+      );
+
+      if (productsResult.rows.length !== productIds.length) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ message: 'One or more products are unavailable' });
+      }
+
+      const productsById = new Map(productsResult.rows.map((product) => [product.id, product]));
+      const requestedQuantities = new Map();
+      for (const item of items) {
+        requestedQuantities.set(
+          item.product_id,
+          (requestedQuantities.get(item.product_id) || 0) + item.quantity,
+        );
+      }
+
+      for (const [productId, requestedQty] of requestedQuantities.entries()) {
+        const product = productsById.get(productId);
+        if (!product || product.stock_quantity < requestedQty) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ message: `Insufficient stock for product ${productId}` });
+        }
+      }
 
       // Create shipping address
       const shippingResult = await client.query(`
@@ -138,10 +203,11 @@ router.post('/', authenticateToken, [
         billing_address.country, billing_address.phone, false,
       ]);
 
-      // Calculate totals
+      // Calculate totals from trusted server-side product prices
       let subtotal = 0;
       for (const item of items) {
-        subtotal += item.price * item.quantity;
+        const product = productsById.get(item.product_id);
+        subtotal += Number(product.price) * item.quantity;
       }
 
       const taxAmount = subtotal * 0.08; // 8% tax
@@ -164,15 +230,36 @@ router.post('/', authenticateToken, [
 
       // Create order items
       for (const item of items) {
-        await client.query(`
-          INSERT INTO order_items (order_id, product_id, quantity, price, total_price)
-          VALUES ($1, $2, $3, $4, $5)
-        `, [orderResult.rows[0].id, item.product_id, item.quantity, item.price, item.price * item.quantity]);
+        const product = productsById.get(item.product_id);
+        const unitPrice = Number(product.price);
 
-        // Update product stock
         await client.query(`
-          UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2
-        `, [item.quantity, item.product_id]);
+          INSERT INTO order_items (
+            order_id,
+            product_id,
+            product_name,
+            product_sku,
+            quantity,
+            unit_price,
+            total_price
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [
+          orderResult.rows[0].id,
+          item.product_id,
+          product.name,
+          product.sku || null,
+          item.quantity,
+          unitPrice,
+          unitPrice * item.quantity,
+        ]);
+      }
+
+      for (const [productId, requestedQty] of requestedQuantities.entries()) {
+        await client.query(
+          'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+          [requestedQty, productId],
+        );
       }
 
       await client.query('COMMIT');
@@ -198,7 +285,7 @@ router.post('/', authenticateToken, [
 // @route   POST /api/orders/:id/cancel
 // @desc    Cancel an order
 // @access  Private
-router.post('/:id/cancel', authenticateToken, async (req, res) => {
+router.post('/:id/cancel', authenticateToken, validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -265,7 +352,7 @@ router.post('/:id/cancel', authenticateToken, async (req, res) => {
 // @route   PUT /api/orders/:id
 // @desc    Update order status (admin only)
 // @access  Private (Admin)
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, tracking_number, notes } = req.body;
@@ -278,6 +365,31 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (!user.rows[0]?.is_admin) {
       return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const allowedTransitions = {
+      pending: ['processing', 'cancelled'],
+      processing: ['shipped', 'cancelled'],
+      shipped: ['delivered'],
+      delivered: [],
+      cancelled: [],
+      refunded: [],
+    };
+
+    const existingOrderResult = await query(
+      'SELECT status FROM orders WHERE id = $1',
+      [id],
+    );
+
+    if (existingOrderResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const currentStatus = existingOrderResult.rows[0].status;
+    if (!allowedTransitions[currentStatus]?.includes(status)) {
+      return res.status(400).json({
+        message: `Invalid status transition from ${currentStatus} to ${status}`,
+      });
     }
 
     // Update order

@@ -2,15 +2,16 @@ const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const { checkoutLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
 // @route   POST /api/stripe/create-payment-intent
 // @desc    Create payment intent for checkout
 // @access  Private
-router.post('/create-payment-intent', authenticateToken, [
-  body('amount').isFloat({ min: 0.5 }).withMessage('Amount must be at least $0.50'),
-  body('currency').optional().isIn(['usd', 'eur', 'gbp']).withMessage('Invalid currency'),
+router.post('/create-payment-intent', authenticateToken, checkoutLimiter, [
+  body('amount').isFloat({ min: 0.5 }).withMessage('Amount must be at least 0.50'),
+  body('currency').optional().isIn(['inr']).withMessage('Invalid currency'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -18,7 +19,7 @@ router.post('/create-payment-intent', authenticateToken, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { amount, currency = 'usd' } = req.body;
+    const { amount, currency = 'inr' } = req.body;
 
     // Convert amount to cents (Stripe expects amounts in smallest currency unit)
     const amountInCents = Math.round(amount * 100);
@@ -45,7 +46,6 @@ router.post('/create-payment-intent', authenticateToken, [
     console.error('Create payment intent error:', error);
     res.status(500).json({
       message: 'Failed to create payment intent',
-      error: error.message,
     });
   }
 });
@@ -53,7 +53,7 @@ router.post('/create-payment-intent', authenticateToken, [
 // @route   POST /api/stripe/webhook
 // @desc    Handle Stripe webhooks
 // @access  Public
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -127,6 +127,12 @@ router.get('/payment-methods', authenticateToken, async (req, res) => {
 // @access  Private
 router.post('/setup-intent', authenticateToken, async (req, res) => {
   try {
+    if (!req.user.stripeCustomerId) {
+      return res.status(400).json({
+        message: 'No Stripe customer profile found for this account',
+      });
+    }
+
     // Create setup intent for saving payment methods
     const setupIntent = await stripe.setupIntents.create({
       customer: req.user.stripeCustomerId, // You'd need to store this
@@ -143,7 +149,6 @@ router.post('/setup-intent', authenticateToken, async (req, res) => {
     console.error('Create setup intent error:', error);
     res.status(500).json({
       message: 'Failed to create setup intent',
-      error: error.message,
     });
   }
 });
@@ -190,7 +195,6 @@ router.post('/refund', authenticateToken, [
     console.error('Refund error:', error);
     res.status(500).json({
       message: 'Failed to process refund',
-      error: error.message,
     });
   }
 });
@@ -228,7 +232,6 @@ router.get('/balance', authenticateToken, async (req, res) => {
     console.error('Get balance error:', error);
     res.status(500).json({
       message: 'Failed to get balance',
-      error: error.message,
     });
   }
 });

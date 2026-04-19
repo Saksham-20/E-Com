@@ -26,9 +26,20 @@ router.get('/', validateProductQuery, async (req, res) => {
       search,
     } = req.query;
 
-    console.log('🔍 Processed params:', { page, limit, category, brand, min_price, max_price, sort, order, search });
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const safeOrder = String(order).toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const sortMap = {
+      created_at: 'p.created_at',
+      price: 'p.price',
+      name: 'p.name',
+      rating: 'average_rating',
+    };
+    const safeSortExpression = sortMap[sort] || sortMap.created_at;
 
-    const offset = (page - 1) * limit;
+    console.log('🔍 Processed params:', { page: pageNum, limit: limitNum, category, brand, min_price, max_price, sort, order: safeOrder, search });
+
+    const offset = (pageNum - 1) * limitNum;
 
     // Build WHERE clause
     const whereConditions = ['p.is_active = true'];
@@ -63,7 +74,7 @@ router.get('/', validateProductQuery, async (req, res) => {
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     // Build ORDER BY clause
-    const orderByClause = `ORDER BY p.${sort} ${order.toUpperCase()}`;
+    const orderByClause = `ORDER BY ${safeSortExpression} ${safeOrder}`;
 
     // Get total count
     const countQuery = `
@@ -122,26 +133,26 @@ router.get('/', validateProductQuery, async (req, res) => {
     `;
 
     console.log('🔍 Products query:', productsQuery);
-    console.log('🔍 Products params:', [...queryParams, limit, offset]);
+    console.log('🔍 Products params:', [...queryParams, limitNum, offset]);
 
-    const productsResult = await query(productsQuery, [...queryParams, limit, offset]);
+    const productsResult = await query(productsQuery, [...queryParams, limitNum, offset]);
     console.log('🔍 Products result count:', productsResult.rows.length);
     console.log('🔍 First product sample:', productsResult.rows[0]);
 
     // Calculate pagination info
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const totalPages = Math.ceil(total / limitNum);
+    const hasNextPage = pageNum < totalPages;
+    const hasPrevPage = pageNum > 1;
 
     const response = {
       success: true,
       data: {
         products: productsResult.rows,
         pagination: {
-          current_page: parseInt(page),
+          current_page: pageNum,
           total_pages: totalPages,
           total_items: total,
-          items_per_page: parseInt(limit),
+          items_per_page: limitNum,
           has_next_page: hasNextPage,
           has_prev_page: hasPrevPage,
         },
@@ -233,6 +244,47 @@ router.get('/categories', async (req, res) => {
 
   } catch (error) {
     console.error('Get categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+});
+
+// @route   GET /api/products/related
+// @desc    Get related products
+// @access  Public
+router.get('/related', async (req, res) => {
+  try {
+    const { categoryId, excludeId, limit = 4 } = req.query;
+
+    if (!categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category ID is required',
+      });
+    }
+
+    const result = await query(`
+      SELECT
+        p.*,
+        pi.image_url as primary_image
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
+      WHERE p.category_id = $1
+        AND p.id != $2
+        AND p.is_active = true
+      ORDER BY p.is_featured DESC, p.created_at DESC
+      LIMIT $3
+    `, [categoryId, excludeId || null, parseInt(limit)]);
+
+    res.json({
+      success: true,
+      data: result.rows,
+    });
+
+  } catch (error) {
+    console.error('Get related products error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -561,87 +613,6 @@ router.get('/:id/reviews', validateUUID, async (req, res) => {
           items_per_page: parseInt(limit),
         },
       },
-    });
-
-  } catch (error) {
-    console.error('Get product reviews error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-    });
-  }
-});
-
-// @route   GET /api/products/related
-// @desc    Get related products
-// @access  Public
-router.get('/related', async (req, res) => {
-  try {
-    const { categoryId, excludeId, limit = 4 } = req.query;
-    
-    console.log('🔗 Related Products - categoryId:', categoryId);
-    console.log('🔗 Related Products - excludeId:', excludeId);
-    console.log('🔗 Related Products - limit:', limit);
-
-    if (!categoryId) {
-      console.log('🔗 Related Products - ERROR: Category ID is missing');
-      return res.status(400).json({
-        success: false,
-        message: 'Category ID is required',
-      });
-    }
-
-    const result = await query(`
-      SELECT 
-        p.*,
-        pi.image_url as primary_image
-      FROM products p
-      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
-      WHERE p.category_id = $1 
-        AND p.id != $2 
-        AND p.is_active = true
-      ORDER BY p.is_featured DESC, p.created_at DESC
-      LIMIT $3
-    `, [categoryId, excludeId || null, parseInt(limit)]);
-
-    console.log('🔗 Related Products - Query result count:', result.rows.length);
-    console.log('🔗 Related Products - Query result:', result.rows);
-
-    res.json({
-      success: true,
-      data: result.rows,
-    });
-
-  } catch (error) {
-    console.error('Get related products error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-    });
-  }
-});
-
-// @route   GET /api/products/:id/reviews
-// @desc    Get product reviews
-// @access  Public
-router.get('/:id/reviews', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await query(`
-      SELECT 
-        r.*,
-        u.first_name,
-        u.last_name
-      FROM product_reviews r
-      JOIN users u ON r.user_id = u.id
-      WHERE r.product_id = $1 AND r.is_approved = true
-      ORDER BY r.created_at DESC
-    `, [id]);
-
-    res.json({
-      success: true,
-      data: result.rows,
     });
 
   } catch (error) {

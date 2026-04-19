@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { query } = require('../database/config');
 const { authenticateToken, requireVerified } = require('../middleware/auth');
 const { validateRegistration, validateLogin } = require('../middleware/validation');
+const { authLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -13,48 +14,10 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Auth routes are working!', timestamp: new Date().toISOString() });
 });
 
-// @route   POST /api/auth/setup-database
-// @desc    Setup database tables and seed data (for production setup)
-// @access  Public (temporary endpoint for setup)
-router.post('/setup-database', async (req, res) => {
-  try {
-    console.log('🔧 Starting database setup...');
-
-    // Import setup and seed functions
-    const setupDatabase = require('../database/setup');
-    const seedDatabase = require('../database/seed');
-
-    // Run database setup
-    await setupDatabase();
-    console.log('✅ Database setup completed');
-
-    // Run database seeding
-    await seedDatabase();
-    console.log('✅ Database seeding completed');
-
-    res.json({
-      success: true,
-      message: 'Database setup and seeding completed successfully!',
-      adminCredentials: {
-        email: 'admin@luxury.com',
-        password: 'admin123',
-      },
-    });
-
-  } catch (error) {
-    console.error('❌ Database setup failed:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Database setup failed',
-      error: error.message,
-    });
-  }
-});
-
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', validateRegistration, async (req, res) => {
+router.post('/register', authLimiter, validateRegistration, async (req, res) => {
   try {
     const { email, password, first_name, last_name, phone } = req.body;
 
@@ -86,7 +49,7 @@ router.post('/register', validateRegistration, async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id },
+      { id: user.id, is_admin: user.is_admin },
       process.env.JWT_SECRET,
       { expiresIn: '7d' },
     );
@@ -120,10 +83,8 @@ router.post('/register', validateRegistration, async (req, res) => {
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', validateLogin, async (req, res) => {
+router.post('/login', authLimiter, validateLogin, async (req, res) => {
   try {
-    console.log('🔐 Login attempt - Email:', req.body.email);
-    console.log('🔐 Login attempt - Headers:', req.headers);
     const { email, password } = req.body;
 
     // Check if user exists
@@ -174,7 +135,6 @@ router.post('/login', validateLogin, async (req, res) => {
       },
     };
 
-    console.log('🔐 Login successful - sending response:', JSON.stringify(responseData, null, 2));
     res.json(responseData);
 
   } catch (error) {
@@ -339,7 +299,7 @@ router.post('/refresh', authenticateToken, async (req, res) => {
   try {
     // Generate new JWT token
     const token = jwt.sign(
-      { userId: req.user.id },
+      { id: req.user.id, is_admin: req.user.is_admin },
       process.env.JWT_SECRET,
       { expiresIn: '7d' },
     );

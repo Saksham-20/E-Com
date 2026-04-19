@@ -10,7 +10,6 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    console.log('Wishlist GET - User ID:', req.user.id);
     const result = await query(`
       SELECT 
         w.id,
@@ -35,18 +34,6 @@ router.get('/', authenticateToken, async (req, res) => {
       WHERE w.user_id = $1 AND p.is_active = true
       ORDER BY w.created_at DESC
     `, [req.user.id]);
-
-    // Clean up wishlist entries for products that no longer exist
-    const cleanupResult = await query(`
-      DELETE FROM wishlist 
-      WHERE user_id = $1 AND product_id NOT IN (
-        SELECT id FROM products WHERE is_active = true
-      )
-    `, [req.user.id]);
-
-    if (cleanupResult.rowCount > 0) {
-      console.log(`Cleaned up ${cleanupResult.rowCount} stale wishlist entries for user ${req.user.id}`);
-    }
 
     res.json({
       success: true,

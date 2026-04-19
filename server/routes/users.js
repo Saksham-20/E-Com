@@ -1,6 +1,7 @@
 const express = require('express');
 const { query } = require('../database/config');
 const { authenticateToken } = require('../middleware/auth');
+const { validateUUID } = require('../middleware/validation');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 
@@ -134,7 +135,7 @@ router.get('/wishlist', authenticateToken, async (req, res) => {
 // @desc    Add item to wishlist
 // @access  Private
 router.post('/wishlist', authenticateToken, [
-  body('productId').isInt().withMessage('Product ID must be a valid integer'),
+  body('productId').isUUID().withMessage('Product ID must be a valid UUID'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -180,7 +181,7 @@ router.post('/wishlist', authenticateToken, [
 // @route   DELETE /api/users/wishlist/:id
 // @desc    Remove item from wishlist
 // @access  Private
-router.delete('/wishlist/:id', authenticateToken, async (req, res) => {
+router.delete('/wishlist/:id', authenticateToken, validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 

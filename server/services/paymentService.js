@@ -10,7 +10,7 @@ class PaymentService {
   // Create payment intent for checkout
   async createPaymentIntent(orderData) {
     try {
-      const { amount, currency = 'usd', metadata = {} } = orderData;
+      const { amount, currency = 'inr', metadata = {} } = orderData;
 
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
@@ -27,7 +27,7 @@ class PaymentService {
       return {
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount / 100, // Convert back to dollars
+        amount: paymentIntent.amount / 100, // Convert back from smallest currency unit
         currency: paymentIntent.currency,
       };
     } catch (error) {

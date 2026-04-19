@@ -1,10 +1,13 @@
 const express = require('express');
 const pool = require('../database/config');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { validateUUID } = require('../middleware/validation');
 const { body, validationResult } = require('express-validator');
 const { upload, handleUploadError } = require('../middleware/upload');
+const { uploadLimiter } = require('../middleware/rateLimit');
 const imageService = require('../services/imageService');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const router = express.Router();
 
@@ -61,10 +64,6 @@ router.get('/dashboard', async (req, res) => {
       lowStockProducts: lowStockProducts.rows,
     };
 
-    console.log('Dashboard API Response:', response);
-    console.log('Total Products from DB:', totalProducts.rows[0].count);
-    console.log('Total Users from DB:', totalUsers.rows[0].count);
-
     res.json(response);
 
   } catch (error) {
@@ -72,7 +71,6 @@ router.get('/dashboard', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message,
     });
   }
 });
@@ -82,14 +80,8 @@ router.get('/dashboard', async (req, res) => {
 // @access  Admin
 router.get('/products', async (req, res) => {
   try {
-    console.log('👑 GET /api/admin/products - Request received');
-    console.log('👑 Query params:', req.query);
-    console.log('👑 User:', req.user);
-
     const { page = 1, limit = 20, search, category, status } = req.query;
     const offset = (page - 1) * limit;
-
-    console.log('👑 Processed params:', { page, limit, search, category, status, offset });
 
     let query = `
       SELECT 
@@ -126,12 +118,7 @@ router.get('/products', async (req, res) => {
     query += ` ORDER BY p.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
-    console.log('👑 Admin products query:', query);
-    console.log('👑 Admin products params:', queryParams);
-
     const products = await pool.query(query, queryParams);
-    console.log('👑 Admin products found:', products.rows.length);
-    console.log('👑 First admin product:', products.rows[0]);
 
     // Get total count
     let countQuery = `
@@ -183,7 +170,7 @@ router.get('/products', async (req, res) => {
 // @route   POST /api/admin/products
 // @desc    Create new product with image upload
 // @access  Admin
-router.post('/products', upload.array('images', 10), handleUploadError, async (req, res) => {
+router.post('/products', uploadLimiter, upload.array('images', 10), handleUploadError, async (req, res) => {
   try {
     const {
       name, description, short_description, price, compare_price, sku,
@@ -282,7 +269,7 @@ router.post('/products', upload.array('images', 10), handleUploadError, async (r
 // @route   PUT /api/admin/products/:id
 // @desc    Update product
 // @access  Admin
-router.put('/products/:id', upload.array('images', 10), handleUploadError, [
+router.put('/products/:id', validateUUID, uploadLimiter, upload.array('images', 10), handleUploadError, [
   body('name').optional().trim().notEmpty().withMessage('Product name is required'),
   body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number'),
 ], async (req, res) => {
@@ -439,7 +426,7 @@ router.put('/products/:id', upload.array('images', 10), handleUploadError, [
 // @route   DELETE /api/admin/products/:id
 // @desc    Delete product completely (hard delete)
 // @access  Admin
-router.delete('/products/:id', async (req, res) => {
+router.delete('/products/:id', validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -578,7 +565,7 @@ router.get('/orders', async (req, res) => {
 // @route   PUT /api/admin/orders/:id/status
 // @desc    Update order status
 // @access  Admin
-router.put('/orders/:id/status', [
+router.put('/orders/:id/status', validateUUID, [
   body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status'),
 ], async (req, res) => {
   try {
@@ -632,8 +619,8 @@ router.post('/users', [
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    // Generate a temporary password (in production, send via email)
-    const tempPassword = 'temp123'; // This should be generated and sent via email
+    // Generate a temporary password and return it once so admins can share securely.
+    const tempPassword = crypto.randomBytes(9).toString('base64url');
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
@@ -647,6 +634,7 @@ router.post('/users', [
     res.status(201).json({
       message: 'User created successfully',
       user: newUser.rows[0],
+      temporaryPassword: tempPassword,
     });
 
   } catch (error) {
@@ -662,6 +650,17 @@ router.get('/users', async (req, res) => {
   try {
     const { page = 1, limit = 20, search, role, sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
     const offset = (page - 1) * limit;
+    const sortColumns = {
+      created_at: 'created_at',
+      updated_at: 'updated_at',
+      email: 'email',
+      first_name: 'first_name',
+      last_name: 'last_name',
+      is_admin: 'is_admin',
+      is_verified: 'is_verified',
+    };
+    const safeSortBy = sortColumns[sortBy] || 'created_at';
+    const safeSortOrder = String(sortOrder).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     let query = `
       SELECT 
@@ -685,7 +684,7 @@ router.get('/users', async (req, res) => {
       queryParams.push(role === 'admin');
     }
 
-    query += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    query += ` ORDER BY ${safeSortBy} ${safeSortOrder} LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     queryParams.push(parseInt(limit), offset);
 
     const users = await pool.query(query, queryParams);
@@ -733,7 +732,7 @@ router.get('/users', async (req, res) => {
 // @route   GET /api/admin/users/:id
 // @desc    Get user by ID for admin
 // @access  Admin
-router.get('/users/:id', async (req, res) => {
+router.get('/users/:id', validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -759,7 +758,7 @@ router.get('/users/:id', async (req, res) => {
 // @route   PUT /api/admin/users/:id
 // @desc    Update user for admin
 // @access  Admin
-router.put('/users/:id', [
+router.put('/users/:id', validateUUID, [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
@@ -807,7 +806,7 @@ router.put('/users/:id', [
 // @route   DELETE /api/admin/users/:id
 // @desc    Delete user for admin
 // @access  Admin
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', validateUUID, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -841,7 +840,7 @@ router.delete('/users/:id', async (req, res) => {
 // @route   PUT /api/admin/products/:id/stock
 // @desc    Update product stock quantity
 // @access  Admin
-router.put('/products/:id/stock', [
+router.put('/products/:id/stock', validateUUID, [
   body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
 ], async (req, res) => {
   try {

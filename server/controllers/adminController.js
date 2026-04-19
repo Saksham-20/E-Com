@@ -284,7 +284,7 @@ const getSettings = async (req, res) => {
       },
       payment: {
         acceptedMethods: (process.env.ACCEPTED_PAYMENT_METHODS || 'credit_card,paypal').split(','),
-        currency: process.env.CURRENCY || 'USD',
+        currency: process.env.CURRENCY || 'INR',
         taxRate: parseFloat(process.env.TAX_RATE) || 8.5,
       },
       notifications: {

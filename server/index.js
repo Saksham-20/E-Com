@@ -60,6 +60,8 @@ console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
 console.log('CORS Origin:', corsOptions.origin);
 
 app.use(cors(corsOptions));
+// Stripe webhook signature verification requires raw body.
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

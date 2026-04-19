@@ -1,9 +1,37 @@
 const express = require('express');
 const { query } = require('../database/config');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
-const { validateUUID } = require('../middleware/validation');
+const { body, param } = require('express-validator');
+const { handleValidationErrors } = require('../middleware/validation');
 
 const router = express.Router();
+
+const validateAddToCart = [
+  body('product_id').isUUID().withMessage('Product ID must be a valid UUID'),
+  body('quantity')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Quantity must be an integer between 1 and 100'),
+  handleValidationErrors,
+];
+
+const validateCartItemId = [
+  param('item_id').isUUID().withMessage('Valid cart item ID is required'),
+  handleValidationErrors,
+];
+
+const validateMergeCart = [
+  body('guest_items')
+    .isArray({ min: 1, max: 100 })
+    .withMessage('Guest items must be a non-empty array with up to 100 items'),
+  body('guest_items.*.product_id')
+    .isUUID()
+    .withMessage('Each guest item product ID must be a valid UUID'),
+  body('guest_items.*.quantity')
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Each guest item quantity must be an integer between 1 and 100'),
+  handleValidationErrors,
+];
 
 // @route   GET /api/cart
 // @desc    Get user's cart
@@ -99,21 +127,11 @@ router.get('/', authenticateToken, async (req, res) => {
 // @route   POST /api/cart/add
 // @desc    Add item to cart
 // @access  Private
-router.post('/add', authenticateToken, async (req, res) => {
+router.post('/add', authenticateToken, validateAddToCart, async (req, res) => {
   try {
-    console.log('🛒 POST /api/cart/add - Request received');
-    console.log('🛒 Request body:', req.body);
-    console.log('🛒 User ID:', req.user.id);
-
     const { product_id, quantity = 1, variant_details } = req.body;
 
-    // Adding item to cart
-    console.log('🛒 Product ID:', product_id);
-    console.log('🛒 Quantity:', quantity);
-    console.log('🛒 Variant details:', variant_details);
-
     if (!product_id) {
-      console.log('🛒 ERROR: Product ID is missing');
       return res.status(400).json({
         success: false,
         message: 'Product ID is required',
@@ -128,16 +146,12 @@ router.post('/add', authenticateToken, async (req, res) => {
     }
 
     // Check if product exists and is active
-    console.log('🛒 Checking if product exists:', product_id);
     const productResult = await query(
       'SELECT id, name, price, stock_quantity FROM products WHERE id = $1 AND is_active = true',
       [product_id],
     );
 
-    console.log('🛒 Product query result:', productResult.rows);
-
     if (productResult.rows.length === 0) {
-      console.log('🛒 ERROR: Product not found');
       return res.status(404).json({
         success: false,
         message: 'Product not found',
@@ -233,7 +247,7 @@ router.post('/add', authenticateToken, async (req, res) => {
 // @route   PUT /api/cart/:item_id
 // @desc    Update cart item quantity
 // @access  Private
-router.put('/:item_id', authenticateToken, async (req, res) => {
+router.put('/:item_id', authenticateToken, validateCartItemId, async (req, res) => {
   try {
     const { item_id } = req.params;
     const { quantity } = req.body;
@@ -305,7 +319,7 @@ router.put('/:item_id', authenticateToken, async (req, res) => {
 // @route   DELETE /api/cart/:item_id
 // @desc    Remove item from cart
 // @access  Private
-router.delete('/:item_id', authenticateToken, async (req, res) => {
+router.delete('/:item_id', authenticateToken, validateCartItemId, async (req, res) => {
   try {
     const { item_id } = req.params;
     // Removing item from cart
@@ -403,16 +417,9 @@ router.get('/count', authenticateToken, async (req, res) => {
 // @route   POST /api/cart/merge
 // @desc    Merge guest cart with user cart after login
 // @access  Private
-router.post('/merge', authenticateToken, async (req, res) => {
+router.post('/merge', authenticateToken, validateMergeCart, async (req, res) => {
   try {
     const { guest_items } = req.body;
-
-    if (!guest_items || !Array.isArray(guest_items)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Guest items array is required',
-      });
-    }
 
     // Get or create cart for user
     const cartResult = await query(
@@ -449,6 +456,10 @@ router.post('/merge', authenticateToken, async (req, res) => {
       }
 
       const product = productResult.rows[0];
+      if (product.stock_quantity <= 0) {
+        skippedCount++;
+        continue;
+      }
 
       // Check if item already exists in cart
       const existingItemResult = await query(
