@@ -49,7 +49,7 @@ export const API_ENDPOINTS = {
 export const APP_CONSTANTS = {
   APP_NAME: process.env.REACT_APP_APP_NAME || 'E-Commerce Shop',
   APP_VERSION: '1.0.0',
-  DEFAULT_CURRENCY: process.env.REACT_APP_DEFAULT_CURRENCY || 'USD',
+  DEFAULT_CURRENCY: process.env.REACT_APP_DEFAULT_CURRENCY || 'INR',
   DEFAULT_LANGUAGE: process.env.REACT_APP_DEFAULT_LANGUAGE || 'en',
   MAX_FILE_SIZE: parseInt(process.env.REACT_APP_MAX_FILE_SIZE) || 5 * 1024 * 1024, // 5MB
   SUPPORTED_IMAGE_TYPES: (process.env.REACT_APP_SUPPORTED_IMAGE_TYPES || 'image/jpeg,image/png,image/webp').split(','),

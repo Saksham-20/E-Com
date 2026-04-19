@@ -67,7 +67,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
               {/* Total */}
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
               {/* Actions */}

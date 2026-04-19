@@ -62,9 +62,7 @@ class ApiService {
 
   // Generic request method
   async request(endpoint, options = {}) {
-    // Add cache-busting parameter to prevent browser cache issues
-    const separator = endpoint.includes('?') ? '&' : '?';
-    const url = `${this.baseURL}${endpoint}${separator}_t=${Date.now()}`;
+    const url = `${this.baseURL}${endpoint}`;
     
     console.log('🌐 API: Making request to:', url);
     
@@ -80,10 +78,11 @@ class ApiService {
       
       // Handle different response statuses
       if (response.status === 401) {
-        // Unauthorized - clear token and redirect to login
+        // Unauthorized - clear token so caller can handle app-level flow
         this.setAuthToken(null);
-        window.location.href = '/login';
-        throw new Error('Unauthorized access');
+        const unauthorizedError = new Error('Unauthorized access');
+        unauthorizedError.status = 401;
+        throw unauthorizedError;
       }
 
       if (response.status === 403) {

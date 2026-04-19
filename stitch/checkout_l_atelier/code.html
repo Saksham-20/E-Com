@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#5f5e5f",
+            "on-secondary-fixed-variant": "#574500",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#46474a",
+            "on-tertiary-fixed-variant": "#00504d",
+            "on-primary-fixed-variant": "#474647",
+            "inverse-surface": "#2f3130",
+            "on-tertiary-container": "#00938f",
+            "tertiary": "#000000",
+            "surface-dim": "#dadad8",
+            "primary-container": "#1b1b1c",
+            "on-secondary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface": "#faf9f7",
+            "on-background": "#1a1c1b",
+            "on-primary-fixed": "#1b1b1c",
+            "on-secondary-fixed": "#241a00",
+            "primary-fixed": "#e5e2e3",
+            "surface-variant": "#e3e2e0",
+            "secondary-container": "#fed65b",
+            "outline-variant": "#c7c6ca",
+            "primary-fixed-dim": "#c8c6c7",
+            "on-surface": "#1a1c1b",
+            "surface-container-low": "#f4f3f1",
+            "on-primary": "#ffffff",
+            "secondary-fixed": "#ffe088",
+            "surface-bright": "#faf9f7",
+            "inverse-on-surface": "#f1f1ef",
+            "surface-container-highest": "#e3e2e0",
+            "outline": "#76777b",
+            "surface-container": "#efeeec",
+            "on-primary-container": "#858384",
+            "inverse-primary": "#c8c6c7",
+            "tertiary-fixed-dim": "#4adbd5",
+            "background": "#faf9f7",
+            "on-secondary-container": "#745c00",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed": "#00201f",
+            "tertiary-container": "#00201f",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#6df7f1",
+            "secondary": "#735c00",
+            "primary": "#000000",
+            "surface-container-high": "#e9e8e6",
+            "secondary-fixed-dim": "#e9c349",
+            "on-tertiary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0px",
+            "lg": "0px",
+            "xl": "0px",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Noto Serif"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #faf9f7; color: #1a1c1b; }
+    .serif-display { font-family: 'Noto Serif', serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24; }
+    .input-atelier { border: none; border-bottom: 1px solid rgba(199, 198, 202, 0.4); background: transparent; padding: 0.75rem 0; width: 100%; transition: border-color 0.3s ease; border-radius: 0 !important; }
+    .input-atelier:focus { outline: none; border-bottom: 1px solid #D4AF37; ring: 0; }
+    .checkout-grid { display: grid; grid-template-columns: 1fr 400px; gap: 4rem; }
+    @media (max-width: 1024px) { .checkout-grid { grid-template-columns: 1fr; gap: 2rem; } }
+  </style>
+</head>
+<body class="bg-surface">
+<!-- TopNavBar (Shared Component) -->
+<!-- Note: Navigation suppressed for focused checkout journey as per "Destination" Rule, 
+       but keeping the header logo and identity as a transactional header -->
+<header class="fixed top-0 w-full z-50 h-20 bg-stone-50/80 backdrop-blur-xl flex justify-between items-center px-12 mx-auto">
+<div class="flex items-center gap-8">
+<a class="text-3xl font-serif tracking-[0.2em] text-neutral-900 uppercase" href="/">L'Atelier</a>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-neutral-900 cursor-pointer">shopping_bag</span>
+</div>
+</header>
+<main class="pt-32 pb-24 px-12 max-w-[1440px] mx-auto min-h-screen">
+<!-- Progress Indicator -->
+<nav class="mb-16 flex items-center justify-center space-x-12">
+<div class="flex items-center space-x-3">
+<span class="text-[10px] font-label uppercase tracking-widest text-neutral-900">01 Selection</span>
+</div>
+<div class="w-12 h-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center space-x-3">
+<span class="text-[10px] font-label uppercase tracking-widest text-neutral-900 font-bold border-b border-secondary">02 Checkout</span>
+</div>
+<div class="w-12 h-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center space-x-3">
+<span class="text-[10px] font-label uppercase tracking-widest text-neutral-400">03 Confirmation</span>
+</div>
+</nav>
+<div class="checkout-grid">
+<!-- Left Column: Shipping & Payment -->
+<section class="space-y-16">
+<!-- Shipping Details -->
+<div>
+<h2 class="serif-display text-2xl mb-8 tracking-tight italic">Shipping Details</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+<div class="md:col-span-2">
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">Email Address</label>
+<input class="input-atelier" placeholder="customer@maison.com" type="email"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">Full Name</label>
+<input class="input-atelier" placeholder="Gabriel Laurent" type="text"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">Shipping Address</label>
+<input class="input-atelier" placeholder="26 Place Vendôme, Paris, France" type="text"/>
+</div>
+</div>
+<!-- Delivery Method -->
+<div class="mt-12">
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-6">Delivery Method</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="border border-secondary p-6 cursor-pointer bg-surface-container-low transition-all duration-300">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label text-xs font-bold uppercase tracking-wider">Standard</span>
+<span class="text-xs">€0.00</span>
+</div>
+<p class="text-xs text-outline leading-relaxed">3-5 business days. Complimentary white-glove delivery.</p>
+</div>
+<div class="border border-outline-variant/30 p-6 cursor-pointer hover:border-outline transition-all duration-300">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label text-xs font-bold uppercase tracking-wider text-outline">Express</span>
+<span class="text-xs text-outline">€45.00</span>
+</div>
+<p class="text-xs text-outline leading-relaxed">Next business day. Priority atelier handling.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Integration -->
+<div class="pt-12 border-t border-outline-variant/10">
+<h2 class="serif-display text-2xl mb-8 tracking-tight italic">Payment Method</h2>
+<!-- Alternative Payments -->
+<div class="flex gap-4 mb-10">
+<button class="flex-1 border border-outline-variant/30 py-3 flex items-center justify-center gap-2 hover:bg-neutral-50 transition-colors">
+<span class="material-symbols-outlined text-sm">contactless</span>
+<span class="text-[10px] font-label uppercase tracking-widest">Apple Pay</span>
+</button>
+<button class="flex-1 border border-outline-variant/30 py-3 flex items-center justify-center gap-2 hover:bg-neutral-50 transition-colors">
+<span class="material-symbols-outlined text-sm">payments</span>
+<span class="text-[10px] font-label uppercase tracking-widest">PayPal</span>
+</button>
+</div>
+<!-- Card Form (Stripe Style) -->
+<div class="bg-surface-container-low p-8 space-y-8">
+<div>
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">Card Number</label>
+<div class="relative">
+<input class="input-atelier" placeholder="•••• •••• •••• ••••" type="text"/>
+<div class="absolute right-0 bottom-3 flex gap-2">
+<span class="material-symbols-outlined text-outline text-lg">credit_card</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">Expiry Date</label>
+<input class="input-atelier" placeholder="MM / YY" type="text"/>
+</div>
+<div>
+<label class="block text-[10px] font-label uppercase tracking-widest text-outline mb-1">CVC</label>
+<input class="input-atelier" placeholder="•••" type="text"/>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center gap-3 text-outline">
+<span class="material-symbols-outlined text-sm">lock</span>
+<p class="text-[10px] font-label uppercase tracking-widest">Your payment data is encrypted and secure.</p>
+</div>
+</div>
+</section>
+<!-- Right Column: Order Summary -->
+<aside class="relative">
+<div class="sticky top-32 bg-white p-10 border-l border-outline-variant/10 h-fit">
+<h3 class="serif-display text-xl mb-8 tracking-tight">Order Summary</h3>
+<!-- Cart Items -->
+<div class="space-y-8 mb-10">
+<div class="flex gap-6">
+<div class="w-20 h-24 bg-surface-container-low flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close-up of a high-end diamond necklace on a white velvet bust with elegant studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0WNgxPIg1EFYZqKtFkHKuOW06Z8zPuwV4-KMI11iraJ6-0ouVMXRRuss9JiXW0_S-K7Jr5STixWqOMeK4a8pC5iLyh5sJwce-JbjYpuOQSc2h_HG9gnE5pGjN3aJ5_Mqv1XGLbMubkKNJaLKcXzGi7ivBIPwj6gcS6vOmC5ciiEM8RPz7MDzakXIsSUiB8_i6JB37SmAJtaLE5I5qg0NGLuh6XCXiCEq1zN-zfG_HIoIhUjPPD9FdTgnkyaBffvKAMxIbG_eRSYGr"/>
+</div>
+<div class="flex flex-col justify-between py-1">
+<div>
+<h4 class="text-xs font-label uppercase tracking-widest font-bold">L'Éclat Solitaire</h4>
+<p class="text-[10px] text-outline mt-1 uppercase tracking-widest">18k White Gold / 2.0ct</p>
+</div>
+<span class="text-xs font-medium">€14,200</span>
+</div>
+</div>
+<div class="flex gap-6">
+<div class="w-20 h-24 bg-surface-container-low flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Luxury gold wedding band ring on a minimalist stone surface with soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB563Tp2FKe_8H9PSvwlTLbiU-hvA6KYy7kVVify-cZOZh2sr-JjDAZIl-nX7o4gNjnJmKxDm1vUGlsx4UjeNKjxjHojarwo5INNdL1DNpt5cTLxn-9EWJ4fLH_K0i0H7fiQ59m86AJ_00q1fcwUC3QE4fvPSIgml4RTr62iOgtLJ1qBjHFZGtNPCIN010F62aQitAH2DX5w-y_fbXmQyNApP6dkhznlEIWyisEAHFKhZIVy0I975y5Ik1nzUyihrUgUCeEB0_-irTd"/>
+</div>
+<div class="flex flex-col justify-between py-1">
+<div>
+<h4 class="text-xs font-label uppercase tracking-widest font-bold">Heritage Band</h4>
+<p class="text-[10px] text-outline mt-1 uppercase tracking-widest">Yellow Gold / Hammered</p>
+</div>
+<span class="text-xs font-medium">€3,400</span>
+</div>
+</div>
+</div>
+<!-- Calculation -->
+<div class="space-y-4 border-t border-outline-variant/10 pt-8 mb-8">
+<div class="flex justify-between text-xs">
+<span class="text-outline uppercase tracking-widest">Subtotal</span>
+<span>€17,600</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-outline uppercase tracking-widest">Shipping</span>
+<span>Complimentary</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-outline uppercase tracking-widest">Tax (VAT 20%)</span>
+<span>€3,520</span>
+</div>
+<div class="flex justify-between text-base font-bold pt-4 border-t border-outline-variant/10">
+<span class="serif-display italic">Total</span>
+<span>€21,120</span>
+</div>
+</div>
+<button class="w-full bg-primary text-white py-5 text-[10px] font-label uppercase tracking-[0.3em] hover:bg-neutral-800 transition-all duration-300 transform hover:-translate-y-0.5">
+            Complete Order
+          </button>
+<div class="mt-8 flex justify-center gap-6">
+<span class="material-symbols-outlined text-outline-variant text-xl" title="Visa">credit_score</span>
+<span class="material-symbols-outlined text-outline-variant text-xl" title="Mastercard">contactless_off</span>
+<span class="material-symbols-outlined text-outline-variant text-xl" title="Secure">verified_user</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full pt-24 pb-12 bg-neutral-50 border-t border-neutral-200/30">
+<div class="max-w-[1440px] mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-1">
+<span class="font-serif text-xl tracking-tighter text-neutral-900 uppercase">L'Atelier</span>
+<p class="mt-6 text-[10px] font-sans tracking-widest text-neutral-500 uppercase leading-loose">
+          Crafting excellence since 1924. Curators of the world's most exquisite high jewelry.
+        </p>
+</div>
+<div>
+<h5 class="text-[10px] font-label font-bold uppercase tracking-widest mb-6">The Maison</h5>
+<ul class="space-y-4">
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Our Story</a></li>
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Sustainability</a></li>
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Boutique Finder</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-[10px] font-label font-bold uppercase tracking-widest mb-6">Customer Care</h5>
+<ul class="space-y-4">
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Contact Us</a></li>
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Shipping &amp; Returns</a></li>
+<li><a class="text-[10px] font-sans tracking-widest text-neutral-500 hover:text-neutral-900 uppercase" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-[10px] font-label font-bold uppercase tracking-widest mb-6">Newsletter</h5>
+<div class="relative">
+<input class="w-full bg-transparent border-b border-neutral-300 py-2 text-[10px] tracking-widest focus:outline-none focus:border-secondary" placeholder="EMAIL ADDRESS" type="email"/>
+<button class="absolute right-0 bottom-2">
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-16 mt-20 pt-12 border-t border-neutral-200/30">
+<p class="text-[10px] font-sans tracking-widest text-neutral-400 uppercase text-center">
+        © 2024 L'Atelier d'Excellence. All Rights Reserved.
+      </p>
+</div>
+</footer>
+</body></html>

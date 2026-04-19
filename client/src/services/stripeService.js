@@ -2,7 +2,7 @@ import api from './api';
 
 export const stripeService = {
   // Create payment intent for checkout
-  async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
+  async createPaymentIntent(amount, currency = 'inr', metadata = {}) {
     try {
       const response = await api.post('/stripe/create-payment-intent', {
         amount,

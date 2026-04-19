@@ -1,12 +1,12 @@
 // Format currency
-export const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
+export const formatCurrency = (amount, currency = 'INR', locale = 'en-IN') => {
   try {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
     }).format(amount);
   } catch (error) {
-    return `$${parseFloat(amount).toFixed(2)}`;
+    return `₹${parseFloat(amount).toFixed(2)}`;
   }
 };
 

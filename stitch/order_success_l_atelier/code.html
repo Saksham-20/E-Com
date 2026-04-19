@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#5f5e5f",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#46474a",
+                        "on-tertiary-fixed-variant": "#00504d",
+                        "on-primary-fixed-variant": "#474647",
+                        "inverse-surface": "#2f3130",
+                        "on-tertiary-container": "#00938f",
+                        "tertiary": "#000000",
+                        "surface-dim": "#dadad8",
+                        "primary-container": "#1b1b1c",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9f7",
+                        "on-background": "#1a1c1b",
+                        "on-primary-fixed": "#1b1b1c",
+                        "on-secondary-fixed": "#241a00",
+                        "primary-fixed": "#e5e2e3",
+                        "surface-variant": "#e3e2e0",
+                        "secondary-container": "#fed65b",
+                        "outline-variant": "#c7c6ca",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "on-surface": "#1a1c1b",
+                        "surface-container-low": "#f4f3f1",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffe088",
+                        "surface-bright": "#faf9f7",
+                        "inverse-on-surface": "#f1f1ef",
+                        "surface-container-highest": "#e3e2e0",
+                        "outline": "#76777b",
+                        "surface-container": "#efeeec",
+                        "on-primary-container": "#858384",
+                        "inverse-primary": "#c8c6c7",
+                        "tertiary-fixed-dim": "#4adbd5",
+                        "background": "#faf9f7",
+                        "on-secondary-container": "#745c00",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#00201f",
+                        "tertiary-container": "#00201f",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#6df7f1",
+                        "secondary": "#735c00",
+                        "primary": "#000000",
+                        "surface-container-high": "#e9e8e6",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0rem",
+                        "lg": "0rem",
+                        "xl": "0rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .serif { font-family: 'Noto Serif', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-fixed">
+<!-- Top Navigation (Transactional Style - No Links) -->
+<nav class="fixed top-0 w-full z-50 h-20 bg-stone-50/80 backdrop-blur-xl flex justify-center items-center px-12 border-b border-transparent">
+<div class="text-3xl font-serif tracking-[0.2em] text-neutral-900 uppercase">L'Atelier</div>
+</nav>
+<main class="pt-40 pb-24 px-6 max-w-5xl mx-auto">
+<!-- Success Header Section -->
+<section class="text-center mb-24">
+<div class="inline-flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-secondary text-5xl" style="font-variation-settings: 'FILL' 0; font-size: 48px;">check_circle</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-headline tracking-tight text-primary mb-6">
+                Thank You for Your Order, <span class="italic text-secondary">Julianne</span>.
+            </h1>
+<p class="text-lg text-on-surface-variant max-w-2xl mx-auto font-body leading-relaxed">
+                Your order <span class="font-semibold text-primary">#LA-12345</span> has been received and is being prepared with our master artisans. A confirmation email is on its way to your inbox.
+            </p>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+<!-- Order Details -->
+<div class="lg:col-span-7 space-y-12">
+<!-- Purchased Items -->
+<div class="border-t border-outline-variant/30 pt-8">
+<h2 class="font-label text-xs uppercase tracking-widest text-outline mb-8">Purchased Items</h2>
+<div class="space-y-8">
+<!-- Item 1 -->
+<div class="flex gap-6 group">
+<div class="w-24 h-32 flex-shrink-0 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Close-up of a delicate gold necklace with a single diamond pendant on a neutral stone background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCALuiVy5WuNEU_HiIayBWaoCAnJfMC6ZW-fg69qvnxYLKoiq4Vqc0E6s6wxww9627yvSzU06B-QkGIQDHUexSg3FZ_K-G-znCyri2vXRT_PTaOjmx3FVZEeF15GyRMlaTrU0_8EottCJ2acG1cEgRP36YHA0chlq1Bzayl0pxbLPnoyuIc2J_Az0030NWL_8FD6oRXnTmq3dYyispGE36bouvsDNNI77DMF-03ktOyhuhCOBZTTsBQbC7So6LrAux4ce_9EMkJVhxN"/>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-lg font-headline text-primary">Etoile Diamond Pendant</h3>
+<p class="text-xs font-label uppercase tracking-widest text-outline mt-1">18K Yellow Gold / 0.5ct</p>
+<p class="mt-4 text-primary font-medium">$2,450.00</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-6 group">
+<div class="w-24 h-32 flex-shrink-0 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A pair of minimalist gold hoop earrings displayed on a white marble pedestal with soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyfMFbNARzWi1S4EiX9_u5q4llgw1_Uvckde3eqD1sB1TlaJRQA_7Pu4d4-oMvZLJmS-AyhCN7rmpB6WqSZSrTIEzzCdh0MeUkFUykyE383vd_oxrI11UwdyJHl9n4SnkrBUNJsAj7qMi1fsXxTpc9XtAnXcusiU5Ov-4kcfn28oB17yWRBLfF97GD3dF9PO82l2NnU1zxP-aKxypmHrPPedsFYLzyds3MLu2rTyae1auZkzDXv-RKr2wR4Ml9GL69soSe73396pB5"/>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-lg font-headline text-primary">Signature Arch Hoops</h3>
+<p class="text-xs font-label uppercase tracking-widest text-outline mt-1">Hand-polished 18K Gold</p>
+<p class="mt-4 text-primary font-medium">$1,200.00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Summary & Shipping -->
+<div class="lg:col-span-5">
+<div class="bg-surface-container-low p-8 lg:p-12 space-y-12">
+<!-- Shipping Info -->
+<div>
+<h2 class="font-label text-xs uppercase tracking-widest text-outline mb-6">Delivery Details</h2>
+<div class="text-on-surface-variant leading-relaxed text-sm">
+<p class="text-primary font-medium mb-1">Julianne Sterling</p>
+<p>721 Rue de la Paix</p>
+<p>75002 Paris, France</p>
+<p class="mt-4 italic">Estimated Arrival: 3-5 Business Days</p>
+</div>
+</div>
+<!-- Payment Summary -->
+<div class="border-t border-outline-variant/30 pt-8">
+<h2 class="font-label text-xs uppercase tracking-widest text-outline mb-6">Financial Summary</h2>
+<div class="space-y-3 text-sm">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Subtotal</span>
+<span class="text-primary">$3,650.00</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Shipping (Express)</span>
+<span class="text-primary">$0.00</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Tax</span>
+<span class="text-primary">$292.00</span>
+</div>
+<div class="flex justify-between pt-4 border-t border-outline-variant/30 text-lg font-headline">
+<span class="text-primary">Total Paid</span>
+<span class="text-secondary">$3,942.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Call to Actions -->
+<div class="mt-24 flex flex-col md:flex-row gap-8 items-center justify-center border-t border-outline-variant/30 pt-16">
+<a class="w-full md:w-auto px-12 py-5 bg-primary text-surface font-label text-xs uppercase tracking-[0.2em] hover:opacity-90 transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3" href="#">
+                Track Your Order
+                <span class="material-symbols-outlined text-sm">east</span>
+</a>
+<a class="group text-secondary font-label text-xs uppercase tracking-[0.2em] flex items-center gap-2" href="#">
+                Continue Shopping
+                <div class="h-[1px] w-8 bg-secondary group-hover:w-16 transition-all duration-500"></div>
+</a>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full pt-24 pb-12 bg-neutral-50 dark:bg-neutral-900">
+<div class="max-w-[1440px] mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+<!-- Brand Column -->
+<div class="col-span-1 md:col-span-1">
+<div class="font-serif text-xl tracking-tighter text-neutral-900 dark:text-stone-50 mb-6">L'Atelier d'Excellence</div>
+<p class="text-[10px] uppercase tracking-widest text-neutral-500 font-sans leading-relaxed">
+                    Crafting timeless heritage jewelry since 1924. Every piece tells a story of artistry and uncompromising quality.
+                </p>
+</div>
+<!-- Links Columns -->
+<div class="col-span-1">
+<h3 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 mb-6 font-bold">The Maison</h3>
+<ul class="space-y-4">
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors underline underline-offset-8 decoration-yellow-600/50" href="#">Sustainability</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Heritage</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Bespoke Services</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h3 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 mb-6 font-bold">Assistance</h3>
+<ul class="space-y-4">
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Contact Us</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Boutique Finder</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Shipping &amp; Returns</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h3 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 mb-6 font-bold">Legal</h3>
+<ul class="space-y-4">
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Terms of Use</a></li>
+<li><a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Cookie Settings</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-16 mt-20 border-t border-neutral-200/30 dark:border-neutral-800/30 pt-12">
+<p class="font-sans tracking-widest text-[10px] uppercase text-neutral-500">© 2024 L'Atelier d'Excellence. All Rights Reserved.</p>
+</div>
+</footer>
+</body></html>

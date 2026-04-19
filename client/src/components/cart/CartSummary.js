@@ -6,7 +6,7 @@ const CartSummary = ({ onCheckout, showCheckoutButton = true }) => {
   const { items, summary, getCartItemCount } = useCart();
 
   const subtotal = summary?.subtotal || 0;
-  const shipping = subtotal > 100 ? 0 : 10; // Free shipping over $100
+  const shipping = subtotal > 100 ? 0 : 10; // Free shipping over ₹100
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
   const itemCount = getCartItemCount();

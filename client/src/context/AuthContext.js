@@ -102,12 +102,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('token');
-      console.log('🔐 AuthContext - checkAuthStatus - token exists:', !!token);
-      console.log('🔐 AuthContext - checkAuthStatus - current state:', state);
       
       // Skip if already loading (to prevent race conditions)
       if (state.isLoading) {
-        console.log('🔐 AuthContext - checkAuthStatus - already loading, skipping');
         return;
       }
       
@@ -121,10 +118,7 @@ export const AuthProvider = ({ children }) => {
             }
           });
 
-          console.log('🔐 AuthContext - checkAuthStatus - response:', response);
-
           if (response.data) {
-            console.log('AuthContext - checkAuthStatus - user data:', response.data.data.user);
             dispatch({
               type: AUTH_ACTIONS.LOGIN_SUCCESS,
               payload: {
@@ -133,7 +127,6 @@ export const AuthProvider = ({ children }) => {
               }
             });
           } else {
-            console.log('AuthContext - checkAuthStatus - token invalid, logging out');
             // Token is invalid, remove it
             localStorage.removeItem('token');
             dispatch({ type: AUTH_ACTIONS.LOGOUT });

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#5f5e5f",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#46474a",
+                    "on-tertiary-fixed-variant": "#00504d",
+                    "on-primary-fixed-variant": "#474647",
+                    "inverse-surface": "#2f3130",
+                    "on-tertiary-container": "#00938f",
+                    "tertiary": "#000000",
+                    "surface-dim": "#dadad8",
+                    "primary-container": "#1b1b1c",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface": "#faf9f7",
+                    "on-background": "#1a1c1b",
+                    "on-primary-fixed": "#1b1b1c",
+                    "on-secondary-fixed": "#241a00",
+                    "primary-fixed": "#e5e2e3",
+                    "surface-variant": "#e3e2e0",
+                    "secondary-container": "#fed65b",
+                    "outline-variant": "#c7c6ca",
+                    "primary-fixed-dim": "#c8c6c7",
+                    "on-surface": "#1a1c1b",
+                    "surface-container-low": "#f4f3f1",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffe088",
+                    "surface-bright": "#faf9f7",
+                    "inverse-on-surface": "#f1f1ef",
+                    "surface-container-highest": "#e3e2e0",
+                    "outline": "#76777b",
+                    "surface-container": "#efeeec",
+                    "on-primary-container": "#858384",
+                    "inverse-primary": "#c8c6c7",
+                    "tertiary-fixed-dim": "#4adbd5",
+                    "background": "#faf9f7",
+                    "on-secondary-container": "#745c00",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#00201f",
+                    "tertiary-container": "#00201f",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#6df7f1",
+                    "secondary": "#735c00",
+                    "primary": "#000000",
+                    "surface-container-high": "#e9e8e6",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        body {
+            background-color: #faf9f7;
+            color: #1a1a1b;
+            font-family: 'Inter', sans-serif;
+        }
+        .serif-display { font-family: 'Noto Serif', serif; }
+        .no-border { border: none !important; }
+        .tonal-shift-bottom { background: linear-gradient(to bottom, transparent 95%, rgba(0,0,0,0.02) 100%); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Shared TopNavBar -->
+<nav class="fixed top-0 w-full z-50 h-20 bg-stone-50/80 dark:bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-12 w-full mx-auto tonal-shift-bottom">
+<div class="flex items-center gap-12">
+<span class="text-3xl font-serif tracking-[0.2em] text-neutral-900 dark:text-stone-50 uppercase">L'Atelier</span>
+<div class="hidden md:flex gap-8">
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Collections</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">High Jewelry</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Heritage</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Bespoke</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-neutral-900 dark:text-stone-50 hover:opacity-70 duration-300">favorite</button>
+<button class="material-symbols-outlined text-neutral-900 dark:text-stone-50 hover:opacity-70 duration-300">shopping_bag</button>
+<button class="material-symbols-outlined text-yellow-600 dark:text-yellow-500 border-b border-yellow-600">person</button>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-12 max-w-[1440px] mx-auto min-h-screen">
+<div class="flex flex-col md:flex-row gap-20">
+<!-- Side Navigation -->
+<aside class="w-full md:w-64 flex-shrink-0">
+<div class="sticky top-32">
+<h2 class="font-label uppercase tracking-widest text-[10px] mb-8 opacity-50">Private Menu</h2>
+<ul class="space-y-6">
+<li>
+<a class="group flex items-center gap-4 text-primary font-medium border-b border-primary pb-1 w-fit" href="#">
+<span class="font-label text-sm uppercase tracking-wider">Account Information</span>
+</a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-outline hover:text-primary transition-colors duration-300" href="#">
+<span class="font-label text-sm uppercase tracking-wider">Order History</span>
+</a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-outline hover:text-primary transition-colors duration-300" href="#">
+<span class="font-label text-sm uppercase tracking-wider">Saved Addresses</span>
+</a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-outline hover:text-primary transition-colors duration-300" href="#">
+<span class="font-label text-sm uppercase tracking-wider">Payment Methods</span>
+</a>
+</li>
+<li>
+<a class="group flex items-center gap-4 text-outline hover:text-primary transition-colors duration-300" href="#">
+<span class="font-label text-sm uppercase tracking-wider">Wishlist</span>
+</a>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<div class="flex-grow space-y-24">
+<!-- Welcome Section -->
+<header>
+<h1 class="serif-display text-5xl md:text-6xl text-primary mb-4 leading-tight">Welcome back, <span class="italic">Julianne</span></h1>
+<p class="font-body text-outline max-w-xl text-lg leading-relaxed">Your personal atelier dashboard. Review your acquisitions, manage your private appointments, and explore your curated wishlist.</p>
+</header>
+<!-- Personal Info Bento -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<div class="md:col-span-8 bg-surface-container-low p-12 flex flex-col justify-between">
+<div>
+<h3 class="font-label text-[10px] uppercase tracking-[0.2em] mb-12 opacity-60">Personal Profile</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+<div>
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Full Name</p>
+<p class="font-headline text-xl text-primary">Julianne V. Sterling</p>
+</div>
+<div>
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Email Address</p>
+<p class="font-headline text-xl text-primary">j.sterling@heritage.com</p>
+</div>
+<div>
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Member Since</p>
+<p class="font-headline text-xl text-primary">October 2021</p>
+</div>
+<div>
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-1">Private Concierge</p>
+<p class="font-headline text-xl text-primary">Elena Rossi</p>
+</div>
+</div>
+</div>
+<div class="mt-12">
+<button class="bg-primary text-surface px-8 py-3 font-label text-[10px] uppercase tracking-[0.2em] transition-transform duration-300 hover:-translate-y-0.5">
+                                Edit Account
+                            </button>
+</div>
+</div>
+<div class="md:col-span-4 bg-primary text-surface p-12 flex flex-col justify-center text-center">
+<span class="material-symbols-outlined text-4xl mb-6 text-secondary-fixed">diamond</span>
+<h4 class="font-label text-[10px] uppercase tracking-[0.2em] mb-2">Heritage Tier</h4>
+<p class="serif-display text-2xl italic mb-6">Platinum Circle</p>
+<p class="font-body text-xs text-on-primary-container leading-relaxed">Enjoy exclusive early access to the upcoming High Jewelry collections.</p>
+</div>
+</section>
+<!-- Recent Orders Section -->
+<section>
+<div class="flex justify-between items-end mb-12">
+<h2 class="serif-display text-3xl">Recent Acquisitions</h2>
+<a class="text-secondary font-label text-[10px] uppercase tracking-widest border-b border-secondary/30 pb-1 hover:border-secondary transition-colors" href="#">View full history</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Order Card 1 -->
+<div class="bg-surface-container-lowest group cursor-pointer">
+<div class="aspect-[4/5] overflow-hidden bg-surface-variant relative">
+<img class="w-full h-full object-cover grayscale-[20%] group-hover:scale-105 transition-transform duration-700" data-alt="close-up of a diamond and sapphire pendant necklace on a dark velvet display stand with soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY_83HxKyY9mcvFhvqTYxXtwekivAr9iv4KuB0-JB1V1U9wq_rIMFEZH3TlTgaC5o9x7oBtmuo4GHpdTp976egGMLuzV9R3QLPpjjzQrQdb0AngKHMqro_tcDt90wc_mjihPYFmiBnhElfBPpLKDgw266E7f863F0fyfy6_z0yVM47QIJ99ZCxSj4u3IQqgFdA-DS6n3DDjbP_rSz0OZe_5vnw2bQJPEhfMmxoE7GpRRkq0ngzABGXumPUNFLaV_XbIQu8nrweDqo8"/>
+<div class="absolute top-4 left-4 bg-primary text-surface text-[9px] font-label uppercase tracking-widest px-3 py-1">
+                                    Shipped
+                                </div>
+</div>
+<div class="py-8 text-center px-4">
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-2">Order #LAT-9281</p>
+<h3 class="font-headline text-lg text-primary mb-2">Celestial Sapphire Pendant</h3>
+<p class="font-body text-sm text-secondary">Ordered Dec 12, 2023</p>
+</div>
+</div>
+<!-- Order Card 2 -->
+<div class="bg-surface-container-lowest group cursor-pointer">
+<div class="aspect-[4/5] overflow-hidden bg-surface-variant relative">
+<img class="w-full h-full object-cover grayscale-[20%] group-hover:scale-105 transition-transform duration-700" data-alt="minimalist gold wedding band on a neutral marble stone with high key natural lighting and sharp shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4PzQN8OIoMlkMuHPorl5fbLc1cNpQKFdyOVvZ8-CInuDMWwivK-YXcl8DulJi19kbiTVOIxw4wRzNgqUB2CFNcRvQHKj8KYSg2xTLe5SW47XkjKkPS4HEJFKwhBqgf-8Al88tQT-GjiWrP_31DeNNRWe7lz4vCjDOOukfkUF8V_7Flqqd01-D5pTTDVI2MoYnJ4MEg7gRGe07V6OR4zz-zbHPSvJ9hPStto666kwhe-U3hSN8KQ1M-AKuwUwUICS_gsnHs8rRes8s"/>
+<div class="absolute top-4 left-4 bg-secondary-container text-on-secondary-container text-[9px] font-label uppercase tracking-widest px-3 py-1">
+                                    Processing
+                                </div>
+</div>
+<div class="py-8 text-center px-4">
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-2">Order #LAT-9402</p>
+<h3 class="font-headline text-lg text-primary mb-2">Aurelian Band, 18k Gold</h3>
+<p class="font-body text-sm text-secondary">Ordered Jan 04, 2024</p>
+</div>
+</div>
+<!-- Order Card 3 -->
+<div class="bg-surface-container-lowest group cursor-pointer">
+<div class="aspect-[4/5] overflow-hidden bg-surface-variant relative">
+<img class="w-full h-full object-cover grayscale-[20%] group-hover:scale-105 transition-transform duration-700" data-alt="intricate pair of diamond earrings dangling on a white reflective surface with soft elegant bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgQTqRxo5DjHpcGC2NDQL14o_XoxgIBQrT_Sd99fvsQbCAspoMtuvMKhp5w7TTrTQG8E5eRUVa_7KpyDzY59srLRp-oyahmom_oY0M4Je2l22HcIsKJNC3iTYEgHcUkHOi2PmnSIUJ9_hBoECro2pK5wkK5m2Pnrp_zNNBKoeV3n0wSADjCVtbEhXUoGVxmkyW4Mtw1od582pwcji3JJYD5Cyvjc_wJv5KLf5r42YR5JSb0-S-EFxx-a-rQ_EKHcUlx6ewKGmIYOE9"/>
+<div class="absolute top-4 left-4 bg-primary text-surface text-[9px] font-label uppercase tracking-widest px-3 py-1">
+                                    Shipped
+                                </div>
+</div>
+<div class="py-8 text-center px-4">
+<p class="font-label text-[9px] uppercase tracking-widest text-outline mb-2">Order #LAT-8812</p>
+<h3 class="font-headline text-lg text-primary mb-2">Etoile Diamond Studs</h3>
+<p class="font-body text-sm text-secondary">Ordered Nov 15, 2023</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Shared Footer -->
+<footer class="w-full pt-24 pb-12 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200/30 dark:border-neutral-800/30">
+<div class="max-w-[1440px] mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="space-y-6">
+<span class="font-serif text-xl tracking-tighter text-neutral-900 dark:text-stone-50">L'Atelier</span>
+<p class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 leading-relaxed">A sanctuary of fine jewelry and ancestral craftsmanship since 1892.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary mb-2">The Maison</h5>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors underline underline-offset-8 decoration-yellow-600/50" href="#">Sustainability</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Boutique Finder</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Career</a>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary mb-2">Support</h5>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Privacy Policy</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Contact Us</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Shipping &amp; Returns</a>
+</div>
+<div class="flex flex-col gap-6">
+<h5 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary mb-2">Newsletter</h5>
+<div class="flex border-b border-neutral-200 py-2">
+<input class="bg-transparent border-none focus:ring-0 w-full font-label text-[10px] uppercase tracking-widest placeholder:text-neutral-300" placeholder="ENTER YOUR EMAIL" type="email"/>
+<button class="material-symbols-outlined text-neutral-400">arrow_forward</button>
+</div>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-16 mt-20 pt-8 border-t border-neutral-200/10 text-center">
+<p class="font-sans tracking-widest text-[10px] uppercase text-neutral-400">© 2024 L'Atelier d'Excellence. All Rights Reserved.</p>
+</div>
+</footer>
+</body></html>

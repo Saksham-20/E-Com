@@ -7,6 +7,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // L'Atelier stitch tokens
+        'atelier-charcoal': '#1a1a1b',
+        'atelier-gold': '#d4af37',
+        'atelier-ivory': '#faf9f7',
+        'atelier-muted': '#46474a',
+        'atelier-outline': '#c7c6ca',
+        'atelier-surface-low': '#f4f3f1',
+        'atelier-surface-container': '#efeeec',
+
         // Primary brand colors
         'tiffany-blue': {
           50: '#f0fdfa',
@@ -100,6 +109,8 @@ module.exports = {
       },
       
       fontFamily: {
+        'headline': ['Noto Serif', 'serif'],
+        'label': ['Inter', 'sans-serif'],
         'sans': ['Inter', 'system-ui', 'sans-serif'],
         'serif': ['Playfair Display', 'Georgia', 'serif'],
         'mono': ['JetBrains Mono', 'monospace'],

@@ -228,10 +228,6 @@ export const CartProvider = ({ children }) => {
   // Add item to cart
   const addToCart = async (product, quantity = 1, variantDetails = null) => {
     try {
-      // Adding product to cart
-      console.log('Add to cart - Product data:', product);
-      console.log('Add to cart - Product ID:', product.id);
-      
       if (!product.id) {
         console.error('Product ID is missing:', product);
         toast.error('Product ID is missing. Cannot add to cart.');
@@ -342,50 +338,32 @@ export const CartProvider = ({ children }) => {
   // Remove item from cart
   const removeFromCart = async (itemId) => {
     try {
-      // Removing item from cart
-      
       if (isAuthenticated) {
-        // Check if itemId is a product ID or cart item ID
-        // If it's a product ID, find the corresponding cart item ID
         let cartItemId = itemId;
-        
-        // Check if this is a product ID by looking in the current cart items
+
         const cartItem = state.items.find(item => item.product_id === itemId);
         if (cartItem) {
           cartItemId = cartItem.id;
         }
-        
-        // Remove via API
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-        const url = `${apiUrl}/api/cart/${cartItemId}`;
-        
-        const response = await fetch(url, {
-          method: 'DELETE',
+        const response = await api.delete(`/cart/${cartItemId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
           }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          
+        if (response.data?.success) {
           // Reload cart to get updated state
           await loadUserCart();
-          
-          toast.success(data.message || 'Item removed from cart');
+
+          toast.success(response.data.message || 'Item removed from cart');
           return { success: true };
         } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to remove item');
-          return { success: false, message: errorData.message };
+          toast.error(response.data?.message || 'Failed to remove item');
+          return { success: false, message: response.data?.message };
         }
       } else {
-        // Remove from guest cart
-        // Check if itemId is a product ID or cart item ID
         let cartItemId = itemId;
-        
-        // Check if this is a product ID by looking in the current cart items
+
         const cartItem = state.items.find(item => item.product_id === itemId);
         if (cartItem) {
           cartItemId = cartItem.id;
@@ -451,32 +429,27 @@ export const CartProvider = ({ children }) => {
         variant_details: item.variant_details
       }));
 
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/cart/merge`, {
-        method: 'POST',
+      const response = await api.post('/cart/merge', {
+        guest_items: guestItems
+      }, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ guest_items: guestItems })
+        }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        
+      if (response.data?.success) {
         // Clear guest cart and load user cart
         dispatch({ type: CART_ACTIONS.CLEAR_CART });
         localStorage.removeItem('guestCart');
-        
+
         // Reload user cart
         await loadUserCart();
-        
-        toast.success(data.message || 'Guest cart merged successfully');
+
+        toast.success(response.data.message || 'Guest cart merged successfully');
         return { success: true };
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to merge cart');
-        return { success: false, message: errorData.message };
+        toast.error(response.data?.message || 'Failed to merge cart');
+        return { success: false, message: response.data?.message };
       }
     } catch (error) {
       console.error('Merge cart error:', error);

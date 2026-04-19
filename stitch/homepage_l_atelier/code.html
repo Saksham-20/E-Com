@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#5f5e5f",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#46474a",
+                    "on-tertiary-fixed-variant": "#00504d",
+                    "on-primary-fixed-variant": "#474647",
+                    "inverse-surface": "#2f3130",
+                    "on-tertiary-container": "#00938f",
+                    "tertiary": "#000000",
+                    "surface-dim": "#dadad8",
+                    "primary-container": "#1b1b1c",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface": "#faf9f7",
+                    "on-background": "#1a1c1b",
+                    "on-primary-fixed": "#1b1b1c",
+                    "on-secondary-fixed": "#241a00",
+                    "primary-fixed": "#e5e2e3",
+                    "surface-variant": "#e3e2e0",
+                    "secondary-container": "#fed65b",
+                    "outline-variant": "#c7c6ca",
+                    "primary-fixed-dim": "#c8c6c7",
+                    "on-surface": "#1a1c1b",
+                    "surface-container-low": "#f4f3f1",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffe088",
+                    "surface-bright": "#faf9f7",
+                    "inverse-on-surface": "#f1f1ef",
+                    "surface-container-highest": "#e3e2e0",
+                    "outline": "#76777b",
+                    "surface-container": "#efeeec",
+                    "on-primary-container": "#858384",
+                    "inverse-primary": "#c8c6c7",
+                    "tertiary-fixed-dim": "#4adbd5",
+                    "background": "#faf9f7",
+                    "on-secondary-container": "#745c00",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#00201f",
+                    "tertiary-container": "#00201f",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#6df7f1",
+                    "secondary": "#735c00",
+                    "primary": "#000000",
+                    "surface-container-high": "#e9e8e6",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0rem",
+                    "lg": "0rem",
+                    "xl": "0rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift-bottom {
+            box-shadow: 0 10px 30px -15px rgba(0,0,0,0.05);
+        }
+        .atelier-text-stroke {
+            -webkit-text-stroke: 1px rgba(26, 26, 27, 0.2);
+            color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-background selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- TopNavBar Implementation -->
+<nav class="fixed top-0 w-full z-50 h-20 bg-stone-50/80 dark:bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-12 w-full mx-auto tonal-shift-bottom">
+<div class="flex items-center gap-12">
+<span class="text-3xl font-serif tracking-[0.2em] text-neutral-900 dark:text-stone-50 uppercase">L'Atelier</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Collections</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">High Jewelry</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Heritage</a>
+<a class="font-serif tracking-tight uppercase text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 transition-opacity duration-500" href="#">Bespoke</a>
+</div>
+</div>
+<div class="flex items-center gap-6 text-neutral-900 dark:text-stone-50">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity duration-500">favorite</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity duration-500">shopping_bag</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity duration-500">person</span>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="Cinematic close-up of a high-end diamond necklace resting on dark velvet, dramatic side lighting highlighting the brilliance and craftsmanship" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFyPNvyhhMIkoe6q39QO2sMiTC2-GUxTdt2U1B8CRofXRPAA9j6dY5oHzcv_a8miyJyL0cNd81tagiJ8NwzqY_iqTQ6Znvmi2RTmYo6WRGrJPcaDilkBZFcTtlePiT-qiO0buZJH3GAOcLjDb7MAyLfqrerPjgtMmXQ8XVAIxtSx8OiNeeUUW-SqIhTADqXGUmSsfAG_jhG6bWxOoVxlnd2utLMgGjowiI-AtzuMn0WBcIBJI4TlIdfCiLGhBx-MOX-vhvS-U-ktTe"/>
+<div class="absolute inset-0 bg-neutral-900/30"></div>
+<div class="relative z-10 text-center text-on-primary px-4">
+<h2 class="text-label-sm uppercase tracking-[0.4em] mb-4 opacity-90">Fine Artistry Since 1924</h2>
+<h1 class="text-6xl md:text-8xl font-headline italic tracking-tight mb-8">Elegance Redefined.</h1>
+<button class="bg-primary text-surface px-12 py-4 text-sm font-label uppercase tracking-widest hover:translate-y-[-2px] transition-transform duration-300">
+                Shop Now
+            </button>
+</div>
+</section>
+<!-- Featured Collections -->
+<section class="py-32 px-12 max-w-[1440px] mx-auto bg-surface">
+<div class="flex flex-col md:flex-row gap-16">
+<div class="flex-1 space-y-8">
+<div class="relative group overflow-hidden bg-surface-container-low aspect-[3/4]">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Exquisite diamond and emerald necklace on an ivory porcelain stand, soft natural lighting, minimalist editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBgis_grR9CFNTeLnahUlajmU5bJSoP0Ji_yX3mynCMVB8evwWQIdrAO57CrtaJikCU4-iwq1iOuoRsceESJpk-TxfXI9fXHymXu0cvfa9phdCdSlkHpUlDgKSutg-lytU-xpN0pUNEZ8w2aDUsO0KubqXwh7NVfg3aHpMbQWPMD71h5_mxQ5dwPUVhgDyXWIxlrCzv9cCZ8INFsRWyuADl-PKJThtPE_98wWFj5nxtGMKgv7mwDIhLV_uLxwqs5h0_kuHbRN-lDBw"/>
+</div>
+<div class="text-center">
+<h3 class="font-headline text-3xl mb-2">High Jewelry</h3>
+<p class="text-on-surface-variant font-label text-[10px] uppercase tracking-widest">Masterpieces of Light</p>
+<a class="inline-block mt-4 text-secondary font-label text-xs uppercase tracking-widest border-b border-secondary/20 hover:border-secondary transition-colors pb-1" href="#">Discover</a>
+</div>
+</div>
+<div class="flex-1 space-y-8 md:mt-24">
+<div class="relative group overflow-hidden bg-surface-container-low aspect-[3/4]">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Minimalist luxury diamond ring on a neutral textured background, warm ambient lighting, architectural precision" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWN5C1ju4LUEwax14vhd2eRrPYBHs2owiFX2n4Gti5PLTVQ89MzEzbs_WENCXKk6Kpl1iZCoj53YkPqnnZONbFF78vAZdxVuNarQ6AiarLDdm1ehDLF3DoSA6TaoAARnf-8ayjb-qqCaBz2akOiWRF3tvTkJpuIaiJmsLIsL0LihVEVCtbl6z7rVB_SfW7VVk1t8GX4LOcumerKWh0Rqxe0LVP3NbpJZkmmN9T2Y0nbfpkFNKM_XFckXgvt1Ca2jZyU0L_B9JEfg9_"/>
+</div>
+<div class="text-center">
+<h3 class="font-headline text-3xl mb-2">Fine Jewelry</h3>
+<p class="text-on-surface-variant font-label text-[10px] uppercase tracking-widest">Timeless Daily Essentials</p>
+<a class="inline-block mt-4 text-secondary font-label text-xs uppercase tracking-widest border-b border-secondary/20 hover:border-secondary transition-colors pb-1" href="#">Explore</a>
+</div>
+</div>
+<div class="flex-1 space-y-8">
+<div class="relative group overflow-hidden bg-surface-container-low aspect-[3/4]">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Jewelry designer sketching a custom piece with fine tools and loose diamonds on a marble workshop table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD99XmZAlOP7Ruoc8O0MztMwqG7akIfSKhuyLQom6twIKgE_EeD_0UTMG08ezAMQhLY8fr0-X_nQNoUoKSJF0nncvQjbHKVeY8a8YmY9IVdW9x1g6XpbJ14z6PHw8sJ_nC1OmH-9bdrVqQOzYd6oit-BCMcnMDGlLezetcHY6OVbOd91pTrVMKkERWTmc5GjrqDFcZRUAZFX0HJWjXULMl4DgSIxPG36mWx8kTir-J5RWu5jaz4k3WiEEENsfPy3OPAILVfbsKARKnm"/>
+</div>
+<div class="text-center">
+<h3 class="font-headline text-3xl mb-2">Bespoke Creations</h3>
+<p class="text-on-surface-variant font-label text-[10px] uppercase tracking-widest">Your Vision, Our Craft</p>
+<a class="inline-block mt-4 text-secondary font-label text-xs uppercase tracking-widest border-b border-secondary/20 hover:border-secondary transition-colors pb-1" href="#">Inquire</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Brand Story Preview -->
+<section class="bg-primary text-surface py-40 px-16">
+<div class="max-w-[1440px] mx-auto grid md:grid-cols-2 items-center gap-24">
+<div class="space-y-12">
+<h2 class="font-headline text-5xl md:text-7xl italic leading-tight">The Heritage of <span class="block">Excellence.</span></h2>
+<div class="w-24 h-px bg-secondary opacity-50"></div>
+<p class="font-body text-on-primary-container text-lg leading-relaxed max-w-md">
+                    Founded in the heart of Paris, L'Atelier has dedicated a century to the pursuit of absolute brilliance. Every stone is ethically sourced, every setting hand-carved by master artisans who view jewelry as an enduring legacy.
+                </p>
+<button class="text-secondary font-label text-sm uppercase tracking-[0.3em] hover:opacity-70 transition-opacity">Read Our Story</button>
+</div>
+<div class="relative">
+<div class="absolute -top-12 -left-12 w-full h-full bg-secondary/10 translate-x-4 translate-y-4"></div>
+<img class="relative w-full aspect-[4/5] object-cover" data-alt="Artisanal hands polishing a gold ring setting under a jeweler's loupe in a historic workshop atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaMBl0ZM4VFy8JDguvf0qsAMEqb_ps283SKaZhxmxOvDNTNyw1hekEpBgDBNiALNbfzTaHggNiMh6hbjr3gF58k6oP1ojFnEbZjnahXsnGhu53zmSIYtJPIDEghDuitV5QZiNlMFzaddwLrDxwWhEqtthDd8Z91DcIeocYOJHgD6jZePCLLbBUsm_W1u49tf7NLreTIK683eB4jKBHxmypCFh9D1J_FsgNBuT562JuMgEj5wPVFOu7o6KdQV4yw8AEB89IXtx4f5A-"/>
+</div>
+</div>
+</section>
+<!-- Best Sellers -->
+<section class="py-32 bg-surface">
+<div class="max-w-[1440px] mx-auto px-16">
+<div class="flex justify-between items-end mb-20">
+<h2 class="font-headline text-4xl">The Atelier Curations</h2>
+<a class="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] border-b border-outline-variant pb-1" href="#">View All Selection</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+<!-- Product 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[1/1] bg-surface-container overflow-hidden mb-6">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Elegant gold chain bracelet with delicate diamond charms, clean studio photography on white surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK8vzTE7ZNsBQGAqlSG_dPcIgXaOuSqBP6-BxmFw7T3ZtWAOuJMx4-DiMixKzzipsNZS9QLmCHgT6Dt7q2sFCKJ0dcq_yPzRb578Gs2pkhclAQF9DG8IOKyCT0KCn8EF71WV7KKXQ98FzG6Agvt89RYC4QfKSR2NJ-gE2ai51zvF44x_YFNCk8x7Cbb2qeJhe_z_c6aeWx0MPTQoW9wzC01NqOK0494K2pgjzk24Uc6Ogcg6j4RAyqBpTPfCwqeSSf--qbYDpIRsdx"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-primary text-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest">Add to Cart</button>
+</div>
+</div>
+<div class="text-center">
+<h4 class="font-headline text-lg mb-1">Etoile Bracelet</h4>
+<p class="text-secondary font-body text-sm tracking-widest">$4,200</p>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[1/1] bg-surface-container overflow-hidden mb-6">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Luxury platinum solitaire diamond ring on a silk cushion, sharp focus on the stone's facets" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfyO5btiJHanASx7RJYU-gd-y3m6ktmk20r35cC9gcVHLajFadgaz9MD4aKzbrtb1-uh7oWbtiJPNkoNV4qf7OxyC4ye93bTbV171W4rF8Snuv4CHw1PYAwQTI_B9vtHLsrRFfZtrVimjizhbUHX2bzHGAbZvzHNk0JgSY1l88nhW7_LQK8rIBYQfoVLhWv4WNKp5WV-5uR2uyHRRPAmRG0fBHfSDwHQ-L5qFW-Hi1a_0weLS8j04J9mm3DZlfkNkksY5dOf4pjP-Q"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-primary text-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest">Add to Cart</button>
+</div>
+</div>
+<div class="text-center">
+<h4 class="font-headline text-lg mb-1">Lumière Ring</h4>
+<p class="text-secondary font-body text-sm tracking-widest">$12,850</p>
+</div>
+</div>
+<!-- Product 3 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[1/1] bg-surface-container overflow-hidden mb-6">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Pair of diamond stud earrings in white gold setting, sparkling against a soft grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkjwLbv1k-_lgUokiNTDQBdPr_UA5IfFXoQoyYLCruWTlK0z8KDz0ll3ApgBu1Z9nvCUZemvpKtCpxYBxlBiDcDVrGa3fqlYjSCEEY7xcHxmdkb5Eqhxyk5UPPMOq-9oOZ1CVJuNCq_SVPFhkbwMc3dgazkqwyYNNTNc-ALTBMICVz56VeN7rTuEkZ3uGFK0fZ3uCVe36UnB8V9q_v7Ou_8EhkxHS_mXeGGqkqVqtG3VNXNF9sstbVYLSzNpwiGEB386ow1yhdb-IR"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-primary text-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest">Add to Cart</button>
+</div>
+</div>
+<div class="text-center">
+<h4 class="font-headline text-lg mb-1">Celestial Studs</h4>
+<p class="text-secondary font-body text-sm tracking-widest">$3,400</p>
+</div>
+</div>
+<!-- Product 4 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[1/1] bg-surface-container overflow-hidden mb-6">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Classic pearl necklace with a gold clasp, elegant and timeless editorial product shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMiHZ7HINt6kFVnb_2hSD3EUO0NJXzjGtWLTSO5BHHcjzOlhzQa_47Q9--cmhvYwLiaXSUebkyfvjSuyhHOGKFeMn3GAeb08xysN6QpydFaWyapNnaTfJtW17YxaT9SOdtbX7m6cNj5sqXyqDeAdM-fycPyKZV_sdathphmYMXjaI9q1pYv2L0PsI_F1Yi8npjcNFsSiWRf97cl9z89NlRH_05dq1_Ed1Tj8mZLjRM3huXA1xZ1BtQFmiUIugrCJ0pcDHNhq_pzK7L"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-primary text-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest">Add to Cart</button>
+</div>
+</div>
+<div class="text-center">
+<h4 class="font-headline text-lg mb-1">Riviera Pearls</h4>
+<p class="text-secondary font-body text-sm tracking-widest">$6,100</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials -->
+<section class="py-32 bg-surface-container-low overflow-hidden">
+<div class="max-w-[1440px] mx-auto px-16 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-secondary text-4xl mb-12">format_quote</span>
+<div class="max-w-3xl">
+<p class="font-headline text-2xl md:text-4xl italic leading-relaxed text-on-surface mb-12">
+                    "The craftsmanship is beyond compare. Every time I wear my L'Atelier necklace, I feel the weight of history and the light of true artistry."
+                </p>
+<div class="flex flex-col items-center">
+<p class="font-label text-xs uppercase tracking-[0.3em] text-on-surface-variant">Isabella V.</p>
+<p class="font-body text-[10px] uppercase tracking-widest text-secondary mt-2">Private Collector</p>
+</div>
+</div>
+<div class="flex gap-4 mt-16">
+<div class="w-12 h-[1px] bg-secondary"></div>
+<div class="w-12 h-[1px] bg-outline-variant"></div>
+<div class="w-12 h-[1px] bg-outline-variant"></div>
+</div>
+</div>
+</section>
+<!-- Newsletter Signup -->
+<section class="py-40 bg-surface border-t border-outline-variant/10">
+<div class="max-w-[1440px] mx-auto px-16 grid md:grid-cols-2 gap-24 items-center">
+<div>
+<h2 class="font-headline text-4xl mb-6">Stay Enchanted</h2>
+<p class="text-on-surface-variant font-body leading-relaxed max-w-sm">
+                    Receive exclusive invitations to private viewings and first access to our limited collection drops.
+                </p>
+</div>
+<form class="flex flex-col gap-8">
+<div class="relative">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2 block">Email Address</label>
+<input class="w-full bg-transparent border-b border-outline-variant/30 py-4 focus:outline-none focus:border-secondary transition-colors font-body text-lg placeholder:text-outline-variant/50" placeholder="example@maison.com" type="email"/>
+</div>
+<button class="bg-primary text-surface w-full md:w-fit px-16 py-4 text-xs font-label uppercase tracking-[0.2em] self-end hover:translate-y-[-2px] transition-transform duration-300" type="submit">
+                    Subscribe
+                </button>
+</form>
+</div>
+</section>
+<!-- Footer Implementation -->
+<footer class="w-full pt-24 pb-12 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200/30 dark:border-neutral-800/30">
+<div class="max-w-[1440px] mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-1">
+<span class="font-serif text-xl tracking-tighter text-neutral-900 dark:text-stone-50">L'Atelier</span>
+<p class="mt-6 text-neutral-500 font-sans tracking-widest text-[10px] uppercase leading-loose">
+                    Defining high jewelry through <br/> a century of uncompromising <br/> savoir-faire.
+                </p>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 font-bold">The Maison</h5>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 underline underline-offset-8 decoration-yellow-600/50 transition-colors" href="#">Our History</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Sustainability</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Boutique Finder</a>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 font-bold">Client Care</h5>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Contact Us</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Shipping &amp; Returns</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Privacy Policy</a>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-sans tracking-widest text-[10px] uppercase text-neutral-900 dark:text-stone-100 font-bold">Connect</h5>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Instagram</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">Pinterest</a>
+<a class="font-sans tracking-widest text-[10px] uppercase text-neutral-500 hover:text-neutral-900 transition-colors" href="#">WeChat</a>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-16 mt-24 border-t border-neutral-200/20 pt-8 flex justify-between items-center">
+<p class="text-neutral-500 font-sans tracking-widest text-[10px] uppercase">© 2024 L'Atelier d'Excellence. All Rights Reserved.</p>
+<div class="flex gap-8">
+<span class="material-symbols-outlined text-neutral-400 text-sm">public</span>
+<span class="text-neutral-500 font-sans tracking-widest text-[10px] uppercase">Global - English</span>
+</div>
+</div>
+</footer>
+</body></html>

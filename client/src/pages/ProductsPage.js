@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import ProductGrid from '../components/product/ProductGrid';
-import SearchBar from '../components/common/SearchBar';
+import ProductCard from '../components/product/ProductCard';
 import FilterSidebar from '../components/common/FilterSidebar';
 import Loading from '../components/ui/Loading';
 import api from '../services/api';
@@ -162,81 +161,90 @@ const ProductsPage = ({ category: propCategory }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {category ? category.replace(/-/g, ' ').toUpperCase() : 'All Products'}
+    <div className="min-h-screen bg-atelier-ivory pt-20">
+      <header className="w-full bg-atelier-surface-low py-20 text-center overflow-hidden relative">
+        <div className="relative z-10 max-w-3xl mx-auto px-4">
+          <h1 className="font-headline text-5xl md:text-7xl tracking-tight mb-6">
+            Our <span className="italic">Collections</span>
           </h1>
-          <p className="text-base text-gray-600">
-            {category 
-              ? `Discover our curated collection of ${category.replace(/-/g, ' ')}`
-              : 'Discover our curated collection of premium products'
-            }
+          <p className="text-atelier-muted text-lg leading-relaxed">
+            {category
+              ? `Discover our curated ${category.replace(/-/g, ' ')} edit, where every piece is selected for timeless elegance.`
+              : 'Explore a curated selection of masterpieces, where traditional craftsmanship meets contemporary vision.'}
           </p>
         </div>
+      </header>
 
-        {/* Search and Filter Bar */}
-        <div className="flex flex-col gap-3 mb-4">
-          {/* Search Bar - Full Width on Mobile */}
-          <div className="w-full">
-            <SearchBar 
-              onSearch={handleSearch} 
-              placeholder="Search products..." 
-              className="w-full"
-              size="sm"
-            />
-          </div>
-          
-          {/* Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="sm:hidden px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 text-center"
-            >
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
-            </button>
-            
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 w-full sm:min-w-[160px]"
-            >
-              <option value="newest">Newest First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Highest Rated</option>
-            </select>
-          </div>
+      <section className="atelier-container py-14 md:py-16">
+        <div className="md:hidden flex items-center justify-between border-b border-atelier-outline/30 pb-4 mb-8">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="atelier-label text-atelier-charcoal font-semibold"
+          >
+            {showFilters ? 'Hide Filters' : 'Filters'}
+          </button>
+          <span className="atelier-label text-atelier-muted">{filteredProducts.length} Items</span>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
-          {/* Filters Sidebar */}
-          <div className={`xl:w-64 ${showFilters ? 'block' : 'hidden xl:block'}`}>
+        <div className="flex flex-col md:flex-row gap-10 md:gap-12">
+          <aside className={`w-full md:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
             <FilterSidebar
               filters={filters}
               categories={categories}
               onFilterChange={handleFilterChange}
             />
-          </div>
+          </aside>
 
-          {/* Products Grid */}
           <div className="flex-1 min-w-0">
-            <div className="mb-4 text-center sm:text-left">
-              <p className="text-sm text-gray-600">
+            <div className="flex items-center justify-between mb-8">
+              <p className="atelier-label text-atelier-muted">
                 Showing {filteredProducts.length} of {products.length} products
               </p>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
+                className="atelier-label text-atelier-charcoal bg-transparent border-0 border-b border-atelier-outline/50 px-0 py-2 focus:ring-0"
+              >
+                <option value="price-high">Price: High to Low</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="newest">Newest First</option>
+                <option value="rating">Highest Rated</option>
+              </select>
             </div>
-            
-            <ProductGrid
-              products={filteredProducts}
-              loading={loading}
-              error={error}
-            />
+
+            <div className="mb-8">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                className="atelier-input"
+              />
+            </div>
+
+            {error ? (
+              <div className="text-center py-16">
+                <h3 className="font-headline text-3xl mb-3">Unable to load products</h3>
+                <p className="text-atelier-muted mb-6">Please try refreshing the page.</p>
+                <button onClick={fetchProducts} className="atelier-primary-btn">
+                  Try Again
+                </button>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <h3 className="font-headline text-3xl mb-3">No products found</h3>
+                <p className="text-atelier-muted">Try adjusting your filters or search query.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} className="shadow-none" />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

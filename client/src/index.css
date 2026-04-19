@@ -1,7 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --atelier-charcoal: #1a1a1b;
+  --atelier-gold: #d4af37;
+  --atelier-ivory: #faf9f7;
+  --atelier-muted: #46474a;
+  --atelier-outline: #c7c6ca;
+}
 
 /* Base styles */
 @layer base {
@@ -12,13 +20,13 @@
   }
 
   body {
-    @apply font-body text-gray-900 bg-white;
+    @apply font-body text-atelier-charcoal bg-atelier-ivory;
     line-height: 1.6;
   }
 
   /* Typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-semibold text-gray-900;
+    @apply font-headline font-normal text-atelier-charcoal;
     line-height: 1.2;
   }
 
@@ -47,11 +55,11 @@
   }
 
   p {
-    @apply text-base text-gray-700 leading-relaxed;
+    @apply text-base text-atelier-muted leading-relaxed;
   }
 
   a {
-    @apply text-tiffany-blue hover:text-tiffany-blue-dark transition-colors duration-200;
+    @apply text-inherit transition-colors duration-200;
   }
 
   /* Form elements */
@@ -62,10 +70,40 @@
   button {
     @apply font-body;
   }
+
+  input,
+  textarea,
+  select {
+    border-radius: 0;
+  }
 }
 
 /* Component styles */
 @layer components {
+  .atelier-container {
+    @apply max-w-[1440px] mx-auto px-4 md:px-8 lg:px-12;
+  }
+
+  .atelier-label {
+    @apply font-label uppercase tracking-[0.2em] text-[10px];
+  }
+
+  .atelier-heading {
+    @apply font-headline tracking-tight;
+  }
+
+  .atelier-primary-btn {
+    @apply bg-atelier-charcoal text-atelier-ivory px-10 py-3 atelier-label hover:-translate-y-[2px] transition-transform duration-300;
+  }
+
+  .atelier-link-btn {
+    @apply atelier-label text-atelier-gold border-b border-atelier-gold/40 pb-1 hover:border-atelier-gold;
+  }
+
+  .atelier-input {
+    @apply w-full bg-transparent border-0 border-b border-atelier-outline/50 px-0 py-3 text-sm focus:border-atelier-gold focus:ring-0 placeholder:text-atelier-muted/50;
+  }
+
   /* Luxury card styles */
   .luxury-card {
     @apply bg-white rounded-lg shadow-soft hover:shadow-medium transition-all duration-300 overflow-hidden;
@@ -264,6 +302,15 @@
 
 /* Utility styles */
 @layer utilities {
+  .tonal-shift-bottom {
+    box-shadow: 0 10px 30px -15px rgba(26, 26, 27, 0.08);
+  }
+
+  .bg-atelier-grid {
+    background-image: radial-gradient(circle at 1px 1px, rgba(26, 26, 27, 0.06) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
   /* Text utilities */
   .text-gradient {
     @apply bg-gradient-to-r from-tiffany-blue to-rose-gold-500 bg-clip-text text-transparent;

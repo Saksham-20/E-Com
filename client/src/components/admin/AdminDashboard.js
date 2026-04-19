@@ -12,6 +12,16 @@ import {
 import Loading from '../ui/Loading';
 import api from '../../services/api';
 
+const formatINR = (amount) => {
+  const value = Number(amount) || 0;
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+};
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,7 +109,7 @@ const AdminDashboard = () => {
     },
     {
       title: 'Revenue',
-      value: `$${stats?.stats?.totalRevenue || 0}`,
+      value: formatINR(stats?.stats?.totalRevenue),
       icon: IoStatsChart,
       color: 'bg-orange-500',
       change: '+22%',
@@ -183,7 +193,7 @@ const AdminDashboard = () => {
                     <p className="text-sm text-gray-600">{order.email}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900">${order.total}</p>
+                    <p className="font-semibold text-gray-900">{formatINR(order.total)}</p>
                     <p className="text-sm text-gray-600">{order.status}</p>
                   </div>
                 </motion.div>
